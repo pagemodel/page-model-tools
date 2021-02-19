@@ -1,0 +1,7 @@
+PageModel org.pagemodel.tests.myapp.pages
+
+* HeaderDisplay xpath "//h1[1]" '*.text().equals("MyApp Login")'
+ErrorDisplay id "errorMsgs"
+* UsernameField id "username"
+* PasswordField id "password"
+* SignInButton id "signInButton" HomePage

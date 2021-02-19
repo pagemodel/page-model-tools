@@ -1,0 +1,10 @@
+AbstractPageModel org.pagemodel.tests.myapp.pages
+
+* TopNav @@MyAppTopNav id topNav
+
+@ComponentModel MyAppTopNav
+  * UserInfoDisplay ^id "userInfo"
+  * HomeLink id "navHome" HomePage
+  ManageUsersLink id "navManageUsers" ManageUsersPage
+  * SignOutLink id "navSignOut" LoginPage
+@EndComponent

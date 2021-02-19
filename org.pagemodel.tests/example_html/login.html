@@ -1,0 +1,30 @@
+<html>
+  <head>
+    <title>MyApp Login</title>
+    <link href="style.css" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+    <div class="clearfix">
+      <div id="header">
+        <h1>MyApp Login</h1>
+      </div>
+      <div id="userInfo"></div>
+    </div>
+    <div id="topNav">
+      <span class="nav-link"></span>
+    </div>
+    <div id="errorMsgs"></div>
+    <div id="content-narrow">
+      <h2>MyApp Login:</h2><br/>
+      <div>
+        Username: <input type="text" id="username">
+      </div><br/>
+      <div>
+        Password: <input type="text" id="password">
+      </div><br/>
+      <div>
+        <input type="button" id="signInButton" class="control-button" value="Sign In" onclick="if(password.value == 'password' && username.value == 'admin'){window.location='home.html'}else{errorMsgs.innerHTML='bad username or password';errorMsgs.style='display:block;'}">
+      </div>
+    </div>
+  </body>
+</html>

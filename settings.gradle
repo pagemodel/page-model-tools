@@ -1,0 +1,1 @@
+include "org.pagemodel.core", "org.pagemodel.web", "org.pagemodel.mail", "org.pagemodel.ssh", "org.pagemodel.tools", "org.pagemodel.tests", "org.pagemodel.gen.project"

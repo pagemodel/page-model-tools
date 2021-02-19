@@ -1,0 +1,35 @@
+{
+    "dev": {
+        "protocol": "file",
+        "port": "",
+        "hostname": "../example_html",
+        "adminDetails": {
+            "username": "admin",
+            "password": "password",
+            "email": "admin@example.com",
+            "userRole": "Administrator"
+        }
+    },
+    "test": {
+        "protocol": "http",
+        "port": "8081",
+        "hostname": "test.myapp.example.com",
+        "adminDetails": {
+            "username": "admin",
+            "password": "password",
+            "email": "admin@example.com",
+            "userRole": "Administrator"
+        }
+    },
+    "prod": {
+        "protocol": "https",
+        "port": "",
+        "hostname": "myapp.example.com",
+        "adminDetails": {
+            "username": "admin",
+            "password": "password",
+            "email": "admin@example.com",
+            "userRole": "Administrator"
+        }
+    }
+}

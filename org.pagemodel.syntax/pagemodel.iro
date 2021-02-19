@@ -1,0 +1,230 @@
+#################################################################
+## Iro
+################################################################
+##
+## * Press Ctrl + '+'/'-' To Zoom in
+## * Press Ctrl + S to save and recalculate...
+## * Documents are saved to web storage.
+## * Only one save slot supported.
+## * Matches cannot span lines.
+## * Unicode chars must be defined in \u0000 to \uffff format.
+## * All matches must be contained by a single group ( ... )
+## * Look behinds not permitted, (?<= or (?<!
+## * Look forwards are permitted (?= or (?!
+## * Constants are defined as __my_const = (......)
+## * The \= format allows unescaped regular expressions
+## * Constants referenced by match \= $${__my_const}
+## * Constants can reference other constants
+## * You are free to delete all the default scopes.
+## * Twitter : ainslec , Web: http://eeyo.io/iro
+##
+################################################################
+name                   = pagemodel
+file_extensions []     = pagemodel;
+textmate_uuid =  b08bd165-0898-45a5-a285-220c8e073e46
+################################################################
+## Constants
+################################################################
+__LOCATOR_TYPE \= (\^?(className|cssSelector|id|linkText|name|partialLinkText|tagName|xpath))
+__ELEMENT_TYPES \= (\S*(Field|Button|Link|Display|FileUpload|Checkbox|DropDown|Select|Radio|Control|Row|Dialog|Modal|Nav|Section|Component))
+__DECORATORS \=([\"']?[\*_]\.([^\"' ]*([\"][^\"]*[\"]|['][^']*['])*[^\"' ]*)[\"']?)
+################################################################
+## Styles
+################################################################
+styles [] {
+.comment : style {
+   color                 = grey
+   italic                = true
+   ace_scope             = comment
+   textmate_scope        = comment
+   pygments_scope        = Comment
+}
+.variable : style {
+   color                 = orange
+   ace_scope             = constant.language
+   textmate_scope        = constant.language
+   pygments_scope        = Name.Variable.Class
+}
+.keyword : style {
+   color                 = orange
+   ace_scope             = keyword
+   textmate_scope        = keyword
+   pygments_scope        = Keyword
+}
+.type : style {
+   color                 = orange
+   ace_scope             = support.type
+   textmate_scope        = support.type
+   pygments_scope        = Keyword.Type
+}
+.elementname : style {
+   color     = green
+   ace_scope             = constant.other
+   textmate_scope        = constant.other
+   pygments_scope        = Name.Variable.Global
+}
+.component : style {
+   color     = violet
+   ace_scope = comment.block.documentation
+   textmate_scope = comment.block.documentation
+   pygments_scope = Comment.Multiline
+}
+.decorator : style {
+   color     = gold
+   ace_scope = storage.type.annotation
+   textmate_scope = storage.type.annotation
+   pygments_scope = Name.Decorator
+}
+.numeric : style {
+   color                 = gold
+   ace_scope             = constant.numeric
+   textmate_scope        = constant.numeric
+   pygments_scope        = Number
+}
+.punctuation : style {
+   color     = red_2
+   ace_scope             = punctuation
+   textmate_scope        = punctuation
+   pygments_scope        = Punctuation
+}
+.text : style {
+   color                 = grey
+   ace_scope             = text
+   textmate_scope        = text
+   pygments_scope        = Literal
+}
+.string : style {
+   color                 = light_green
+   ace_scope             = string
+   textmate_scope        = string
+   pygments_scope        = String
+}
+.illegal : style {
+   color                 = white
+   background_color      = red
+   ace_scope             = invalid
+   textmate_scope        = invalid
+   pygments_scope        = Generic.Error
+}
+}
+#################################################
+## Parse contexts
+#################################################
+contexts [] {
+##############################################
+## Main Context - Entry point context
+##############################################
+main : context {
+   : pattern {
+      regex          \= $${__LOCATOR_TYPE}
+      styles []       = .keyword;
+   }
+   : include "numeric" ;
+   : inline_push {
+      regex          \= (\{)
+      styles []       = .punctuation;
+      : pop {
+         regex       \= (\})
+         styles []    = .punctuation;
+      }
+      : include "main" ;
+   }
+   : pattern {
+      regex          \= (;)
+      styles []       = .punctuation;
+   }
+    : pattern {
+      regex          \= (\*\s)
+      styles []       = .keyword;
+   }
+   : pattern {
+      regex       \= $${__DECORATORS}
+      styles [] = .decorator;
+   }
+   : inline_push {
+      regex          \= (\")
+      styles []       = .punctuation;
+      : pop {
+         regex       \= (\")
+         styles []    = .punctuation;
+      }
+      : pattern {
+         regex       \= ((i|s)%\S*%)
+         styles [] = .variable;
+      }
+   }
+   : inline_push {
+      regex          \= (\')
+      styles []       = .punctuation;
+      default_style   = .text
+      : pop {
+         regex       \= (\')
+         styles []    = .punctuation;
+      }
+   }
+   : include "java_snippet";
+   : pattern {
+      regex          \= (#.*)
+      styles []       = .comment;
+   }
+   : pattern {
+      regex          \=(^\@ComponentModel )(.*)
+      styles []       = .component, .type;
+   }
+   : pattern {
+      regex          \=(^\@SectionModel )(.*)
+      styles []       = .component, .type;
+   }
+    : pattern {
+      regex          \=(@{1,3}\S*)
+      styles []       = .component;
+   }
+   : pattern {
+      regex          \=(^\@EndComponent)
+      styles []       = .component;
+   }
+   : pattern {
+      regex          \=(^\@EndSection)
+      styles []       = .component;
+   }
+   : pattern {
+      regex          \= (\S*[PageModel|ComponentModel|SectionModel])(\s\S*$)
+      styles []       = .type, .text;
+   }
+   : pattern {
+      regex         \= $${__ELEMENT_TYPES}
+      styles []      = .elementname;
+   }
+   : pattern {
+      regex          \= ([^\s])
+      styles []       = .illegal;
+   }
+}
+#################################################
+## End of Contexts
+#################################################
+###########################################
+## Numeric Context
+###########################################
+numeric : context {
+   : pattern {
+      regex          \= (\b\d+)
+      styles []       = .numeric;
+   }
+}
+###########################################
+## Multi Line Comment Context
+###########################################
+java_snippet : context {
+   description        = java snippet
+   : inline_push {
+      regex          \= (^\s*%%?\S*)
+      styles []       = .keyword;
+      default_style   = .string
+      : pop {
+         regex       \= (^\s*%%?end)
+         styles []    = .keyword;
+      }
+   }
+}
+}

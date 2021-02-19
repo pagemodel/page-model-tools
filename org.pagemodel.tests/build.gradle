@@ -1,0 +1,14 @@
+buildscript {
+    dependencies {
+        classpath 'org.pagemodel:org.pagemodel.gen.gradle:0.7.0-SNAPSHOT'
+    }
+}
+
+apply plugin: 'org.pagemodel.gen.gradle'
+
+dependencies {
+    compile project(':org.pagemodel.tools')
+    testCompile 'junit:junit:4.12'
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+    compile group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
+}

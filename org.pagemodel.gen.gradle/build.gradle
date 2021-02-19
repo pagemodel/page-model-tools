@@ -1,0 +1,50 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+apply plugin: 'idea'
+
+version = '0.7.0-SNAPSHOT'
+group = 'org.pagemodel'
+
+dependencies {
+    compile gradleApi()
+    compile 'org.slf4j:slf4j-api:1.7.25'
+}
+
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url 'http://pagemodel.org/maven/snapshots/' }
+        maven { url 'http://pagemodel.org/maven/releases/' }
+    }
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { url 'http://pagemodel.org/maven/snapshots/' }
+    maven { url 'http://pagemodel.org/maven/releases/' }
+}
+
+jar {
+    manifest {
+        attributes(
+                "License-Name": "APACHE-2.0",
+                "License-URL": "http://www.apache.org/licenses/LICENSE-2.0")
+    }
+}
+
+publishing {
+    publications {
+        mavenDeploy(MavenPublication) {
+            groupId project.group
+            artifactId project.name
+            version project.version
+            from components.java
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}

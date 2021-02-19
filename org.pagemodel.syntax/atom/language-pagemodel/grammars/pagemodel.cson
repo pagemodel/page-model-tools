@@ -1,0 +1,199 @@
+'fileTypes' : [
+  'pagemodel'
+]
+'name' : 'pagemodel'
+'patterns' : [
+  {
+    'include' : '#main'
+  }
+]
+'scopeName' : 'source.pagemodel'
+'uuid' : 'b08bd165-0898-45a5-a285-220c8e073e46'
+'repository' : {
+  'main' : {
+    'patterns' : [
+      {
+        'match' : '(\\^?(className|cssSelector|id|linkText|name|partialLinkText|tagName|xpath))'
+        'name' : 'keyword.pagemodel'
+      }
+      {
+        'include' : '#numeric'
+      }
+      {
+        'begin' : '(\\{)'
+        'beginCaptures' : {
+          '1' : {
+            'name' : 'punctuation.pagemodel'
+          }
+        }
+        'patterns' : [
+          {
+            'include' : '#main__1'
+          }
+        ]
+        'end' : '(\\})'
+        'endCaptures' : {
+          '1' : {
+            'name' : 'punctuation.pagemodel'
+          }
+        }
+      }
+      {
+        'match' : '(;)'
+        'name' : 'punctuation.pagemodel'
+      }
+      {
+        'match' : '(\\*\\s)'
+        'name' : 'keyword.pagemodel'
+      }
+      {
+        'match' : '([\\"\\x{0027}]?[\\*_]\\.([^\\"\\x{0027}\\x{0020}]*([\\"][^\\"]*[\\"]|[\\x{0027}][^\\x{0027}]*[\\x{0027}])*[^\\"\\x{0027}\\x{0020}]*)[\\"\\x{0027}]?)'
+        'name' : 'storage.type.annotation.pagemodel'
+      }
+      {
+        'begin' : '(\\")'
+        'beginCaptures' : {
+          '1' : {
+            'name' : 'punctuation.pagemodel'
+          }
+        }
+        'patterns' : [
+          {
+            'include' : '#main__2'
+          }
+        ]
+        'end' : '(\\")'
+        'endCaptures' : {
+          '1' : {
+            'name' : 'punctuation.pagemodel'
+          }
+        }
+      }
+      {
+        'begin' : '(\\\')'
+        'beginCaptures' : {
+          '1' : {
+            'name' : 'punctuation.pagemodel'
+          }
+        }
+        'contentName' : 'text.pagemodel'
+        'end' : '(\\\')'
+        'endCaptures' : {
+          '1' : {
+            'name' : 'punctuation.pagemodel'
+          }
+        }
+      }
+      {
+        'include' : '#java_snippet'
+      }
+      {
+        'match' : '(#.*)'
+        'name' : 'comment.pagemodel'
+      }
+      {
+        'match' : '(^\\@ComponentModel )(.*)'
+        'captures' : {
+          '1' : {
+            'name' : 'comment.block.documentation.pagemodel'
+          }
+          '2' : {
+            'name' : 'support.type.pagemodel'
+          }
+        }
+      }
+      {
+        'match' : '(^\\@SectionModel )(.*)'
+        'captures' : {
+          '1' : {
+            'name' : 'comment.block.documentation.pagemodel'
+          }
+          '2' : {
+            'name' : 'support.type.pagemodel'
+          }
+        }
+      }
+      {
+        'match' : '(@{1,3}\\S*)'
+        'name' : 'comment.block.documentation.pagemodel'
+      }
+      {
+        'match' : '(^\\@EndComponent)'
+        'name' : 'comment.block.documentation.pagemodel'
+      }
+      {
+        'match' : '(^\\@EndSection)'
+        'name' : 'comment.block.documentation.pagemodel'
+      }
+      {
+        'match' : '(\\S*[PageModel\\x{007c}ComponentModel\\x{007c}SectionModel])(\\s\\S*$)'
+        'captures' : {
+          '1' : {
+            'name' : 'support.type.pagemodel'
+          }
+          '2' : {
+            'name' : 'text.pagemodel'
+          }
+        }
+      }
+      {
+        'match' : '(\\S*(Field|Button|Link|Display|FileUpload|Checkbox|DropDown|Select|Radio|Control|Row|Dialog|Modal|Nav|Section|Component))'
+        'name' : 'constant.other.pagemodel'
+      }
+      {
+        'match' : '([^\\s])'
+        'name' : 'invalid.pagemodel'
+      }
+    ]
+  }
+  'java_snippet' : {
+    'patterns' : [
+      {
+        'begin' : '(^\\s*%%?\\S*)'
+        'beginCaptures' : {
+          '1' : {
+            'name' : 'keyword.pagemodel'
+          }
+        }
+        'contentName' : 'string.pagemodel'
+        'end' : '(^\\s*%%?end)'
+        'endCaptures' : {
+          '1' : {
+            'name' : 'keyword.pagemodel'
+          }
+        }
+      }
+    ]
+  }
+  'java_snippet__1' : {
+    'patterns' : [
+    ]
+  }
+  'main__1' : {
+    'patterns' : [
+      {
+        'include' : '#main'
+      }
+    ]
+  }
+  'main__2' : {
+    'patterns' : [
+      {
+        'match' : '((i|s)%\\S*%)'
+        'name' : 'constant.language.pagemodel'
+      }
+    ]
+  }
+  'main__3' : {
+    'patterns' : [
+    ]
+  }
+  'numeric' : {
+    'patterns' : [
+      {
+        'match' : '(\\b\\d+)'
+        'name' : 'constant.numeric.pagemodel'
+      }
+    ]
+  }
+}

@@ -1,0 +1,105 @@
+#!/bin/bash
+
+# Copyright 2021 Matthew Stevenson <pagemodel.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# author: Matt Stevenson <matt@pagemodel.org>
+
+function main() {
+    set -x
+    USER=seluser
+    BUILD_IMAGE=myapp-headless-chrome:1.0.0
+    SSH_DIR_NAME=.ssh
+    TIMEZONE="America/Chicago"
+    GRADLE_DIR_NAME=
+    DOCKER_OPTS=
+
+    while [[ "$#" -gt 0 ]]; do
+        if [ "$1" == "--" ]; then
+            shift
+            break
+        elif [ "$1" == "--ssh" ] || [ "$1" == "-s" ]; then
+            SSH_DIR_NAME="${2}"
+            shift 2
+            continue
+        elif [ "$1" == "--user" ] || [ "$1" == "-u" ]; then
+            USER="${2}"
+            shift 2
+            continue
+        elif [ "$1" == "--image" ] || [ "$1" == "-i" ]; then
+            BUILD_IMAGE="${2}"
+            shift 2
+            continue
+        elif [ "$1" == "--timezone" ] || [ "$1" == "-t" ]; then
+            TIMEZONE="${2}"
+            shift 2
+            continue
+        elif [ "$1" == "--gradle" ] || [ "$1" == "-g" ]; then
+            GRADLE_DIR_NAME="${2}"
+            shift 2
+            continue
+        elif [ "$1" == "--opts" ] || [ "$1" == "-o" ]; then
+            DOCKER_OPTS="${2}"
+            shift 2
+            continue
+        else
+            break
+        fi
+    done
+
+    GROUP="${USER}"
+    if [ "${USER}" == "root" ]; then
+        HOME_DIR=/root
+    else
+        HOME_DIR=/home/${USER}
+    fi
+
+    WORK_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+    WORK_VOLUME="-v ${WORK_DIR}:${WORK_DIR}:rw,delegated"
+
+    [ ! -e "~/${SSH_DIR_NAME}" ] && mkdir -m777 -p ~/${SSH_DIR_NAME}
+    SSH_DIR="$(cd ~/${SSH_DIR_NAME} && pwd)"
+    SSH_VOLUME="-v ${SSH_DIR}:${HOME_DIR}/.ssh"
+    if [ "${SSH_DIR_NAME}" == ".ssh-build" ] &&
+        [ -e ~/.ssh/id_rsa ] &&
+        [ -e ~/.ssh/id_rsa.pub ]; then
+        SSH_HOME="$(cd ~/.ssh && pwd)"
+        SSH_VOLUME="${SSH_VOLUME} -v ${SSH_HOME}/id_rsa:${HOME_DIR}/.ssh/id_rsa \
+					-v ${SSH_HOME}/id_rsa.pub:${HOME_DIR}/.ssh/id_rsa.pub"
+    fi
+
+    GRADLE_VOLUME=
+    if [ "${GRADLE_DIR_NAME}" ]; then
+        [ ! -e ~/${GRADLE_DIR_NAME} ] && mkdir -p ~/${GRADLE_DIR_NAME}
+        GRADLE_DIR="$(cd ~/${GRADLE_DIR_NAME} && pwd)"
+        GRADLE_VOLUME="-v ${GRADLE_DIR}:${HOME_DIR}/.gradle:rw,delegated"
+    fi
+
+    VOLUMES="${WORK_VOLUME} \
+		${SSH_VOLUME} \
+		${GRADLE_VOLUME}"
+
+    DOCKER_WORK_DIR=${WORK_DIR}
+    TIMEZONE_OPTS=
+    [ "${TIMEZONE}" ] && TIMEZONE_OPTS="-e TZ=${TIMEZONE}"
+    OPTS="--rm -ti ${DOCKER_OPTS} ${TIMEZONE_OPTS} -u ${USER}:${GROUP} ${VOLUMES} -w ${DOCKER_WORK_DIR} ${BUILD_IMAGE}"
+
+    if [ ! -z "$*" ]; then
+        docker run ${OPTS} "$@"
+    else
+        docker run ${OPTS} /bin/bash --
+    fi
+}
+
+main "$@"

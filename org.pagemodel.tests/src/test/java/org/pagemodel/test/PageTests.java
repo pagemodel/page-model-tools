@@ -1,0 +1,121 @@
+/*
+ * Copyright 2021 Matthew Stevenson <pagemodel.org>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.pagemodel.test;
+
+import org.junit.Test;
+import org.pagemodel.core.utils.Unique;
+import org.pagemodel.tests.myapp.tools.MyAppUser;
+import org.pagemodel.web.utils.PageException;
+
+/**
+ * @author Matt Stevenson <matt@pagemodel.org>
+ */
+public class PageTests extends MyAppTestBase {
+
+	@Test
+	public void testMyAppPages() {
+		MyAppUser admin = MyAppUser.admin(context);
+		MyAppUser.admin(context).loginToMainPage()
+				.testSiteStatusDisplay().text().equals("Online")
+				.testSiteVersionDisplay().text().startsWith("0.7")
+				.testStatusDateDisplay().text().storeValue("status_date")
+				.testPage().waitFor().numberOfSeconds(1)
+				.testUpdateStatusButton().click()
+				.testStatusDateDisplay().text().notEquals(context.load("status_date"))
+
+				.testStatusDateDisplay().text().asDate().storeValue("status_date2")
+				.testStatusDateDisplay().waitAndRefreshFor().text().asDate().greaterThan(context.load("status_date2"))
+
+				.testTopNav().testUserInfoDisplay().text().equals("Logged in as " + admin.getUsername())
+				.testTopNav().testUserInfoDisplay().text().endsWith(admin.getUsername())
+				.testTopNav().testUserInfoDisplay().text().testMatch("Logged in as (.*)").equals(admin.getUsername())
+				.testTopNav().testUserInfoDisplay().text().transform(str -> str.replace("Logged in as ", "")).equals(admin.getUsername())
+
+				.testNotificationDisplay(1).testTitleDisplay().text().equals("Notification 1")
+				.testNotificationDisplay(1).testDismissLink().click()
+				.testNotificationDisplay(1).testTitleDisplay().waitFor().text().equals("Notification 2")
+
+				.testTopNav().testManageUsersLink().click()
+				.testAddUserButton().click()
+				.testUsernameField().sendKeys("newUser")
+				.testEmailField().sendKeys(Unique.string("%s@example.com"))
+				.testPasswordField().sendKeys("password")
+				.testAdminCheckbox().setChecked()
+				.testCancelButton().click()
+
+				.testUserRow("admin").testDeleteButton().notEnabled()
+				.testUserRow("bob.hall").testDeleteButton().click()
+				.testUserRow("bob.hall").waitFor().notExists()
+				.testUserRow("bob.hall").testDeleteButton().waitAndRefreshFor().click()
+				.testUserRow("bob.hall").waitFor().notExists()
+
+				.testTopNav().testHomeLink().click()
+				.testNotificationDisplay(1).testTitleDisplay().text().storeValue("title1")
+				.testNotificationDisplay(1).testDismissLink().click()
+				.testNotificationDisplay(context.loadString("title1")).waitFor().notExists()
+
+				.testItemReviewRow("Item 1").testUserDisplay().text().startsWith("bob")
+				.testItemReviewRow("Item 1").testDeleteLink().click()
+				.testItemReviewRow("Item 1").waitFor().notExists()
+
+				.testItemReviewRow("Item 2").asSection()
+				.testStatusDropDown().attribute("value").equals("Pending")
+				.testUserDisplay().text().contains("sam")
+				.testRoutingDisplay().text().endsWith("-a")
+				.testStatusDropDown().selectValue("Approved")
+				.testSectionParent()
+
+				.testTopNav().testSignOutLink().click()
+				.closeBrowser();
+
+	}
+	@Test
+	public void testClickAndClickWait() {
+		MyAppUser.admin(context).loginToMainPage()
+
+				.testItemReviewRow("Item 1").testDeleteLink().click()
+				.testItemReviewRow("Item 1").waitFor().notExists()
+				.testPage().refreshPage()
+				.testItemReviewRow("Item 1").testDeleteLink().waitFor().click()
+				.testItemReviewRow("Item 1").waitFor().notExists()
+				.testItemReviewRow("Item 1").testDeleteLink().waitAndRefreshFor().click()
+				.testItemReviewRow("Item 1").waitFor().notExists()
+				.doAction(page -> {
+					try {
+						page.testItemReviewRow("Item 111").testDeleteLink().click();
+					} catch (PageException ex) {
+						ex.removeScreenshot();
+					}
+				})
+				.doAction(page -> {
+					try {
+						page.testItemReviewRow("Item 111").testDeleteLink().waitFor().withTimeout(1).click();
+					} catch (PageException ex) {
+						ex.removeScreenshot();
+					}
+				})
+				.doAction(page -> {
+					try {
+						page.testItemReviewRow("Item 111").testDeleteLink().waitAndRefreshFor().withTimeout(3).click();
+					} catch (PageException ex) {
+						ex.removeScreenshot();
+					}
+				})
+				.testTopNav().testSignOutLink().click()
+				.closeBrowser();
+	}
+}

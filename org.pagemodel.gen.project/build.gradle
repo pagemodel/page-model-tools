@@ -1,0 +1,8 @@
+dependencies {
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'org.pagemodel.gen.project.Main'
+    }
+}

@@ -1,0 +1,22 @@
+<configuration>
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <withJansi>true</withJansi>
+    <encoder>
+      <pattern>[%d{HH:mm:ss.SSS}] %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <timestamp key="bySecond" datePattern="yyyy-MM-dd_HH.mm.ss"/>
+  <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+    <file>build/testrun-${bySecond}.log</file>
+    <encoder>
+      <pattern>[%d{HH:mm:ss.SSS}] %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <root level="INFO">
+    <appender-ref ref="STDOUT"/>
+      <appender-ref ref="FILE" />
+  </root>
+  <logger name="net.schmizz.sshj" level="error"/>
+</configuration>

@@ -1,0 +1,124 @@
+<html>
+  <head>
+    <title>MyApp Home</title>
+    <link href="style.css" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+    <div class="clearfix">
+      <div id="header">
+        <h1>MyApp Home</h1>
+      </div>
+      <div id="userInfo">Logged in as <b>admin</b></div>
+    </div>
+    <div id="topNav">
+      <span class="nav-link"><a id="navHome" href="home.html">Home</a></span>
+      <span class="nav-link"><a id="navManageUsers" href="manage_users.html">Manage Users</a></span>
+      <span class="nav-link"><a id="navSignOut" href="login.html">Sign Out</a></span>
+    </div>
+    <div id="errorMsgs"></div>
+    <div id="content">
+      <div id="notifications">
+        <div class="notification">
+          <div class="notif-title">
+            Notification 1
+          </div>
+          <div class="notif-msg">
+            message 1
+          </div>
+          <a class="notif-dismiss" href="#" onclick="this.parentNode.parentNode.removeChild(this.parentNode);">Dismiss</a>
+        </div>
+        <div class="notification">
+          <div class="notif-title">
+            Notification 2
+          </div>
+          <div class="notif-msg">
+            message 2
+          </div>
+          <a class="notif-dismiss" href="#" onclick="this.parentNode.parentNode.removeChild(this.parentNode);">Dismiss</a>
+        </div>
+      </div>
+      <div id="dashboard">
+        <div class="dashboard-item clearfix">
+          <div class="dashboard-label">
+            Site status:
+          </div>
+          <div id="siteStatus" class="dashboard-value">
+            Online
+          </div>
+        </div>
+        <div class="dashboard-item clearfix">
+          <div class="dashboard-label">
+            Site version:
+          </div>
+          <div id="siteVersion" class="dashboard-value">
+            0.7.0
+          </div>
+        </div>
+        <div class="dashboard-item clearfix">
+          <div class="dashboard-label">
+            Status date:
+          </div>
+          <div id="statusDate" class="dashboard-value">
+          </div>
+          <div class="dashboard-value">
+            <input type="button" id="updateStatus" class="dashboard-button" href="#" onclick="updateDate();" value="Update Status">
+          </div>
+        </div>
+      </div>
+      <div id="items">
+        <h2>Items Review:</h2>
+        <table id="itemReviewTable">
+          <header>
+            <tr>
+              <td>Name</td>
+              <td>Status</td>
+              <td>Routing</td>
+              <td>User</td>
+              <td></td>
+              <td></td>
+            </tr>
+          </header>
+          <tbody>
+            <tr>
+              <td>Item 1</td>
+              <td>
+                <select>
+                  <option>Pending</option>
+                  <option selected>Approved</option>
+                  <option>Denied</option>
+                </select>
+              </td>
+              <td>684-v</td>
+              <td>bob.hall</td>
+              <td><a href="javascript:void();">Save</a></td>
+              <td><a href="#" onclick="this.parentNode.parentNode.parentNode.removeChild(this.parentNode.parentNode);">Delete</a></td>
+            </tr>
+            <tr>
+              <td>Item 2</td>
+              <td>
+                <select>
+                  <option selected>Pending</option>
+                  <option>Approved</option>
+                  <option>Denied</option>
+                </select>
+              </td>
+              <td>338-a</td>
+              <td>sam54</td>
+              <td><a href="javascript:void();">Save</a></td>
+              <td><a href="#" onclick="this.parentNode.parentNode.parentNode.removeChild(this.parentNode.parentNode);">Delete</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <script type="text/javascript">
+      function updateDate(){
+        var date = new Date();
+        var n = date.toDateString();
+        var time = date.toLocaleTimeString();
+        document.getElementById('statusDate').innerHTML = n + ' ' + time;
+      }
+      updateDate();
+    </script>
+  </body>
+</html>

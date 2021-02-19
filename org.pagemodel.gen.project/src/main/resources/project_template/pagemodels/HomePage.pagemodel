@@ -1,0 +1,27 @@
+MyAppInternalPage org.pagemodel.tests.myapp.pages
+
+* HeaderDisplay xpath "//h1[1]" *.text().equals("MyApp Home")
+* SiteStatusDisplay id "siteStatus"
+* SiteVersionDisplay id "siteVersion"
+* StatusDateDisplay id "statusDate"
+* UpdateStatusButton id "updateStatus"
+
+NotificationDisplay @@NotificationDialog xpath "//div[@id='notifications']/div[i%notificationNum%]"
+NotificationDisplay @@NotificationDialog xpath "//div[@id='notifications']/div/div[1][text()='s%title%']//parent::div"
+
+ItemReviewRow @@ItemReviewRow xpath "//table[@id='itemReviewTable']/tbody/tr/td[1][text()='s%itemName%']//parent::tr"
+
+@ComponentModel NotificationDialog
+  TitleDisplay cssSelector "div:nth-child(1)"
+  MessageDisplay cssSelector "div:nth-child(2)"
+  DismissLink cssSelector "a.notif-dismiss"
+@EndComponent
+
+@ComponentModel ItemReviewRow
+  NameDisplay cssSelector "td:nth-child(1)"
+  StatusDropDown cssSelector "td:nth-child(2) > select"
+  RoutingDisplay cssSelector "td:nth-child(3)"
+  UserDisplay cssSelector "td:nth-child(4)"
+  SaveLink cssSelector "td:nth-child(5) > a"
+  DeleteLink cssSelector "td:nth-child(6) > a"
+@EndComponent

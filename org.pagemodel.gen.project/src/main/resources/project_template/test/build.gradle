@@ -1,0 +1,6 @@
+dependencies {
+    testCompile project(':MyAppPageModels')
+    testCompile 'junit:junit:4.12'
+    testCompile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+    testCompile group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
+}

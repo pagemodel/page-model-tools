@@ -1,0 +1,79 @@
+<html>
+  <head>
+    <title>MyApp Manage Users</title>
+    <link href="style.css" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+  <div class="clearfix">
+    <div id="header">
+      <h1>MyApp Manage Users</h1>
+    </div>
+    <div id="userInfo">Logged in as <b>admin</b></div>
+  </div>
+  <div id="topNav">
+    <span class="nav-link"><a id="navHome" href="home.html">Home</a></span>
+    <span class="nav-link"><a id="navManageUsers" href="manage_users.html">Manage Users</a></span>
+    <span class="nav-link"><a id="navSignOut" href="login.html">Sign Out</a></span>
+  </div>
+    <div id="errorMsgs"></div>
+    <div id="content">
+      <div class="clearfix">
+        <div class="content-title">
+          <h2>Users:</h2>
+        </div>
+        <div class="content-controls">
+          <input type="button" id="addUser" class="control-button" value="Add User" onclick="addUserContainer.style='display:block;'">
+        </div>
+      </div>
+      <table id="userTable">
+        <header>
+          <tr>
+            <td>Username</td>
+            <td>Email</td>
+            <td>Role</td>
+            <td></td>
+          </tr>
+        </header>
+        <tbody>
+          <tr>
+            <td class="username">admin</td>
+            <td class="email">admin@example.com</td>
+            <td class="role">administrator</td>
+            <td class="delete"><input type="button" value="Delete" disabled="disabled"></td>
+          </tr>
+          <tr>
+            <td class="username">bob.hall</td>
+            <td class="email">bhall@example.com</td>
+            <td class="role">user</td>
+            <td class="delete"><input type="button" value="Delete" onclick="if(confirm('Delete admin?'))this.parentNode.parentNode.parentNode.removeChild(this.parentNode.parentNode);"></td>
+          </tr>
+          <tr>
+            <td class="username">sam54</td>
+            <td class="email">sam54@example.com</td>
+            <td class="role">user</td>
+            <td class="delete"><input type="button" value="Delete" onclick="if(confirm('Delete admin?'))this.parentNode.parentNode.parentNode.removeChild(this.parentNode.parentNode);"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="addUserContainer" style="display:none;">
+      <div id="addUserOverlay"></div>
+      <div id="addUserDialog" class="add-user">
+        <h2>Add User</h2>
+        <div id="addUserLayout">
+          <table id="addUserTable">
+            <tr><td>Username:</td><td><input id="newUserName" type="text"></td></tr>
+            <tr><td>Email:</td><td><input id="newUserEmail" type="text"></td></tr>
+            <tr><td>Admin:</td><td><input id="newUserAdmin" type="checkbox"></td></tr>
+            <tr><td>Password:</td><td><input id="newUserPassword" type="password"></td></tr>
+            <tr><td>Password<br/>Confirm:</td><td><input id="newUserPasswordConfirm" type="password"></td></tr>
+          </table>
+        </div>
+        <div>
+          <input type="button" id="newUserCancel" class="control-button" value="Cancel" onclick="addUserContainer.style='display:none;'">
+          <input type="button" id="newUserSave" class="control-button" value="Save" onclick="addUserContainer.style='display:none;'">
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

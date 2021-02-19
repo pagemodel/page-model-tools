@@ -1,0 +1,13 @@
+.gradle
+/bin/
+.project
+.classpah
+.idea
+build
+.DS_Store
+*/src/gen
+user.defaults
+org.pagemodel.gen.gradle/gradle*
+pmt-test
+XYZTests
+*.jar

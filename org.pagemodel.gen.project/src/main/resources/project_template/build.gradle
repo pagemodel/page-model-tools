@@ -1,0 +1,40 @@
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'eclipse'
+    apply plugin: 'maven'
+    apply plugin: 'distribution'
+    apply plugin: 'idea'
+
+    sourceCompatibility = 1.8
+
+    version = '1.0.0_0.7.0-SNAPSHOT'
+    group = 'org.pagemodel.tests'
+
+    buildscript {
+        repositories {
+            mavenLocal()
+            mavenCentral()
+            maven { url 'http://pagemodel.org/maven/snapshots/' }
+            maven { url 'http://pagemodel.org/maven/releases/' }
+        }
+    }
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url 'http://pagemodel.org/maven/snapshots/' }
+        maven { url 'http://pagemodel.org/maven/releases/' }
+    }
+
+    test {
+        testLogging.showStandardStreams = true
+        testLogging.exceptionFormat = 'full'
+        if (project.hasProperty('excludeTests')) {
+            exclude project.property('excludeTests')
+        }
+
+        systemProperty 'browser', System.getProperty("browser")
+        systemProperty 'myapp.profile', System.getProperty("myapp.profile")
+        systemProperty 'mail.external', System.getProperty("mail.external")
+    }
+}

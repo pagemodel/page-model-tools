@@ -1,0 +1,12 @@
+dependencies {
+    compile project(':org.pagemodel.core')
+    compile project(':org.pagemodel.web')
+    compile project(':org.pagemodel.mail')
+    compile project(':org.pagemodel.ssh')
+
+    compile 'org.seleniumhq.selenium:htmlunit-driver:2.33.3'
+    compile group: 'io.github.bonigarcia', name: 'webdrivermanager', version: '3.3.0'
+
+    compile 'com.deque:axe-selenium:3.0'
+    runtime 'com.deque:axe-selenium:3.0'
+}

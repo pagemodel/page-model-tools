@@ -1,0 +1,12 @@
+{
+    "dev": {
+        "domain": "mail.example.com",
+        "host": "mail.example.com",
+        "username": "username",
+        "password": "password",
+        "popPort": -1,
+        "smtpPort": 25,
+        "useTls": false,
+        "allowInsecure": true
+    }
+}

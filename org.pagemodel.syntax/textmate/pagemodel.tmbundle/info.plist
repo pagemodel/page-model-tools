@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>contactEmailRot13</key>
+	<string></string>
+	<key>contactName</key>
+	<string>Allen Moore</string>
+	<key>description</key>
+	<string>Page Model Tools .pagemodel syntax</string>
+	<key>name</key>
+	<string>pagemodel</string>
+	<key>uuid</key>
+	<string>9CC24C50-5C8F-452A-8537-991CCDCC0DCF</string>
+</dict>
+</plist>
