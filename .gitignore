@@ -10,4 +10,4 @@ user.defaults
 org.pagemodel.gen.gradle/gradle*
 pmt-test
 XYZTests
-*.jar
+org.pagemodel.*.jar

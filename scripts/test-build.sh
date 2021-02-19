@@ -3,7 +3,7 @@
 cd "$(dirname "$0")"
 rm -rf pmt-test XYZTests
 
-git clone git clone https://github.com/pagemodel/page-model-tools.git pmt-test
+git clone https://github.com/pagemodel/page-model-tools.git pmt-test
 cd pmt-test/org.pagemodel.gen.gradle
 ../gradlew --rerun-tasks clean build publishToMavenLocal --console=plain
 cd ..
