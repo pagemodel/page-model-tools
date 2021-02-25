@@ -20,7 +20,7 @@ if [[ "$#" -gt 0 ]]; then
   VERSION="$1"
   shift
 else
-  VERSION="0.7.0"
+  VERSION="0.8.0"
 fi
 
 cd "$(dirname "$0")"

@@ -25,29 +25,53 @@ import java.io.*;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Type;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 
 public class ProfileMap<T> {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+	private static Map<Class<?>, Map<String, ?>> profileDefaults = new HashMap<>();
+
+	public static <T> void addDefaults(Class<T> clazz, Map<String,T> defaults){
+		if(defaults == null){
+			profileDefaults.remove(clazz);
+		}
+		if(!profileDefaults.containsKey(clazz)){
+			profileDefaults.put(clazz, defaults);
+		}else{
+			((Map<String,T>)profileDefaults.get(clazz)).putAll(defaults);
+		}
+	}
+
 	protected Class<T> type;
 	protected Map<String, T> profileMap;
-
 
 	public static <T> ProfileMap<T> loadFile(Class<T> type, String filePath) {
 		try {
 			ProfileMap<T> profileMap = new ProfileMap<>(type);
-			profileMap.profileMap = profileMap.loadConfigMapFile(filePath);
+			profileMap.profileMap.putAll(profileMap.loadConfigMapFile(filePath));
 			return profileMap;
 		}catch(IOException ex){
 			throw new RuntimeException("Error: unable to load profiles.", ex);
 		}
 	}
 
+	private static <T> void registerDefaultProfiles(Class<T> type){
+		if(profileDefaults.containsKey(type)){
+			return;
+		}
+		try {
+			type.getMethod("registerDefaultProfiles").invoke(type);
+		}catch(Exception ex){
+			profileDefaults.put(type, new HashMap<>());
+		}
+	}
+
 	public static <T> ProfileMap<T> loadUrl(Class<T> type, String url) {
 		try {
 			ProfileMap<T> profileMap = new ProfileMap<>(type);
-			profileMap.profileMap = profileMap.loadConfigMapUrl(url);
+			profileMap.profileMap.putAll(profileMap.loadConfigMapUrl(url));
 			return profileMap;
 		}catch(IOException ex){
 			throw new RuntimeException("Error: unable to load profiles.", ex);
@@ -56,6 +80,11 @@ public class ProfileMap<T> {
 
 	protected ProfileMap(Class<T> type) {
 		this.type = type;
+		profileMap = new HashMap<>();
+		registerDefaultProfiles(type);
+		if(profileDefaults.containsKey(type)){
+			profileMap.putAll((Map<String,T>)profileDefaults.get(type));
+		}
 	}
 
 	public T getProfile(String profile) {
@@ -66,23 +95,23 @@ public class ProfileMap<T> {
 		return profileMap;
 	}
 
-	public T loadJsonFile(String configPath) throws FileNotFoundException {
+	protected T loadJsonFile(String configPath) throws FileNotFoundException {
 		Reader reader = new FileReader(configPath);
 		return new Gson().fromJson(reader, type);
 	}
 
-	public T loadJsonURL(String urlStr) throws IOException {
+	protected T loadJsonURL(String urlStr) throws IOException {
 		InputStreamReader reader = new InputStreamReader(new URL(urlStr).openStream());
 		return new Gson().fromJson(reader, type);
 	}
 
-	public Map<String, T> loadConfigMapFile(String configPath) throws FileNotFoundException {
+	protected Map<String, T> loadConfigMapFile(String configPath) throws FileNotFoundException {
 		Reader reader = new FileReader(configPath);
 		Type typeOfHashMap = TypeToken.getParameterized(Map.class, String.class, type).getType();
 		return new Gson().fromJson(reader,typeOfHashMap);
 	}
 
-	public Map<String, T> loadConfigMapUrl(String urlStr) throws IOException {
+	protected Map<String, T> loadConfigMapUrl(String urlStr) throws IOException {
 		InputStreamReader reader = new InputStreamReader(new URL(urlStr).openStream());
 		Type typeOfHashMap = TypeToken.getParameterized(Map.class, String.class, type).getType();
 		return new Gson().fromJson(reader,typeOfHashMap);

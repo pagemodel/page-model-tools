@@ -1,5 +1,5 @@
 PageModelTools classes wrap and expose core selenium functionality:
-
+```
 TestContext
   WebDriver.new
   WebDriver.get
@@ -62,10 +62,10 @@ DimensionTester
 PointTester
   Point.getX
   Point.getY
-  
+```
   
 PageModelTools testers wrap standard Java classes:
-
+```
 StringTester
   String.contains
   String.equals
@@ -75,9 +75,9 @@ StringTester
   String.endsWith
   String.length
 
-IntegerTester (ComparableTester)
+ComparableTester (Integer, Date, Double, Float, Long)
   Comparable.compareTo (==, !=, >, <, >=, <=)
-
+```
 
 Copyright 2021 Matthew Stevenson <pagemodel.org>
 This work is licensed under a Creative Commons Attribution 4.0 International License

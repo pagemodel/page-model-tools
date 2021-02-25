@@ -18,7 +18,9 @@ package org.pagemodel.tests.myapp.tools;
 
 import org.pagemodel.tests.myapp.pages.LoginPage;
 import org.pagemodel.tools.ExtendedTestContext;
+import org.pagemodel.tools.WebDriverConfig;
 import org.pagemodel.tools.WebDriverFactory;
+import org.pagemodel.web.PageUtils;
 import java.io.File;
 
 /**
@@ -31,14 +33,14 @@ public class MyAppTestContext extends ExtendedTestContext {
 		WebDriverFactory.browserOptions.addUserBrowserOptions("chrome","--window-size=800,800");
 	}
 
-	public MyAppTestContext(MyAppConfig myAppConfig, String browser) {
-		super(null, null, browser);
+	public MyAppTestContext(MyAppConfig myAppConfig, WebDriverConfig webDriverConfig) {
+		super(null, null, webDriverConfig);
 		this.myAppConfig = myAppConfig;
 	}
 
 	public LoginPage getLoginPage() {
 		openPage(getApplicationUrl("/login.html"));
-		return new LoginPage(this);
+		return PageUtils.waitForNavigateToPage(LoginPage.class, this);
 	}
 
 	public MyAppConfig getMyAppConfig() {

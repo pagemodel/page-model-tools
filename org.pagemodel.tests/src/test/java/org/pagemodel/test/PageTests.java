@@ -19,7 +19,6 @@ package org.pagemodel.test;
 import org.junit.Test;
 import org.pagemodel.core.utils.Unique;
 import org.pagemodel.tests.myapp.tools.MyAppUser;
-import org.pagemodel.web.utils.PageException;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
@@ -31,7 +30,7 @@ public class PageTests extends MyAppTestBase {
 		MyAppUser admin = MyAppUser.admin(context);
 		MyAppUser.admin(context).loginToMainPage()
 				.testSiteStatusDisplay().text().equals("Online")
-				.testSiteVersionDisplay().text().startsWith("0.7")
+				.testSiteVersionDisplay().text().startsWith("0.8.0")
 				.testStatusDateDisplay().text().storeValue("status_date")
 				.testPage().waitFor().numberOfSeconds(1)
 				.testUpdateStatusButton().click()
@@ -48,6 +47,12 @@ public class PageTests extends MyAppTestBase {
 				.testNotificationDisplay(1).testTitleDisplay().text().equals("Notification 1")
 				.testNotificationDisplay(1).testDismissLink().click()
 				.testNotificationDisplay(1).testTitleDisplay().waitFor().text().equals("Notification 2")
+
+				.testPage().testAccessibility(
+						"<html> element must have a lang attribute",
+						"Form elements must have labels",
+						"Page must have one main landmark",
+						"All page content must be contained by landmarks")
 
 				.testTopNav().testManageUsersLink().click()
 				.testAddUserButton().click()
@@ -94,27 +99,6 @@ public class PageTests extends MyAppTestBase {
 				.testItemReviewRow("Item 1").waitFor().notExists()
 				.testItemReviewRow("Item 1").testDeleteLink().waitAndRefreshFor().click()
 				.testItemReviewRow("Item 1").waitFor().notExists()
-				.doAction(page -> {
-					try {
-						page.testItemReviewRow("Item 111").testDeleteLink().click();
-					} catch (PageException ex) {
-						ex.removeScreenshot();
-					}
-				})
-				.doAction(page -> {
-					try {
-						page.testItemReviewRow("Item 111").testDeleteLink().waitFor().withTimeout(1).click();
-					} catch (PageException ex) {
-						ex.removeScreenshot();
-					}
-				})
-				.doAction(page -> {
-					try {
-						page.testItemReviewRow("Item 111").testDeleteLink().waitAndRefreshFor().withTimeout(3).click();
-					} catch (PageException ex) {
-						ex.removeScreenshot();
-					}
-				})
 				.testTopNav().testSignOutLink().click()
 				.closeBrowser();
 	}

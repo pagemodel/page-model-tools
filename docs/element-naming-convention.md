@@ -13,6 +13,8 @@ Checkbox - checkbox input
 DropDown - drop down style select input
 Select - non-drop down select (multiple selections not yet supported)
 Radio - radio input
+Image - image element
+Tab - tab style button
 Control - interactive non-button element(s)
 
 Component element types:

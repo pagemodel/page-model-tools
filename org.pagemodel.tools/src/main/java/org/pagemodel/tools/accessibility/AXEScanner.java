@@ -39,12 +39,9 @@ import java.util.concurrent.TimeUnit;
 public class AXEScanner {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-	protected static final URL SCRIPT_URL = AXEScanner.class.getResource("/axe.min.js");
+	protected static final URL SCRIPT_URL = AXEScanner.class.getClassLoader().getResource("axe.min.js");
 
-	public final static String LOG_DIR = "results/accessibility/current";
-	public final static String ACCESSIBILITY_RUN_LOG = "accessibilityRun.log";
-	public final static String ACCESSIBILITY_SUCCESS_LOG = "accessibilitySuccess.log";
-	public final static String ACCESSIBILITY_FAILURE_LOG = "accessibilityFailure.log";
+	public final static String LOG_DIR = "build/accessibility/";
 
 	private static boolean SCREENSHOT_FLAG = true;
 
@@ -67,57 +64,38 @@ public class AXEScanner {
 	}
 
 	public <T> boolean analyzeAccessibility(WebTestContext testContext, String testName) {
-		return analyzeAccessibility(testContext, testName, LOG_DIR, ACCESSIBILITY_RUN_LOG, ACCESSIBILITY_SUCCESS_LOG, ACCESSIBILITY_FAILURE_LOG);
+		return analyzeAccessibility(testContext, testName, LOG_DIR);
 	}
 
-	public <T> boolean analyzeAccessibility(WebTestContext testContext, String testName, String logDir, String accessibilityLogName, String accessibilitySuccessName, String accessibilityFailureName) {
+	public <T> boolean analyzeAccessibility(WebTestContext testContext, String testName, String logDir) {
 		File destFolder = new File(logDir);
 		if (!destFolder.exists()) {
 			destFolder.mkdirs();
 		}
 		String outFileName = convertTestNameToFileName(testName);
-		try {
-			logAccessibilityRun(testName, logDir, accessibilityLogName);
-			if (getScreenshotFlag()) {
-				Screenshot.takeScreenshot(testContext, outFileName);
-			}
-			testContext.getDriver().manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS);
-			JSONObject responseJSON = new AXE.Builder(testContext.getDriver(), SCRIPT_URL).analyze();
-//            page.getDriver().manage().timeouts().implicitlyWait(1, TimeUnit.SECONDS);
-			JSONArray violation = responseJSON.getJSONArray("violations");
-			if (violation.length() != 0) {
-				boolean passScan = true;
-				for (int i = 0; i < violation.length(); i++) {
-					String violationName = violation.getJSONObject(i).getString("help");
-					if (!expectedViolations.contains(violationName)) {
-						passScan = false;
-						log.error("Found unexpected violation: " + violationName);
-					} else {
-						log.info("Ignoring expected violation: " + violationName);
-					}
-				}
-				if (!passScan) {
-					logAccessibilityRun(testName, logDir, accessibilityFailureName);
-					AXE.writeResults(logDir + "/" + outFileName + "_" + System.currentTimeMillis(), violation);
-					return false;
+		if (getScreenshotFlag()) {
+			Screenshot.takeScreenshot(testContext, outFileName);
+		}
+		testContext.getDriver().manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS);
+		JSONObject responseJSON = new AXE.Builder(testContext.getDriver(), SCRIPT_URL).analyze();
+		JSONArray violation = responseJSON.getJSONArray("violations");
+		if (violation.length() != 0) {
+			boolean passScan = true;
+			for (int i = 0; i < violation.length(); i++) {
+				String violationName = violation.getJSONObject(i).getString("help");
+				if (!expectedViolations.contains(violationName)) {
+					passScan = false;
+					log.error("Found unexpected violation: " + violationName);
+				} else {
+					log.info("Ignoring expected violation: " + violationName);
 				}
 			}
-			logAccessibilityRun(testName, logDir, accessibilitySuccessName);
-			return true;
-		} catch (IOException ex) {
-			log.error("Error writing to accessibility log.", ex);
-			return false;
-		} finally {
+			if (!passScan) {
+				AXE.writeResults(logDir + "/" + outFileName + "_" + System.currentTimeMillis(), violation);
+				return false;
+			}
 		}
-	}
-
-	private <T> void logAccessibilityRun(String testName, String destDir, String accessibilityLogPath) throws IOException {
-		File accessibilityLogFile = new File(destDir + "/" + accessibilityLogPath);
-		try (BufferedWriter logWriter = new BufferedWriter(new FileWriter(accessibilityLogFile, true))) {
-			logWriter.append(testName);
-			logWriter.newLine();
-			logWriter.flush();
-		}
+		return true;
 	}
 
 	private String convertTestNameToFileName(String testName) {

@@ -1,6 +1,6 @@
 buildscript {
     dependencies {
-        classpath 'org.pagemodel:org.pagemodel.gen.gradle:0.7.0-SNAPSHOT'
+        classpath 'org.pagemodel:org.pagemodel.gen.gradle:0.8.0-SNAPSHOT'
     }
 }
 
@@ -8,7 +8,7 @@ apply plugin: 'org.pagemodel.gen.gradle'
 apply plugin: 'maven-publish'
 
 dependencies {
-    compile group: 'org.pagemodel', name: 'org.pagemodel.tools', version: '0.7.0-SNAPSHOT'
+    compile group: 'org.pagemodel', name: 'org.pagemodel.tools', version: '0.8.0-SNAPSHOT'
 }
 
 publishing {

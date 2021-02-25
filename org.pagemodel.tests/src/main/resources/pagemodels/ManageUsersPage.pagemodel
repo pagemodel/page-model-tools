@@ -1,6 +1,6 @@
 MyAppInternalPage org.pagemodel.tests.myapp.pages
 
-* HeaderDisplay xpath "//h1[1]" '*.text().equals("MyApp Manage Users")'
+* HeaderDisplay xpath "//h1[1]" *.text().equals("MyApp Manage Users")
 
 * AddUserButton id "addUser" AddUserSection:AddUserDialog
 UserRow @@UserRow xpath "//table[@id='userTable']/tbody/tr/td[contains(@class,'username') and text()='s%username%']//parent::tr"
@@ -10,7 +10,7 @@ AddUserDialog @AddUserSection id "addUserDialog"
   UsernameDisplay cssSelector "td.username"
   EmailDisplay cssSelector "td.emailAddress"
   RoleDisplay cssSelector "td.role"
-  DeleteButton cssSelector "td.delete > input" '_.withAlertAccept()'
+  DeleteButton cssSelector "td.delete > input" _.withAlertAccept()
 @EndComponent
 
 @SectionModel AddUserSection

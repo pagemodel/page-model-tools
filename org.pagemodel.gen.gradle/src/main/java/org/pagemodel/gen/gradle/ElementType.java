@@ -26,6 +26,8 @@ enum ElementType {
 	DropDown("SelectTester"),
 	Select("SelectTester"),
 	Radio,
+	Image,
+	Tab,
 	Control,
 	Row,
 	Dialog,

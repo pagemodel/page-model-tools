@@ -1,6 +1,6 @@
 buildscript {
     dependencies {
-        classpath 'org.pagemodel:org.pagemodel.gen.gradle:0.7.0-SNAPSHOT'
+        classpath 'org.pagemodel:org.pagemodel.gen.gradle:0.8.0-SNAPSHOT'
     }
 }
 

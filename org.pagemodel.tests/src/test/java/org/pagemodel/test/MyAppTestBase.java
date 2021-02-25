@@ -25,6 +25,7 @@ import org.pagemodel.mail.SmtpServer;
 import org.pagemodel.tests.myapp.tools.MyAppConfig;
 import org.pagemodel.tests.myapp.tools.MyAppTestContext;
 import org.pagemodel.tools.ProfileMap;
+import org.pagemodel.tools.WebDriverConfig;
 
 import static org.pagemodel.core.utils.SystemProperties.readSystemProperty;
 
@@ -33,12 +34,14 @@ import static org.pagemodel.core.utils.SystemProperties.readSystemProperty;
  */
 public class MyAppTestBase {
 	protected static boolean configLoaded = false;
-	private static ProfileMap<MyAppConfig> profiles;
+	private static ProfileMap<MyAppConfig> myAppProfiles;
 	private static ProfileMap<MailAuthenticator> mailProfiles;
-	private static MailAuthenticator externalMailAuth;
+	private static ProfileMap<WebDriverConfig> driverProfiles;
 
-	protected static String browser;
+	protected static WebDriverConfig webDriverConfig;
+	protected static MailAuthenticator externalMailAuth;
 	protected static MyAppConfig myAppConfig;
+
 	protected static PopServer externalPop;
 	protected static SmtpServer externalSmtp;
 
@@ -47,11 +50,12 @@ public class MyAppTestBase {
 	@BeforeClass
 	public static synchronized void loadConfig() {
 		if (!configLoaded) {
-			profiles = ProfileMap.loadFile(MyAppConfig.class, "src/test/resources/profiles.myapp.json");
+			myAppProfiles = ProfileMap.loadFile(MyAppConfig.class, "src/test/resources/profiles.myapp.json");
 			mailProfiles = ProfileMap.loadFile(MailAuthenticator.class, "src/test/resources/profiles.mail.json");
+			driverProfiles = ProfileMap.loadFile(WebDriverConfig.class, "src/test/resources/profiles.driver.json");
 
-			browser = readSystemProperty("browser", "chrome");
-			myAppConfig = profiles.getProfile(readSystemProperty("myapp.profile", "dev"));
+			webDriverConfig = driverProfiles.getProfile(readSystemProperty("driver", "chrome"));
+			myAppConfig = myAppProfiles.getProfile(readSystemProperty("myapp", "dev"));
 			externalMailAuth = mailProfiles.getProfile(readSystemProperty("mail.external", "dev"));
 
 			externalPop = new PopServer(externalMailAuth);
@@ -62,7 +66,7 @@ public class MyAppTestBase {
 
 	@Before
 	public void createTestContext() {
-		context = new MyAppTestContext(myAppConfig, browser);
+		context = new MyAppTestContext(myAppConfig, webDriverConfig);
 	}
 
 	@After

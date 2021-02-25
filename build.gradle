@@ -6,23 +6,19 @@ subprojects {
 
     sourceCompatibility = 1.8
 
-    version = '0.7.0-SNAPSHOT'
+    version = '0.8.0-SNAPSHOT'
     group = 'org.pagemodel'
 
     buildscript {
         repositories {
             mavenLocal()
             mavenCentral()
-            maven { url 'http://pagemodel.org/maven/snapshots/' }
-            maven { url 'http://pagemodel.org/maven/releases/' }
         }
     }
 
     repositories {
         mavenLocal()
         mavenCentral()
-        maven { url 'http://pagemodel.org/maven/snapshots/' }
-        maven { url 'http://pagemodel.org/maven/releases/' }
     }
 
     jar {
@@ -51,8 +47,8 @@ subprojects {
         testLogging.showStandardStreams = true
         testLogging.exceptionFormat = 'full'
 
-        systemProperty 'browser', System.getProperty("browser")
-        systemProperty 'myapp.profile', System.getProperty("myapp.profile")
+        systemProperty 'driver', System.getProperty("driver")
+        systemProperty 'myapp', System.getProperty("myapp")
         systemProperty 'mail.external', System.getProperty("mail.external")
     }
 }

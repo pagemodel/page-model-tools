@@ -1,6 +1,6 @@
 {
   "name": "language-pagemodel",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Page Model Tools .pagemodel syntax",
   "repository": "https://github.com/pagemodel",
   "keywords": [

@@ -26,8 +26,8 @@ textmate_uuid =  b08bd165-0898-45a5-a285-220c8e073e46
 ## Constants
 ################################################################
 __LOCATOR_TYPE \= (\^?(className|cssSelector|id|linkText|name|partialLinkText|tagName|xpath))
-__ELEMENT_TYPES \= (\S*(Field|Button|Link|Display|FileUpload|Checkbox|DropDown|Select|Radio|Control|Row|Dialog|Modal|Nav|Section|Component))
-__DECORATORS \=([\"']?[\*_]\.([^\"' ]*([\"][^\"]*[\"]|['][^']*['])*[^\"' ]*)[\"']?)
+__ELEMENT_TYPES \= (\S*(Field|Button|Link|Display|FileUpload|Checkbox|DropDown|Select|Radio|Image|Tab|Control|Row|Dialog|Modal|Nav|Section|Component))
+__DECORATORS \=([\"][\*_]\.[^\"]*[\"]|['][\*_]\.[^']*[']|[\*_]\.([^\"' ]*([\"][^\"]*[\"]|['][^']*['])*)*)
 ################################################################
 ## Styles
 ################################################################
@@ -141,26 +141,15 @@ main : context {
       regex       \= $${__DECORATORS}
       styles [] = .decorator;
    }
-   : inline_push {
-      regex          \= (\")
-      styles []       = .punctuation;
-      : pop {
-         regex       \= (\")
-         styles []    = .punctuation;
-      }
-      : pattern {
-         regex       \= ((i|s)%\S*%)
-         styles [] = .variable;
-      }
+   : push {
+      regex         \= (")
+      styles []      = .string;
+      context []     = inside_double_quotes;
    }
-   : inline_push {
-      regex          \= (\')
-      styles []       = .punctuation;
-      default_style   = .text
-      : pop {
-         regex       \= (\')
-         styles []    = .punctuation;
-      }
+   : push {
+      regex         \= (')
+      styles []      = .string;
+      context []     = inside_single_quotes;
    }
    : include "java_snippet";
    : pattern {
@@ -198,6 +187,54 @@ main : context {
    : pattern {
       regex          \= ([^\s])
       styles []       = .illegal;
+   }
+}
+
+inside_double_quotes : context {
+   : pop {
+      regex      \= ([is]*)(")
+      styles []   = .string, .string;
+   }
+   : inline_push {
+      regex          \= ([is]%)
+      styles []       = .keyword;
+      default_style   = .variable
+      : pop {
+         regex       \= (%)
+         styles []    = .keyword;
+      }
+   }
+   : pattern {
+      regex      \= (\\(?:\\|"))
+      styles [] = .string;
+   }
+   : pattern {
+      regex      \= (([^"%is]*([is](?:[^%"]))*))
+      styles [] = .string;
+   }
+}
+
+inside_single_quotes : context {
+   : pop {
+      regex      \= ([is]*)(')
+      styles []   = .string, .string;
+   }
+   : inline_push {
+      regex          \= ([is]%)
+      styles []       = .punctuation;
+      default_style   = .variable
+      : pop {
+         regex       \= (%)
+         styles []    = .punctuation;
+      }
+   }
+   : pattern {
+      regex      \= (\\(?:\\|'))
+      styles [] = .string;
+   }
+   : pattern {
+      regex      \= (([^'%is]*([is](?:[^%']))*))
+      styles [] = .string;
    }
 }
 #################################################

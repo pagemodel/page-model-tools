@@ -29,28 +29,33 @@ import org.pagemodel.web.utils.PageException;
 public class ExtendedTestContext extends DefaultWebTestContext implements SSHTestContext, MailTestContext {
 	public static String DEFAULT_BROWSER = "headless";
 
-	private String browser = DEFAULT_BROWSER;
+	private WebDriverConfig webDriverConfig;
 	protected SSHAuthenticator sshAuthenticator;
 
 	public ExtendedTestContext(WebDriver driver, SSHAuthenticator sshAuthenticator, String browser) {
 		super(driver);
 		this.sshAuthenticator = sshAuthenticator;
 		if(browser != null && !browser.isEmpty()){
-			setBrowser(browser);
+			browser = DEFAULT_BROWSER;
 		}
+		WebDriverConfig webDriverConfig = new WebDriverConfig();
+		webDriverConfig.setLocalBrowserName(browser);
+		this.webDriverConfig = webDriverConfig;
 	}
 
-	public String getBrowser() {
-		return browser;
+	public ExtendedTestContext(WebDriver driver, SSHAuthenticator sshAuthenticator, WebDriverConfig webDriverConfig) {
+		super(driver);
+		this.sshAuthenticator = sshAuthenticator;
+		if(webDriverConfig == null){
+			webDriverConfig = new WebDriverConfig();
+			webDriverConfig.setLocalBrowserName(DEFAULT_BROWSER);
+		}
+		this.webDriverConfig = webDriverConfig;
 	}
 
-	protected void setBrowser(String browser) {
-		this.browser = browser;
-	}
-
-	protected void openPage(String url) {
-		if (getDriver() == null) {
-			setDriver(WebDriverFactory.open(getBrowser(), url));
+	protected void openPage(String url){
+		if (getDriver() == null){
+			setDriver(WebDriverFactory.create(webDriverConfig, url));
 		}else{
 			getDriver().get(url);
 		}

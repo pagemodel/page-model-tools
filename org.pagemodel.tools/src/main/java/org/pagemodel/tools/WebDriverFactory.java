@@ -22,6 +22,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Platform;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
@@ -32,7 +33,6 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.ie.InternetExplorerOptions;
-import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.pagemodel.web.DefaultWebTestContext;
@@ -45,8 +45,8 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
@@ -60,7 +60,7 @@ public abstract class WebDriverFactory {
 	public final static String DOWNLOAD_DIRECTORY;
 
 	public final static BrowserOptions browserOptions = new BrowserOptions();
-	private final static Map<String, Callable<WebDriver>> browserFactoryMap = new HashMap<>();
+	private final static Map<String, Function<WebDriverConfig,WebDriver>> browserFactoryMap = new HashMap<>();
 
 	static {
 		String home = System.getProperty("user.home");
@@ -75,16 +75,44 @@ public abstract class WebDriverFactory {
 		browserFactoryMap.put("htmlunit", WebDriverFactory::openHtmlUnit);
 	}
 
+	/**
+	 *
+	 * @deprecated Provided for backwards compatibility.  Please use the create method instead.
+	 */
+	@Deprecated()
 	public static WebDriver open(String browser, String url) {
-		log.info("Opening url [" + url + "] in browser [" + browser + "]");
-		WebDriver driver = getWebDriver(browser);
+		WebDriverConfig webDriverConfig = new WebDriverConfig();
+		webDriverConfig.setLocalBrowserName(browser);
+		return create(webDriverConfig, url);
+	}
+
+	public static WebDriver create(WebDriverConfig config, String url){
+		WebDriver driver;
+		String browser;
+		if (config.getRemoteUrl() != null) {
+			DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
+			desiredCapabilities.setPlatform(Platform.fromString(config.getPlatForm()));
+			desiredCapabilities.setVersion(config.getVersion());
+			desiredCapabilities.setBrowserName(config.getBrowserName());
+
+			for (Map.Entry<String, String> entry : config.getBrowserOptions().entrySet()) {
+				desiredCapabilities.setCapability(entry.getKey(), entry.getValue());
+			}
+			browser = config.getBrowserName();
+			log.info("Opening url [" + url + "] in browser " + browser + " on " + config.getPlatForm());
+			driver = getRemoteWebDriver(browser, config.getRemoteUrl(), desiredCapabilities);
+		}else{
+			browser = config.getLocalBrowserName();
+			log.info("Opening url [" + url + "] in browser [" + browser + "]");
+			driver = getWebDriver(config);
+		}
 		try {
 			driver.get(url);
 			clickThroughCertErrorPage(driver);
-		} catch (Throwable e) {
+		} catch (Throwable e){
 			close(driver);
 			throw new PageException(new DefaultWebTestContext(driver),
-					"Error: Failed opening url [" + url + "] in browser [" + browser + "]");
+					"Error: Failed opening url ["+ url + "] in browser " + browser);
 		}
 		return driver;
 	}
@@ -107,13 +135,14 @@ public abstract class WebDriverFactory {
 		}
 	}
 
-	public static WebDriver getWebDriver(String browser) {
+	public static WebDriver getWebDriver(WebDriverConfig webDriverConfig) {
+		String browser = webDriverConfig.getLocalBrowserName();
 		if(!browserFactoryMap.containsKey(browser)){
 			throw new RuntimeException("Error: Unknown browser type [" + browser + "].  "
-					+ "Available broswer types are: " + Arrays.toString(browserFactoryMap.keySet().toArray(new String[0])));
+					+ "Available browser types are: " + Arrays.toString(browserFactoryMap.keySet().toArray(new String[0])));
 		}
 		try {
-			WebDriver driver = browserFactoryMap.get(browser).call();
+			WebDriver driver = browserFactoryMap.get(browser).apply(webDriverConfig);
 			driver.manage().timeouts().pageLoadTimeout(DEFAULT_PAGE_LOAD_TIMEOUT_SECONDS, TimeUnit.SECONDS);
 			driver.manage().timeouts().implicitlyWait(DEFAULT_IMPLICITLY_WAIT_SECONDS, TimeUnit.SECONDS);
 			driver.manage().timeouts().setScriptTimeout(DEFAULT_SCRIPT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
@@ -121,20 +150,6 @@ public abstract class WebDriverFactory {
 		} catch (Exception ex){
 			throw new RuntimeException("Error: Unable to open browser with type [" + browser + "]", ex);
 		}
-	}
-
-	public static DesiredCapabilities makeDesiredCapabilities(String platformName, String platformVersion, String deviceName){
-		DesiredCapabilities caps = new DesiredCapabilities();
-		if (platformName != null) {
-			caps.setCapability(CapabilityType.PLATFORM_NAME, platformName);
-		}
-		if (platformVersion != null) {
-			caps.setCapability("platformVersion", platformVersion);
-		}
-		if (deviceName != null) {
-			caps.setCapability("deviceName", deviceName);
-		}
-		return caps;
 	}
 
 	public static RemoteWebDriver getRemoteWebDriver(String browser, String remoteURL, DesiredCapabilities caps) {
@@ -147,18 +162,24 @@ public abstract class WebDriverFactory {
 		}
 	}
 
-	private static WebDriver openChrome() {
+	private static WebDriver openChrome(WebDriverConfig webDriverConfig) {
 		WebDriverManager.chromedriver().setup();
 		ChromeOptions options = new ChromeOptions();
 		options.addArguments(browserOptions.getBrowserOptions("chrome"));
+		if(webDriverConfig.getLocalBrowserOptions() != null) {
+			options.addArguments(webDriverConfig.getLocalBrowserOptions());
+		}
 		return new ChromeDriver(options);
 	}
 
-	private static WebDriver openChromeHeadless() {
+	private static WebDriver openChromeHeadless(WebDriverConfig webDriverConfig) {
 		WebDriverManager.chromedriver().setup();
 		ChromeOptions options = new ChromeOptions();
 		options.setHeadless(true);
 		options.addArguments(browserOptions.getBrowserOptions("headless"));
+		if(webDriverConfig.getLocalBrowserOptions() != null) {
+			options.addArguments(webDriverConfig.getLocalBrowserOptions());
+		}
 		ChromeDriverService driverService = ChromeDriverService.createDefaultService();
 		WebDriver driver = new ChromeDriver(driverService, options);
 
@@ -185,10 +206,13 @@ public abstract class WebDriverFactory {
 		return driver;
 	}
 
-	private static WebDriver openFirefox() {
+	private static WebDriver openFirefox(WebDriverConfig webDriverConfig) {
 		WebDriverManager.firefoxdriver().setup();
 		FirefoxOptions options = new FirefoxOptions();
 		options.addArguments(browserOptions.getBrowserOptions("firefox"));
+		if(webDriverConfig.getLocalBrowserOptions() != null) {
+			options.addArguments(webDriverConfig.getLocalBrowserOptions());
+		}
 //        FirefoxProfile fp = new FirefoxProfile();
 //        fp.setAcceptUntrustedCertificates(true);
 //        fp.setAssumeUntrustedCertificateIssuer(true);
@@ -197,19 +221,22 @@ public abstract class WebDriverFactory {
 		return new FirefoxDriver(options);
 	}
 
-	private static WebDriver openInternetExplorer() {
+	private static WebDriver openInternetExplorer(WebDriverConfig webDriverConfig) {
 		WebDriverManager.iedriver().setup();
 		InternetExplorerOptions options = new InternetExplorerOptions();
 		options.addCommandSwitches(browserOptions.getBrowserOptions("ie").toArray(new String[0]));
+		if(webDriverConfig.getLocalBrowserOptions() != null) {
+			options.addCommandSwitches(webDriverConfig.getLocalBrowserOptions());
+		}
 		return new InternetExplorerDriver(options);
 	}
 
-	private static WebDriver openEdge() {
+	private static WebDriver openEdge(WebDriverConfig webDriverConfig) {
 		WebDriverManager.edgedriver().setup();
 		return new EdgeDriver();
 	}
 
-	private static WebDriver openHtmlUnit() {
+	private static WebDriver openHtmlUnit(WebDriverConfig webDriverConfig) {
 		return new HtmlUnitDriver(true);
 	}
 }

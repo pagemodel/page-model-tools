@@ -1,6 +1,7 @@
 # .pagemodel file syntax
 
 ## Syntax Highlighter
+It is recommended to install the .pagemodel syntax highlighter in your editor for working with .pagemodel files.
 
 #### TextMate Bundle
 TextMate bundles can be imported into TextMate, IntelliJ, VS Code, and other editors.
@@ -79,6 +80,8 @@ Checkbox - checkbox input
 DropDown - drop down style select input
 Select - non-drop down select (multiple selections not yet supported)
 Radio - radio input
+Image - image element
+Tab - tab style button
 Control - interactive non-button element(s)
 
 Component element types:

@@ -47,40 +47,50 @@
         'name' : 'keyword.pagemodel'
       }
       {
-        'match' : '([\\"\\x{0027}]?[\\*_]\\.([^\\"\\x{0027}\\x{0020}]*([\\"][^\\"]*[\\"]|[\\x{0027}][^\\x{0027}]*[\\x{0027}])*[^\\"\\x{0027}\\x{0020}]*)[\\"\\x{0027}]?)'
+        'match' : '([\\"][\\*_]\\.[^\\"]*[\\"]|[\\x{0027}][\\*_]\\.[^\\x{0027}]*[\\x{0027}]|[\\*_]\\.([^\\"\\x{0027}\\x{0020}]*([\\"][^\\"]*[\\"]|[\\x{0027}][^\\x{0027}]*[\\x{0027}])*)*)'
         'name' : 'storage.type.annotation.pagemodel'
       }
       {
-        'begin' : '(\\")'
+        'begin' : '(")'
         'beginCaptures' : {
           '1' : {
-            'name' : 'punctuation.pagemodel'
+            'name' : 'string.pagemodel'
           }
         }
         'patterns' : [
           {
-            'include' : '#main__2'
+            'include' : '#inside_double_quotes'
           }
         ]
-        'end' : '(\\")'
+        'end' : '([is]*)(")'
         'endCaptures' : {
           '1' : {
-            'name' : 'punctuation.pagemodel'
+            'name' : 'string.pagemodel'
+          }
+          '2' : {
+            'name' : 'string.pagemodel'
           }
         }
       }
       {
-        'begin' : '(\\\')'
+        'begin' : '(\')'
         'beginCaptures' : {
           '1' : {
-            'name' : 'punctuation.pagemodel'
+            'name' : 'string.pagemodel'
           }
         }
-        'contentName' : 'text.pagemodel'
-        'end' : '(\\\')'
+        'patterns' : [
+          {
+            'include' : '#inside_single_quotes'
+          }
+        ]
+        'end' : '([is]*)(\')'
         'endCaptures' : {
           '1' : {
-            'name' : 'punctuation.pagemodel'
+            'name' : 'string.pagemodel'
+          }
+          '2' : {
+            'name' : 'string.pagemodel'
           }
         }
       }
@@ -137,13 +147,75 @@
         }
       }
       {
-        'match' : '(\\S*(Field|Button|Link|Display|FileUpload|Checkbox|DropDown|Select|Radio|Control|Row|Dialog|Modal|Nav|Section|Component))'
+        'match' : '(\\S*(Field|Button|Link|Display|FileUpload|Checkbox|DropDown|Select|Radio|Image|Tab|Control|Row|Dialog|Modal|Nav|Section|Component))'
         'name' : 'constant.other.pagemodel'
       }
       {
         'match' : '([^\\s])'
         'name' : 'invalid.pagemodel'
       }
+    ]
+  }
+  'inside_double_quotes' : {
+    'patterns' : [
+      {
+        'begin' : '([is]%)'
+        'beginCaptures' : {
+          '1' : {
+            'name' : 'keyword.pagemodel'
+          }
+        }
+        'contentName' : 'constant.language.pagemodel'
+        'end' : '(%)'
+        'endCaptures' : {
+          '1' : {
+            'name' : 'keyword.pagemodel'
+          }
+        }
+      }
+      {
+        'match' : '(\\\\(?:\\\\|"))'
+        'name' : 'string.pagemodel'
+      }
+      {
+        'match' : '(([^\\x{0022}\\x{0025}is]*([is](?:[^\\x{0025}\\x{0022}]))*))'
+        'name' : 'string.pagemodel'
+      }
+    ]
+  }
+  'inside_double_quotes__1' : {
+    'patterns' : [
+    ]
+  }
+  'inside_single_quotes' : {
+    'patterns' : [
+      {
+        'begin' : '([is]%)'
+        'beginCaptures' : {
+          '1' : {
+            'name' : 'punctuation.pagemodel'
+          }
+        }
+        'contentName' : 'constant.language.pagemodel'
+        'end' : '(%)'
+        'endCaptures' : {
+          '1' : {
+            'name' : 'punctuation.pagemodel'
+          }
+        }
+      }
+      {
+        'match' : '(\\\\(?:\\\\|\'))'
+        'name' : 'string.pagemodel'
+      }
+      {
+        'match' : '(([^\\x{0027}\\x{0025}is]*([is](?:[^\\x{0025}\\x{0027}]))*))'
+        'name' : 'string.pagemodel'
+      }
+    ]
+  }
+  'inside_single_quotes__1' : {
+    'patterns' : [
     ]
   }
   'java_snippet' : {
@@ -174,18 +246,6 @@
       {
         'include' : '#main'
       }
-    ]
-  }
-  'main__2' : {
-    'patterns' : [
-      {
-        'match' : '((i|s)%\\S*%)'
-        'name' : 'constant.language.pagemodel'
-      }
-    ]
-  }
-  'main__3' : {
-    'patterns' : [
     ]
   }
   'numeric' : {

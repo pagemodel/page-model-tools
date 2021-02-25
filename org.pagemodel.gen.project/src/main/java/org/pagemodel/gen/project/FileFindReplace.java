@@ -55,6 +55,7 @@ public class FileFindReplace {
 				mv("project_template/test/build.gradle", projectName + "TestSanity/build.gradle"),
 				mv("project_template/test/MyAppTestBase.java", projectName + "TestSanity/src/test/java/" + pkgPath + "/test/sanity/" + projectName + "TestBase.java"),
 				mv("project_template/test/PageTests.java", projectName + "TestSanity/src/test/java/" + pkgPath + "/test/sanity/PageTests.java"),
+				mv("project_template/test/profiles.driver.json", projectName + "TestSanity/src/test/resources/profiles.driver.json"),
 				mv("project_template/test/profiles.myapp.json", projectName + "TestSanity/src/test/resources/profiles." + projectName.toLowerCase() + ".json"),
 				mv("project_template/test/profiles.mail.json", projectName + "TestSanity/src/test/resources/profiles.mail.json"),
 

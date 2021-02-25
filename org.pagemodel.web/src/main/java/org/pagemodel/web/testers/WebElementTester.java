@@ -164,9 +164,9 @@ public class WebElementTester<R, N extends PageModel<? super N>> {
 		return new StringTester<>(() -> callRef().getTagName(), getReturnObj(), page.getContext(), getEvaluator());
 	}
 
-	public StringTester<R> attribute(String string) {
-		getEvaluator().setSourceDisplayRef(() -> "attribute: name:[" + string + "], " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]");
-		return new StringTester<>(() -> callRef().getAttribute(string), getReturnObj(), page.getContext(), getEvaluator());
+	public StringTester<R> attribute(String attribute) {
+		getEvaluator().setSourceDisplayRef(() -> "attribute: name:[" + attribute + "], " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]");
+		return new StringTester<>(() -> callRef().getAttribute(attribute), getReturnObj(), page.getContext(), getEvaluator());
 	}
 
 	public StringTester<R> cssValue(String string) {

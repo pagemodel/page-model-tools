@@ -19,7 +19,7 @@
 function main() {
     set -x
     USER=seluser
-    BUILD_IMAGE=pagemodel-headless-chrome:1.0.0
+    BUILD_IMAGE=pagemodel-headless-chrome:0.8.0
     SSH_DIR_NAME=.ssh
     TIMEZONE="America/Chicago"
     GRADLE_DIR_NAME=

@@ -79,60 +79,75 @@
         </dict>
         <dict>
           <key>match</key>
-          <string>([\&quot;\x{0027}]?[\*_]\.([^\&quot;\x{0027}\x{0020}]*([\&quot;][^\&quot;]*[\&quot;]|[\x{0027}][^\x{0027}]*[\x{0027}])*[^\&quot;\x{0027}\x{0020}]*)[\&quot;\x{0027}]?)</string>
+          <string>([\&quot;][\*_]\.[^\&quot;]*[\&quot;]|[\x{0027}][\*_]\.[^\x{0027}]*[\x{0027}]|[\*_]\.([^\&quot;\x{0027}\x{0020}]*([\&quot;][^\&quot;]*[\&quot;]|[\x{0027}][^\x{0027}]*[\x{0027}])*)*)</string>
           <key>name</key>
           <string>storage.type.annotation.pagemodel</string>
         </dict>
         <dict>
           <key>begin</key>
-          <string>(\&quot;)</string>
+          <string>(&quot;)</string>
           <key>beginCaptures</key>
           <dict>
             <key>1</key>
             <dict>
               <key>name</key>
-              <string>punctuation.pagemodel</string>
+              <string>string.pagemodel</string>
             </dict>
           </dict>
           <key>patterns</key>
           <array>
             <dict>
               <key>include</key>
-              <string>#main__2</string>
+              <string>#inside_double_quotes</string>
             </dict>
            </array>
           <key>end</key>
-          <string>(\&quot;)</string>
+          <string>([is]*)(&quot;)</string>
           <key>endCaptures</key>
           <dict>
             <key>1</key>
             <dict>
               <key>name</key>
-              <string>punctuation.pagemodel</string>
+              <string>string.pagemodel</string>
+            </dict>
+            <key>2</key>
+            <dict>
+              <key>name</key>
+              <string>string.pagemodel</string>
             </dict>
           </dict>
         </dict>
         <dict>
           <key>begin</key>
-          <string>(\&apos;)</string>
+          <string>(&apos;)</string>
           <key>beginCaptures</key>
           <dict>
             <key>1</key>
             <dict>
               <key>name</key>
-              <string>punctuation.pagemodel</string>
+              <string>string.pagemodel</string>
             </dict>
           </dict>
-          <key>contentName</key>
-          <string>text.pagemodel</string>
+          <key>patterns</key>
+          <array>
+            <dict>
+              <key>include</key>
+              <string>#inside_single_quotes</string>
+            </dict>
+           </array>
           <key>end</key>
-          <string>(\&apos;)</string>
+          <string>([is]*)(&apos;)</string>
           <key>endCaptures</key>
           <dict>
             <key>1</key>
             <dict>
               <key>name</key>
-              <string>punctuation.pagemodel</string>
+              <string>string.pagemodel</string>
+            </dict>
+            <key>2</key>
+            <dict>
+              <key>name</key>
+              <string>string.pagemodel</string>
             </dict>
           </dict>
         </dict>
@@ -217,7 +232,7 @@
         </dict>
         <dict>
           <key>match</key>
-          <string>(\S*(Field|Button|Link|Display|FileUpload|Checkbox|DropDown|Select|Radio|Control|Row|Dialog|Modal|Nav|Section|Component))</string>
+          <string>(\S*(Field|Button|Link|Display|FileUpload|Checkbox|DropDown|Select|Radio|Image|Tab|Control|Row|Dialog|Modal|Nav|Section|Component))</string>
           <key>name</key>
           <string>constant.other.pagemodel</string>
         </dict>
@@ -227,6 +242,102 @@
           <key>name</key>
           <string>invalid.pagemodel</string>
         </dict>
+       </array>
+    </dict>
+    <key>inside_double_quotes</key>
+    <dict>
+      <key>patterns</key>
+      <array>
+        <dict>
+          <key>begin</key>
+          <string>([is]%)</string>
+          <key>beginCaptures</key>
+          <dict>
+            <key>1</key>
+            <dict>
+              <key>name</key>
+              <string>keyword.pagemodel</string>
+            </dict>
+          </dict>
+          <key>contentName</key>
+          <string>constant.language.pagemodel</string>
+          <key>end</key>
+          <string>(%)</string>
+          <key>endCaptures</key>
+          <dict>
+            <key>1</key>
+            <dict>
+              <key>name</key>
+              <string>keyword.pagemodel</string>
+            </dict>
+          </dict>
+        </dict>
+        <dict>
+          <key>match</key>
+          <string>(\\(?:\\|&quot;))</string>
+          <key>name</key>
+          <string>string.pagemodel</string>
+        </dict>
+        <dict>
+          <key>match</key>
+          <string>(([^\x{0022}\x{0025}is]*([is](?:[^\x{0025}\x{0022}]))*))</string>
+          <key>name</key>
+          <string>string.pagemodel</string>
+        </dict>
+       </array>
+    </dict>
+    <key>inside_double_quotes__1</key>
+    <dict>
+      <key>patterns</key>
+      <array>
+       </array>
+    </dict>
+    <key>inside_single_quotes</key>
+    <dict>
+      <key>patterns</key>
+      <array>
+        <dict>
+          <key>begin</key>
+          <string>([is]%)</string>
+          <key>beginCaptures</key>
+          <dict>
+            <key>1</key>
+            <dict>
+              <key>name</key>
+              <string>punctuation.pagemodel</string>
+            </dict>
+          </dict>
+          <key>contentName</key>
+          <string>constant.language.pagemodel</string>
+          <key>end</key>
+          <string>(%)</string>
+          <key>endCaptures</key>
+          <dict>
+            <key>1</key>
+            <dict>
+              <key>name</key>
+              <string>punctuation.pagemodel</string>
+            </dict>
+          </dict>
+        </dict>
+        <dict>
+          <key>match</key>
+          <string>(\\(?:\\|&apos;))</string>
+          <key>name</key>
+          <string>string.pagemodel</string>
+        </dict>
+        <dict>
+          <key>match</key>
+          <string>(([^\x{0027}\x{0025}is]*([is](?:[^\x{0025}\x{0027}]))*))</string>
+          <key>name</key>
+          <string>string.pagemodel</string>
+        </dict>
+       </array>
+    </dict>
+    <key>inside_single_quotes__1</key>
+    <dict>
+      <key>patterns</key>
+      <array>
        </array>
     </dict>
     <key>java_snippet</key>
@@ -273,24 +384,6 @@
           <key>include</key>
           <string>#main</string>
         </dict>
-       </array>
-    </dict>
-    <key>main__2</key>
-    <dict>
-      <key>patterns</key>
-      <array>
-        <dict>
-          <key>match</key>
-          <string>((i|s)%\S*%)</string>
-          <key>name</key>
-          <string>constant.language.pagemodel</string>
-        </dict>
-       </array>
-    </dict>
-    <key>main__3</key>
-    <dict>
-      <key>patterns</key>
-      <array>
        </array>
     </dict>
     <key>numeric</key>
