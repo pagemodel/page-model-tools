@@ -96,9 +96,9 @@ package com.example.xyz.test.xyz.test.sanity;
 import org.junit.Test;
 
 public class PageTests extends XYZTestBase {
-	@Test
-	public void loginPageTest(){
-		context.getLoginPage()
+  @Test
+  public void loginPageTest(){
+    context.getLoginPage()
         .testUsernameField().sendKeys("admin")
         .testPasswordField().sendKeys("password")
         .testSignInButton().click()
@@ -108,7 +108,7 @@ public class PageTests extends XYZTestBase {
         .testSignInButton().clickAnd().noRedirect()
         .testErrorDisplay().text().contains("bad username or password")
         .closeBrowser();
-	}
+  }
 }
 ```
 
