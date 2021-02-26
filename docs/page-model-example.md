@@ -92,7 +92,13 @@ The ErrorDisplay element is only present after an error occurs.  This element is
 ### Login Page Testing
 A test to login, logout, attempt to login with a bad password, verify the error message and close the browser:
 ```java
-context.getLoginPage()
+package com.example.xyz.test.xyz.test.sanity;
+import org.junit.Test;
+
+public class PageTests extends XYZTestBase {
+	@Test
+	public void loginPageTest(){
+		context.getLoginPage()
         .testUsernameField().sendKeys("admin")
         .testPasswordField().sendKeys("password")
         .testSignInButton().click()
@@ -102,6 +108,29 @@ context.getLoginPage()
         .testSignInButton().clickAnd().noRedirect()
         .testErrorDisplay().text().contains("bad username or password")
         .closeBrowser();
+	}
+}
+```
+
+The log from running this test `./gradlew --rerun-tasks test --tests *.loginPageTest`:
+```
+[18:19:35.247] Opening url [file:///home/user/XYZTests/XYZTestSanity/../example_html/login.html] in browser [firefox]
+[18:19:35.535] Using geckodriver 0.28.0 (since Mozilla Firefox 83 is installed in your machine)
+[18:19:35.542] Exporting webdriver.gecko.driver as /home/user/.m2/repository/webdriver/geckodriver/linux64/0.28.0/geckodriver
+[18:19:37.875] Waiting for page, LoginPage to display.
+[18:19:38.418] Execute send keys: [admin] to element(by(By.id: username), found(tag:[input], id:[username])) on page [LoginPage]
+[18:19:38.538] Execute send keys: [password] to element(by(By.id: password), found(tag:[input], id:[password])) on page [LoginPage]
+[18:19:38.652] Execute click: element(by(By.id: signInButton), found(tag:[input], id:[signInButton], value:[Sign In], class:[control-button])) on page [LoginPage]
+[18:19:38.842] Waiting for page, HomePage to display.
+[18:19:39.984] Execute click: element(by(By.id: navSignOut), found(tag:[a], id:[navSignOut], href:[file:///home/matt/dev/test/XYZTests/example_html/login.html], text:[Sign Out]), parent(by(By.id: topNav), foundParent(tag:[div], id:[topNav]))) on page [HomePage]
+[18:19:40.157] Waiting for page, LoginPage to display.
+[18:19:40.789] Execute send keys: [admin] to element(by(By.id: username), found(tag:[input], id:[username])) on page [LoginPage]
+[18:19:40.929] Execute send keys: [bad password] to element(by(By.id: password), found(tag:[input], id:[password])) on page [LoginPage]
+[18:19:41.153] Execute clickAnd: element(by(By.id: signInButton), found(tag:[input], id:[signInButton], value:[Sign In], class:[control-button])) on page [LoginPage]
+[18:19:41.435] Expecting no redirect: on page [com.example.xyz.test.xyz.pages.LoginPage]
+[18:19:41.436] Waiting for page, LoginPage to display.
+[18:19:42.110] Find text: element(by(By.id: errorMsgs), found(tag:[div], id:[errorMsgs], text:[bad username or password])) on page [LoginPage]
+                	Assert [bad username or password] contains [bad username or password]
 ```
 
 ```java
