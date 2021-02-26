@@ -1,7 +1,7 @@
 # Page Model Examples
 This page describes the .pagemodel files for the sample html in the XYZ application generated in the [Getting Started Guide](../README.md#getting-started)
 
-Before writing .pagemodel files, it is recommended to install the [pagemodel syntax highlighter](page-model-gen-readme.md#syntax-highlighter). 
+Before writing .pagemodel files, it is recommended to install the [pagemodel syntax highlighter](page-model-gen-readme.md#syntax-highlighter).
 ## Login Page
 We'll start with a simple login page
 
@@ -40,7 +40,7 @@ We'll start with a simple login page
 ```
 
 ##### Login Page Elements
-There are 5 elements on the page needed for testing.  3 immediate functional elements: The `username field`, `password field`, and `sign in button`.  There is a `header display`.  And, there is a hidden `error messages display`. 
+There are 5 elements on the page needed for testing.  3 immediate functional elements: The `username field`, `password field`, and `sign in button`.  There is a `header display`.  And, there is a hidden `error messages display`.
 
 ### LoginPage.pagemodel
 ```
@@ -55,14 +55,14 @@ ErrorDisplay id "errorMsgs"
 
 The file is named `LoginPage.pagemodel` and wil generate `LoginPage.java`
 
-In first line, 
+In first line,
 ```
 PageModel com.example.xyz.pages
 ```
 `PageModel` declares LoginPage as regular PageModel.
- 
+
  The next value `com.example.xyz.pages` declares the package for PageModel.java
- 
+
  The remaining lines declare the elements on the page.
  ```
 * HeaderDisplay xpath "//h1[1]"
@@ -90,17 +90,17 @@ The ErrorDisplay element is only present after an error occurs.  This element is
 `HomePage` - Clicking the sign in button is expected to navigate to the page defined in `HomePage.pagemodel`
 
 ### Login Page Testing
-A test to login, logout, attempt to login with a bad password, verify the error message and close the browser: 
+A test to login, logout, attempt to login with a bad password, verify the error message and close the browser:
 ```java
 context.getLoginPage()
         .testUsernameField().sendKeys("admin")
         .testPasswordField().sendKeys("password")
         .testSignInButton().click()
-        .testTopNav().testSignOutButton().click()
+        .testTopNav().testSignOutLink().click()
         .testUsernameField().sendKeys("admin")
         .testPasswordField().sendKeys("bad password")
         .testSignInButton().clickAnd().noRedirect()
-        .testErrorMessagesDisplay().text().contains("bad username or password")
+        .testErrorDisplay().text().contains("bad username or password")
         .closeBrowser();
 ```
 
@@ -110,7 +110,7 @@ context.getLoginPage()
 
 Open the browser for the `XYZTestContext` and go to the login page url.  Returns a `LoginPage` object.
 
-A typical test would start with `XYZUser.admin(context).loginToMainPage()` to go straight to the `HomePage` instead of using `context.getLoginPage()`. 
+A typical test would start with `XYZUser.admin(context).loginToMainPage()` to go straight to the `HomePage` instead of using `context.getLoginPage()`.
 
 ```java
 .testUsernameField().sendKeys("admin")
@@ -125,43 +125,43 @@ A typical test would not have "admin" or "password" hardcoded.  They would inste
 ```
 
 perform the click action for the sign in button `WebElementTester`.  Returns a `HomePage` object.
- 
+
  ```java
- .testTopNav().testSignOutButton().click()
+ .testTopNav().testSignOutLink().click()
 ```
- 
+
  Gets the `TopNav` `ComponentModel` from the `HomePage`.  (A component model is a special `WebElementTester` with child elements.)  Then get the sign out button from the `TopNav` component and click.  Returns a `LoginPage` object.
- 
+
  ```java
  .testSignInButton().clickAnd().noRedirect()
 ```
- 
+
  Use `clickAnd()` to override the normal `ClickAction` behavior of expecting to navigate to the `HomePage`, `clickAnd()` will provide methods for expecting no redirect, a redirect to a type of page, or handling alerts.
  `.noRedirect()` tells the test we expect to stay on the `LoginPage` after clicking the `SignInButton`
- 
+
  ```java
- .testErrorMessagesDisplay().text().contains("bad username or password")
+ .testErrorDisplay().text().contains("bad username or password")
 ```
- 
- After the failed sign in attempt, the `ErrorMessagesDisplay` element is tested to have text containing "bad username or password".
- 
+
+ After the failed sign in attempt, the `ErrorDisplay` element is tested to have text containing "bad username or password".
+
  Calling `.text()` on a `WebElementTester` will return a `StringTester` with a lambda reference to the `String` `WebElement.getText()`.  The `StringTester` provides methods for testing anything exposed by the `String` class such as `contains`, `equals`, `startsWith`, `matches`, `length`, etc.
- 
- Along with the `StringTester` is a `ComparableTester` for testing anything implementing `Comparable` such as `Integer`, `Double`, or `Date`.  `.testErrorMessagesDisplay().text().length()` will return a `ComparableTester` with a lambda reference to the `int` `WebElement.getText().length()`
- 
+
+ Along with the `StringTester` is a `ComparableTester` for testing anything implementing `Comparable` such as `Integer`, `Double`, or `Date`.  `.testErrorDisplay().text().length()` will return a `ComparableTester` with a lambda reference to the `int` `WebElement.getText().length()`
+
  ```java
  .closeBrowser();
 ```
- 
+
  Close the browser associated with the `TestContext`, ending the test chain.
- 
+
  ## Internal Pages
  Once logged in we are on the Home Page:
- 
+
  ![Home Page](images/page-model-example/home-page.png)
- 
+
  When logged into a typical application, all pages have common elements, usually navigation, headers, and footers.
- 
+
  The common header html is:
  ```html
 <body>
@@ -264,7 +264,7 @@ The top line
 XYZInternalPage com.example.xyz.pages
 ```
  declares `HomePage` as inheriting from `XYZInternalPage`, giving it the `TopNav` element defined there.
- 
+
  ```
 * HeaderDisplay xpath "//h1[1]" *.text().equals("XYZ Home")
 ```

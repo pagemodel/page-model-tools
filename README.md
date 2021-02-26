@@ -12,7 +12,7 @@ Page Models are defined in simple .pagemodel files declaring page elements and r
 
 Java page model classes are generated from .pagemodel files automatically with a gradle plugin.
 
-[.pagemodel readme](docs/page-model-gen-readme.md)
+[.pagemodel examples](docs/page-model-example.md) [.pagemodel syntax](docs/page-model-gen-readme.md)
 
 ###### HomePage.pagemodel:
 
@@ -55,7 +55,7 @@ cd ..
 1. after building the sources, get the built `org.pagemodel.gen.project-0.8.0-SNAPSHOT.jar`
 2. run the jar to generate a new project
 3. run the sample tests in your project
- 
+
 ###### Linux and MacOS:
 ```
 cp page-model-tools/org.pagemodel.gen.project/build/libs/org.pagemodel.gen.project-0.8.0-SNAPSHOT.jar .
@@ -174,12 +174,12 @@ created for each test to allow parallel testing
 server information, admin user details, ssh credentials, mail credentials
 
 contains any extra variables needed by the tests
-            
+
 ### XYZUserDetails
 user information which can be saved, loaded, and randomly generated
 
 username, email, password, role
-                
+
 ### XYZUser
 active user object loaded from user details
 
