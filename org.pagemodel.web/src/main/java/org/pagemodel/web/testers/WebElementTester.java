@@ -70,15 +70,15 @@ public class WebElementTester<R, N extends PageModel<? super N>> {
 		try {
 			WebElement el = elementRef.call();
 			if (el == null) {
-				return new LocatedWebElement(null, null, null);
+				return new LocatedWebElement(null, (String)null, null);
 			}
 			if (LocatedWebElement.class.isAssignableFrom(el.getClass())) {
 				return (LocatedWebElement) el;
 			} else {
-				return new LocatedWebElement(el, null, null);
+				return new LocatedWebElement(el, (String)null, null);
 			}
 		} catch (Throwable ex) {
-			return new LocatedWebElement(null, null, null);
+			return new LocatedWebElement(null, (String)null, null);
 		}
 	}
 
@@ -156,12 +156,12 @@ public class WebElementTester<R, N extends PageModel<? super N>> {
 
 	public StringTester<R> text() {
 		getEvaluator().setSourceDisplayRef(() -> "text: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]");
-		return new StringTester<>(() -> callRef().getText(), getReturnObj(), page.getContext(), getEvaluator());
+		return new StringTester<>(() -> callRef().getText().trim().replaceAll("\\s+", " "), getReturnObj(), page.getContext(), getEvaluator());
 	}
 
 	public StringTester<R> tagName() {
 		getEvaluator().setSourceDisplayRef(() -> "tag name: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]");
-		return new StringTester<>(() -> callRef().getTagName(), getReturnObj(), page.getContext(), getEvaluator());
+		return new StringTester<>(() -> callRef().getTagName().toLowerCase(), getReturnObj(), page.getContext(), getEvaluator());
 	}
 
 	public StringTester<R> attribute(String attribute) {
@@ -185,16 +185,18 @@ public class WebElementTester<R, N extends PageModel<? super N>> {
 	}
 
 	public R clearText() {
-		log.info(getEvaluator().getActionMessage(() -> "clear text: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]"));
-		getEvaluator().quiet().testCondition(() -> "exists: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
-				() -> callRef().hasElement(), getReturnObj(), page.getContext());
-		callRef().clear();
-		return getReturnObj();
+		return getEvaluator().testCondition(() -> "clear text: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
+				() -> {
+					if(!callRef().hasElement()){
+						return false;
+					}
+					callRef().clear();
+					return true;
+				}, getReturnObj(), page.getContext());
 	}
 
 	public R sendKeys(CharSequence... keys) {
-		doSendKeys(keys);
-		return getReturnObj();
+		return doSendKeys(keys);
 	}
 
 	public WebActionTester<R> sendKeysAnd(CharSequence... keys) {
@@ -202,11 +204,15 @@ public class WebElementTester<R, N extends PageModel<? super N>> {
 		return new WebActionTester<>(page.getContext(), page, this);
 	}
 
-	protected void doSendKeys(CharSequence... keys) {
-		log.info(getEvaluator().getActionMessage(() -> "send keys: " + Arrays.toString(keys) + " to " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]"));
-		getEvaluator().quiet().testCondition(() -> "exists: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
-				() -> callRef().hasElement(), getReturnObj(), page.getContext());
-		callRef().sendKeys(keys);
+	protected R doSendKeys(CharSequence... keys) {
+		return getEvaluator().testCondition(() -> "send keys: " + Arrays.toString(keys) + " to " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
+				() -> {
+					if(!callRef().hasElement()){
+						return false;
+					}
+					callRef().sendKeys(keys);
+					return true;
+				}, getReturnObj(), page.getContext());
 	}
 
 	public N click() {

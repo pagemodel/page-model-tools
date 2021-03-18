@@ -35,6 +35,7 @@ public class Http {
 	public static class HttpInner extends HttpTester<HttpInner> {
 		public HttpInner(TestContext testContext) {
 			super(null, testContext);
+			this.returnObj = this;
 		}
 	}
 

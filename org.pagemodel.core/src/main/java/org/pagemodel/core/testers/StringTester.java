@@ -156,6 +156,10 @@ public class StringTester<R> {
 		return new StringTester<>(() -> ThrowingFunction.unchecked(transform).apply(callRef()), returnObj, testContext, getEvaluator());
 	}
 
+	public <T extends Comparable<T>> ComparableTester<T, R> transformCompare(ThrowingFunction<String,T,?> transform) {
+		return new ComparableTester<>(() -> ThrowingFunction.unchecked(transform).apply(callRef()), returnObj, testContext, getEvaluator());
+	}
+
 	public ComparableTester<Integer, R> length() {
 		return new ComparableTester<>(() -> {
 			String val = callRef();

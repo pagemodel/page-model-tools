@@ -19,7 +19,6 @@ package org.pagemodel.tests.myapp.tools;
 import org.pagemodel.tests.myapp.pages.LoginPage;
 import org.pagemodel.tools.ExtendedTestContext;
 import org.pagemodel.tools.WebDriverConfig;
-import org.pagemodel.tools.WebDriverFactory;
 import org.pagemodel.web.PageUtils;
 import java.io.File;
 
@@ -28,10 +27,6 @@ import java.io.File;
  */
 public class MyAppTestContext extends ExtendedTestContext {
 	private MyAppConfig myAppConfig;
-
-	static {
-		WebDriverFactory.browserOptions.addUserBrowserOptions("chrome","--window-size=800,800");
-	}
 
 	public MyAppTestContext(MyAppConfig myAppConfig, WebDriverConfig webDriverConfig) {
 		super(null, null, webDriverConfig);

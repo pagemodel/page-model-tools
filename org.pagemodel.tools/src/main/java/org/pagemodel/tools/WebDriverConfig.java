@@ -1,33 +1,58 @@
 
 package org.pagemodel.tools;
 
+import org.openqa.selenium.MutableCapabilities;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.remote.CapabilityType;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class WebDriverConfig {
 
 	private String remoteUrl;
-	private String localBrowserName;
-	private String[] localBrowserOptions;
-	private Map<String, String> browserOptions;
-	private String browserName;
-	private String version;
-	private String platForm;
+	private Map<String,Object> capabilities;
+	transient private MutableCapabilities caps;
 
 	public static void registerDefaultProfiles() {
 		Map<String, WebDriverConfig> defaultProfile = new HashMap<>();
-		defaultProfile.put("chrome", local("chrome"));
-		defaultProfile.put("headless", local("headless"));
+
+		ChromeOptions chromeOpts = new ChromeOptions();
+		chromeOpts.addArguments("--ignore-certificate-errors", "--disable-dev-shm-usage", "--silent", "--log-level=3");
+		defaultProfile.put("chrome", local("chrome", chromeOpts.asMap()));
+
+		ChromeOptions chromeHeadlessOpts = new ChromeOptions();
+		chromeHeadlessOpts.addArguments("--ignore-certificate-errors", "--disable-dev-shm-usage", "--silent",
+				"--log-level=3", "--headless", "--disable-gpu", "--window-size=1920,1080");
+		defaultProfile.put("headless", local("chrome", chromeHeadlessOpts.asMap()));
+
 		defaultProfile.put("firefox", local("firefox"));
 		defaultProfile.put("edge", local("edge"));
 		defaultProfile.put("ie", local("ie"));
+		defaultProfile.put("safari", local("safari"));
+		defaultProfile.put("opera", local("opera"));
+		defaultProfile.put("operablink", local("operablink"));
 		defaultProfile.put("htmlunit", local("htmlunit"));
 		ProfileMap.addDefaults(WebDriverConfig.class, defaultProfile);
 	}
 
 	public static WebDriverConfig local(String browser){
 		WebDriverConfig webDriverConfig = new WebDriverConfig();
-		webDriverConfig.setLocalBrowserName(browser);
+		webDriverConfig.caps = new MutableCapabilities();
+		webDriverConfig.caps.setCapability(CapabilityType.BROWSER_NAME, browser);
+		webDriverConfig.capabilities = new TreeMap<>(webDriverConfig.caps.asMap());
+		return webDriverConfig;
+	}
+
+	public static WebDriverConfig local(String browser, Map<String,Object> capabilities){
+		WebDriverConfig webDriverConfig = new WebDriverConfig();
+		webDriverConfig.caps = new MutableCapabilities();
+		webDriverConfig.caps.setCapability(CapabilityType.BROWSER_NAME, browser);
+		for(Map.Entry<String,Object> entry : capabilities.entrySet()){
+			webDriverConfig.caps.setCapability(entry.getKey(), entry.getValue());
+		}
+		webDriverConfig.capabilities = new TreeMap<>(webDriverConfig.caps.asMap());
 		return webDriverConfig;
 	}
 
@@ -39,51 +64,15 @@ public class WebDriverConfig {
 		this.remoteUrl = remoteUrl;
 	}
 
-	public String getLocalBrowserName() {
-		return localBrowserName;
+	public MutableCapabilities getCapabilities() {
+		if(caps == null){
+			caps = new MutableCapabilities(capabilities);
+		}
+		return caps;
 	}
 
-	public void setLocalBrowserName(String localBrowserName) {
-		this.localBrowserName = localBrowserName;
-	}
-
-	public String[] getLocalBrowserOptions() {
-		return localBrowserOptions;
-	}
-
-	public void setLocalBrowserOptions(String[] localBrowserOptions) {
-		this.localBrowserOptions = localBrowserOptions;
-	}
-
-	public Map<String, String> getBrowserOptions() {
-		return browserOptions;
-	}
-
-	public void setBrowserOptions(Map<String, String> browserOptions) {
-		this.browserOptions = browserOptions;
-	}
-
-	public String getBrowserName() {
-		return browserName;
-	}
-
-	public void setBrowserName(String browserName) {
-		this.browserName = browserName;
-	}
-
-	public String getVersion() {
-		return version;
-	}
-
-	public void setVersion(String version) {
-		this.version = version;
-	}
-
-	public String getPlatForm() {
-		return platForm;
-	}
-
-	public void setPlatForm(String platForm) {
-		this.platForm = platForm;
+	public void setCapabilities(MutableCapabilities capabilities) {
+		this.capabilities = capabilities.asMap();
+		this.caps = capabilities;
 	}
 }

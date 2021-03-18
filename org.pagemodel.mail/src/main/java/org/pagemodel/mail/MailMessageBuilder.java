@@ -92,6 +92,20 @@ public class MailMessageBuilder<R> {
 				() -> mailMessage.addRecipientsBcc(addresses));
 	}
 
+	public MailMessageBuilder<R> clearRecipients(){
+		return logAndRun("Clearing all recipients",
+				() -> {
+					mailMessage.recipientsTo.clear();
+					mailMessage.recipientsCc.clear();
+					mailMessage.recipientsBcc.clear();
+				});
+	}
+
+
+	public MailMessageBuilder<R> tagSubject(){
+		return subject(mailMessage.getSubject());
+	}
+
 	public MailMessageBuilder<R> subjectUntagged(String subject){
 		return logAndRun("Set subject [" + subject + "]",
 				() -> mailMessage.setSubject(subject));

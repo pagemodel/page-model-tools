@@ -163,7 +163,6 @@ public abstract class SectionModel<S extends SectionModel<? super S, P, R>, P ex
 
 	@Override
 	public <R> R doAction(ThrowingFunction<S, R, ?> action) {
-
 		try {
 			return action.apply((S) this);
 		} catch (Throwable t) {

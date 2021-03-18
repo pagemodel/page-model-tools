@@ -136,7 +136,7 @@ public class PageModelWriter {
 			locator = locator.replaceAll(arg.locatorString, "\" + " + arg.name + " + \"");
 		}
 		String methodArgs = String.join(", ", args.stream().map(arg -> arg.argString).toArray(String[]::new));
-		sb.append(System.lineSeparator()).append(classIndent).append("protected WebElement get")
+		sb.append(System.lineSeparator()).append(classIndent).append("protected LocatedWebElement get")
 				.append(elem.name).append("(").append(methodArgs).append(") {").append(System.lineSeparator())
 				.append(methodIndent).append("return ").append(elem.findMethod).append("(By.").append(elem.byType)
 					.append("(\"").append(locator).append("\"));").append(System.lineSeparator())

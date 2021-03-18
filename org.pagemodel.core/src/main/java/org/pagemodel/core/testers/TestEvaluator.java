@@ -18,33 +18,75 @@ package org.pagemodel.core.testers;
 
 import org.pagemodel.core.TestContext;
 import org.pagemodel.core.utils.ThrowingCallable;
+import org.pagemodel.core.utils.ThrowingRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
 import java.util.concurrent.Callable;
-import java.util.function.Function;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
  */
-public abstract class TestEvaluator implements Function<Callable<Boolean>,Boolean> {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+public abstract class TestEvaluator {
+	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+	public final static String TEST_ASSERT = "Assert";
+	public final static String TEST_EXECUTE = "Execute";
+
+	protected String testType;
 	protected String label;
 	protected Callable<String> testMessageRef;
 	protected Callable<String> sourceDisplay;
 
 	public <T> T testCondition(Callable<String> messageRef, Callable<Boolean> test, T returnObj, TestContext testContext) {
-		setTestMessageRef(messageRef);
-		log.info(getTestMessage(getTestMessageRef(), getSourceDisplayRef()));
+		return doTest(TEST_ASSERT, messageRef, test, returnObj, testContext);
+	}
+
+	public <T> T testExecute(Callable<String> messageRef, ThrowingRunnable<? extends Exception> test, T returnObj, TestContext testContext) {
+		return doTest(TEST_EXECUTE, messageRef,
+				() -> {
+					test.run();
+					return true;
+				},
+				returnObj, testContext);
+	}
+
+	protected <T> T doTest(String testType, Callable<String> messageRef, Callable<Boolean> test, T returnObj, TestContext testContext) {
+		setTestMessageRef(testType, messageRef);
+		log(getTestMessage(getTestMessageRef(), getSourceDisplayRef()));
 		try {
-			if(apply(test)){
+			if(callTest(test)){
 				return returnObj;
 			}
 		} catch (Throwable ex) {
 			throw testContext.createException(getTestMessage(getTestMessageRef(), getSourceDisplayRef()), ex);
 		}
 		throw testContext.createException(getTestMessage(getTestMessageRef(), getSourceDisplayRef()));
+	}
+
+	public void log(String message){
+		logger.info(message);
+	}
+
+	abstract protected Boolean callTest(Callable<Boolean> test);
+
+	static class ThrowingTest<T> {
+		private Callable<T> test;
+		private T returnObj;
+
+		public ThrowingTest(Callable<T> test) {
+			this.test = test;
+		}
+
+		public Boolean call() throws Exception {
+			returnObj = test.call();
+			return true;
+		}
+
+		public T getValue(){
+			return returnObj;
+		}
 	}
 
 	public Quiet quiet(){
@@ -58,7 +100,8 @@ public abstract class TestEvaluator implements Function<Callable<Boolean>,Boolea
 		return testMessageRef;
 	}
 
-	protected void setTestMessageRef(Callable<String> testMessageRef) {
+	protected void setTestMessageRef(String testType, Callable<String> testMessageRef) {
+		this.testType = testType;
 		this.testMessageRef = testMessageRef;
 	}
 
@@ -101,7 +144,7 @@ public abstract class TestEvaluator implements Function<Callable<Boolean>,Boolea
 		}
 
 		@Override
-		public Boolean apply(Callable<Boolean> test) {
+		protected Boolean callTest(Callable<Boolean> test) {
 			return ThrowingCallable.unchecked(test).call();
 		}
 	}
@@ -113,17 +156,9 @@ public abstract class TestEvaluator implements Function<Callable<Boolean>,Boolea
 			this.testEvaluator = testEvaluator;
 		}
 
-		public <T> T testCondition(Callable<String> messageRef, Callable<Boolean> test, T returnObj, TestContext testContext) {
-			setTestMessageRef(messageRef);
-			log.debug(getTestMessage(getTestMessageRef(), getSourceDisplayRef()));
-			try {
-				if(apply(test)){
-					return returnObj;
-				}
-			} catch (Throwable ex) {
-				throw testContext.createException(getTestMessage(getTestMessageRef()), ex);
-			}
-			throw testContext.createException(getTestMessage(getTestMessageRef()));
+		@Override
+		public void log(String message) {
+			logger.debug(message);
 		}
 
 		public TestEvaluator getInnerEvaluator(){
@@ -136,8 +171,8 @@ public abstract class TestEvaluator implements Function<Callable<Boolean>,Boolea
 		}
 
 		@Override
-		protected void setTestMessageRef(Callable<String> testMessageRef) {
-			testEvaluator.setTestMessageRef(testMessageRef);
+		protected void setTestMessageRef(String testType, Callable<String> testMessageRef) {
+			testEvaluator.setTestMessageRef(testType, testMessageRef);
 		}
 
 		@Override
@@ -156,8 +191,8 @@ public abstract class TestEvaluator implements Function<Callable<Boolean>,Boolea
 		}
 
 		@Override
-		public Boolean apply(Callable<Boolean> test) {
-			return testEvaluator.apply(test);
+		protected Boolean callTest(Callable<Boolean> test) {
+			return testEvaluator.callTest(test);
 		}
 	}
 
@@ -169,19 +204,25 @@ public abstract class TestEvaluator implements Function<Callable<Boolean>,Boolea
 			this.testEvaluator = testEvaluator;
 		}
 
-		public <T> T testCondition(Callable<String> messageRef, Callable<Boolean> test, T returnObj, TestContext testContext) {
+		@Override
+		public <T> T doTest(String testType, Callable<String> messageRef, Callable<Boolean> test, T returnObj, TestContext testContext) {
 			if(!testStatus){
 				return returnObj;
 			}
-			setTestMessageRef(messageRef);
-			log.debug(getTestMessage(getTestMessageRef(), getSourceDisplayRef()));
+			setTestMessageRef(testType, messageRef);
+			log(getTestMessage(getTestMessageRef(), getSourceDisplayRef()));
 			try {
-				if(apply(test)){
+				if(callTest(test)){
 					return returnObj;
 				}
 			} catch (Throwable ex) { }
 			testStatus = false;
 			return returnObj;
+		}
+
+		@Override
+		public void log(String message) {
+			logger.debug(message);
 		}
 
 		public TestEvaluator getInnerEvaluator(){
@@ -202,8 +243,8 @@ public abstract class TestEvaluator implements Function<Callable<Boolean>,Boolea
 		}
 
 		@Override
-		protected void setTestMessageRef(Callable<String> testMessageRef) {
-			testEvaluator.setTestMessageRef(testMessageRef);
+		protected void setTestMessageRef(String testType, Callable<String> testMessageRef) {
+			testEvaluator.setTestMessageRef(testType, testMessageRef);
 		}
 
 		@Override
@@ -222,8 +263,8 @@ public abstract class TestEvaluator implements Function<Callable<Boolean>,Boolea
 		}
 
 		@Override
-		public Boolean apply(Callable<Boolean> test) {
-			return testEvaluator.apply(test);
+		protected Boolean callTest(Callable<Boolean> test) {
+			return testEvaluator.callTest(test);
 		}
 	}
 
@@ -235,8 +276,9 @@ public abstract class TestEvaluator implements Function<Callable<Boolean>,Boolea
 			this.testEvaluator = testEvaluator;
 		}
 
-		public <T> T testCondition(Callable<String> messageRef, Callable<Boolean> test, T returnObj, TestContext testContext) {
-			setTestMessageRef(messageRef);
+		@Override
+		protected <T> T doTest(String testType, Callable<String> messageRef, Callable<Boolean> test, T returnObj, TestContext testContext) {
+			setTestMessageRef(testType, messageRef);
 			testLog.append(getTestMessage(getTestMessageRef(), getSourceDisplayRef())).append("\n");
 			return returnObj;
 		}
@@ -255,8 +297,8 @@ public abstract class TestEvaluator implements Function<Callable<Boolean>,Boolea
 		}
 
 		@Override
-		protected void setTestMessageRef(Callable<String> testMessageRef) {
-			testEvaluator.setTestMessageRef(testMessageRef);
+		protected void setTestMessageRef(String testType, Callable<String> testMessageRef) {
+			testEvaluator.setTestMessageRef(testType, testMessageRef);
 		}
 
 		@Override
@@ -275,8 +317,8 @@ public abstract class TestEvaluator implements Function<Callable<Boolean>,Boolea
 		}
 
 		@Override
-		public Boolean apply(Callable<Boolean> test) {
-			return testEvaluator.apply(test);
+		protected Boolean callTest(Callable<Boolean> test) {
+			return testEvaluator.callTest(test);
 		}
 	}
 }

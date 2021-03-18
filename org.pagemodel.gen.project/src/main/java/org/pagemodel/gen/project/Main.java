@@ -21,7 +21,7 @@ public class Main {
 		if(argv.length < 2){
 			System.out.println("Error: ProjectShortName and ProjectGroup required arguments.");
 			System.out.println("Usage: java -jar org.pagemodel.gen.project.jar ProjectShortName ProjectGroup [path/to/outputProjectDir/]");
-			System.out.println("Ex: java -jar org.pagemodel.gen.project.jar XYZ com.example.xyz.test projects/XYZTest/");
+			System.out.println("Ex: java -jar org.pagemodel.gen.project.jar XYZ com.example projects/XYZTest/");
 		}
 		String projectName = argv[0];
 		String projectGroup = argv[1];

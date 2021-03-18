@@ -19,6 +19,7 @@ package org.pagemodel.test;
 import org.junit.Test;
 import org.pagemodel.core.utils.Unique;
 import org.pagemodel.tests.myapp.tools.MyAppUser;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
@@ -32,10 +33,14 @@ public class PageTests extends MyAppTestBase {
 				.testSiteStatusDisplay().text().equals("Online")
 				.testSiteVersionDisplay().text().startsWith("0.8.0")
 				.testStatusDateDisplay().text().storeValue("status_date")
+				.testStatusDateDisplay().text().asDate().storeValue("status_date3")
 				.testPage().waitFor().numberOfSeconds(1)
 				.testUpdateStatusButton().click()
 				.testStatusDateDisplay().text().notEquals(context.load("status_date"))
 
+				.testStatusDateDisplay().text().asDate()
+						.transform(date -> (int)TimeUnit.SECONDS.convert(date.getTime() - context.loadDate("status_date3").getTime(), TimeUnit.MILLISECONDS))
+						.lessThan(7)
 				.testStatusDateDisplay().text().asDate().storeValue("status_date2")
 				.testStatusDateDisplay().waitAndRefreshFor().text().asDate().greaterThan(context.load("status_date2"))
 
@@ -88,6 +93,7 @@ public class PageTests extends MyAppTestBase {
 				.closeBrowser();
 
 	}
+
 	@Test
 	public void testClickAndClickWait() {
 		MyAppUser.admin(context).loginToMainPage()

@@ -16,12 +16,15 @@ Radio - radio input
 Image - image element
 Tab - tab style button
 Control - interactive non-button element(s)
+IFrame - iframe element
 
 Component element types:
 Row - a table row or row of elements
 Dialog - a dialog box with child elements
 Modal - a modal dialog box that takes focus from the rest of the page
 Nav - a navigation component with navigation buttons or links
+Section - generic section
+Component - generic component
 
 
 e.g.

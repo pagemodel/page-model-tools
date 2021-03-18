@@ -20,6 +20,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.Base64;
 import java.util.Properties;
 
 /**
@@ -44,8 +47,8 @@ public class SystemProperties {
 			return propVal;
 		}
 		propVal = System.getenv(property);
-		if (propVal != null && !propVal.isEmpty()) {
-			log.info("Found environment variable " + property + "=" + propVal);
+		if (propVal != null && !propVal.isEmpty() && !propVal.equals("null")) {
+			log.info("Found environment variable " + property + "=******** [hash:" + sha256(propVal).substring(0,6) + "]");
 			return propVal;
 		}
 		log.trace("Unable to find " + property + ", using default: " + defaultVal);
@@ -70,5 +73,15 @@ public class SystemProperties {
 			props.load(new FileInputStream(filePath));
 		}catch(Exception ex){ }
 		userDefaults = props;
+	}
+
+	private static String sha256(String text){
+		try {
+			MessageDigest digest = MessageDigest.getInstance("SHA-256");
+			byte[] hash = digest.digest(text.getBytes(StandardCharsets.UTF_8));
+			return Base64.getEncoder().encodeToString(hash);
+		}catch(Exception ex){
+			return null;
+		}
 	}
 }

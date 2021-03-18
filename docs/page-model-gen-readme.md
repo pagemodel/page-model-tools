@@ -83,6 +83,7 @@ Radio - radio input
 Image - image element
 Tab - tab style button
 Control - interactive non-button element(s)
+IFrame - iframe element
 
 Component element types:
 Row - a table row or row of elements

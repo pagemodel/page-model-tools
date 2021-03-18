@@ -1,3 +1,19 @@
 {
-
+    "chrome-headless": {
+        "capabilities": {
+            "browserName":"chrome",
+            "goog:chromeOptions": {
+                "args": [
+                    "--ignore-certificate-errors",
+                    "--disable-dev-shm-usage",
+                    "--silent",
+                    "--log-level=3",
+                    "--headless",
+                    "--disable-gpu",
+                    "--window-size=1920,1080"
+                ],
+                "extensions": []
+            }
+        }
+    }
 }

@@ -19,6 +19,7 @@ package org.pagemodel.web;
 import org.openqa.selenium.*;
 
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
@@ -26,11 +27,17 @@ import java.util.List;
 public class LocatedWebElement implements WebElement {
 	protected WebElement element;
 	protected WebElement parent;
-	protected By elementBy;
+	protected String locator;
 
 	public LocatedWebElement(WebElement element, By by, WebElement parent) {
 		this.element = element;
-		this.elementBy = by;
+		this.locator = by.toString();
+		this.parent = parent;
+	}
+
+	public LocatedWebElement(WebElement element, String locator, WebElement parent) {
+		this.element = element;
+		this.locator = locator;
 		this.parent = parent;
 	}
 
@@ -126,8 +133,8 @@ public class LocatedWebElement implements WebElement {
 		return getElement().getScreenshotAs(target);
 	}
 
-	public By getElementLocator() {
-		return elementBy;
+	public String getElementLocator() {
+		return locator;
 	}
 
 	public WebElement getLocatorParent() {
@@ -143,7 +150,7 @@ public class LocatedWebElement implements WebElement {
 	}
 
 	public boolean hasLocator() {
-		return elementBy != null;
+		return locator != null;
 	}
 
 	public String getElementDisplay() {
@@ -152,12 +159,12 @@ public class LocatedWebElement implements WebElement {
 
 	public static LocatedWebElement wrap(WebElement el) {
 		if (el == null) {
-			return new LocatedWebElement(null, null, null);
+			return new LocatedWebElement(null, (String)null, null);
 		}
 		if (LocatedWebElement.class.isAssignableFrom(el.getClass())) {
 			return (LocatedWebElement) el;
 		} else {
-			return new LocatedWebElement(el, null, null);
+			return new LocatedWebElement(el, (String)null, null);
 		}
 	}
 
@@ -177,14 +184,14 @@ public class LocatedWebElement implements WebElement {
 				disp.append("found(");
 			}
 			boolean separator = false;
-			separator = addElementDisplay("tag", lwe.getElement().getTagName(), disp, separator);
+			separator = addElementDisplay("tag", lwe.getElement().getTagName(), disp, separator, str -> str.toLowerCase());
 			separator = addElementDisplay("id", lwe.getElement().getAttribute("id"), disp, separator);
 			separator = addElementDisplay("name", lwe.getElement().getAttribute("name"), disp, separator);
 			if (!label.equals("parent")) {
 				separator = addElementDisplay("value", lwe.getElement().getAttribute("value"), disp, separator);
 				separator = addElementDisplay("class", lwe.getElement().getAttribute("class"), disp, separator);
 				separator = addElementDisplay("href", lwe.getElement().getAttribute("href"), disp, separator);
-				addElementDisplay("text", lwe.getElement().getText(), disp, separator);
+				addElementDisplay("text", lwe.getElement().getText(), disp, separator, str -> str.trim().replaceAll("\\s+", " "));
 			}
 			disp.append(")");
 		} else {
@@ -198,6 +205,13 @@ public class LocatedWebElement implements WebElement {
 	}
 
 	private static boolean addElementDisplay(String label, String value, StringBuilder disp, boolean seperator) {
+		return addElementDisplay(label, value, disp, seperator, null);
+	}
+
+	private static boolean addElementDisplay(String label, String value, StringBuilder disp, boolean seperator, Function<String,String> transform) {
+		if(value != null && transform != null){
+			value = transform.apply(value);
+		}
 		if(value != null && !value.isEmpty()) {
 			if(seperator){
 				disp.append(", ");

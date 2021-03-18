@@ -63,8 +63,11 @@ public class ProfileMap<T> {
 		}
 		try {
 			type.getMethod("registerDefaultProfiles").invoke(type);
+		}catch(NoSuchMethodException ex){
+			profileDefaults.put(type, new HashMap<>());
 		}catch(Exception ex){
 			profileDefaults.put(type, new HashMap<>());
+			log.info("Exception registering default profiles for type [" + type.getName() + "]", ex);
 		}
 	}
 

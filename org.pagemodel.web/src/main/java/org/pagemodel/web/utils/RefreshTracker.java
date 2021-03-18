@@ -16,32 +16,25 @@
 
 package org.pagemodel.web.utils;
 
-import org.pagemodel.web.WebTestContext;
-import org.pagemodel.core.utils.Unique;
-import org.pagemodel.web.PageUtils;
-import org.pagemodel.web.testers.ClickAction;
-import org.pagemodel.web.PageModel;
-import org.pagemodel.web.testers.WebElementTester;
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
+import org.pagemodel.core.utils.Unique;
+import org.pagemodel.web.PageModel;
+import org.pagemodel.web.PageUtils;
+import org.pagemodel.web.WebTestContext;
+import org.pagemodel.web.testers.ClickAction;
+import org.pagemodel.web.testers.WebElementTester;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class RefreshTracker extends PageModel.DefaultPageModel<RefreshTracker> {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private String id;
 
 	public static <T extends PageModel<? super T>> T refreshPage(T page) {
-		log.info("Refreshing page [" + page.getContext().getDriver().getTitle() + "] after wait.");
+		page.getEvaluator().log("Refreshing page [" + page.getContext().getDriver().getTitle() + "] after wait.");
 		return new RefreshTracker(page.getContext())
 				.addRefreshTrackingElement()
-				.testRefreshTrackingElement().waitFor().exists()
 				.doAction(page::onPageLeave)
 				.doAction(() -> page.getContext().getDriver().navigate().refresh())
 				.testRefreshTrackingElement().waitFor().notExists()
@@ -68,11 +61,11 @@ public class RefreshTracker extends PageModel.DefaultPageModel<RefreshTracker> {
 
 	protected RefreshTracker addRefreshTrackingElement() {
 		id = Unique.string("refresh-%s");
-		log.info("Inserting <div id='" + id + "'/> to verify page refresh.");
-		JavascriptExecutor jse = (JavascriptExecutor) getContext().getDriver();
-		jse.executeScript("var iDiv = document.createElement('div');" +
-				"iDiv.id = '" + id + "';" +
-				"document.getElementsByTagName('body')[0].appendChild(iDiv);");
-		return this;
+		return testPage().testJavaScriptWithReturn(
+				"var iDiv = document.createElement('div');"
+				+ "iDiv.id = '" + id + "';"
+				+ "document.getElementsByTagName('body')[0].appendChild(iDiv);"
+				+ "return iDiv;", 5)
+				.testReturnElement().exists();
 	}
 }

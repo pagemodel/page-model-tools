@@ -1,22 +1,40 @@
 # Page Model Tools
 
-Page Model Tools is a set of tools for developing page object models for fluent testing.
+What is Page Model Tools?
 
-## Fluent tests:
-Tests are written as fluent method chains:
+#### Page Model language for .pagemodel files:
+Quickly build maintainable and reusable Page Object Models to describe your web application.
+* Pagemodel language to easily define the pages of your website.
+* Pagemodel generator to generate page object model java classes from your pagemodel files.
 
-![test code](docs/images/test_code.png)
+[.pagemodel examples](docs/page-model-example.md)  | [.pagemodel syntax](docs/page-model-gen-readme.md)
 
-## Simple page models:
-Page Models are defined in simple .pagemodel files declaring page elements and reusable components.  Syntax highlighers for the .pagemodel file format are included.
+#### Page Model intuitive testing api:
+Writing tests is easy and easy to learn. Page models provide a complete chaining API. Testing tools and methods are easy to discover as auto-complete guides you through writing tests.
 
-Java page model classes are generated from .pagemodel files automatically with a gradle plugin.
+* Consistent testing api across all elements of all pages of all applications.
+* Fluent api for your website uses auto-complete to guide you through testing.
 
-[.pagemodel examples](docs/page-model-example.md) [.pagemodel syntax](docs/page-model-gen-readme.md)
+[Page and Element test methods](docs/test-methods.md)
 
-###### HomePage.pagemodel:
+#### Project generator:
+Use the project generator to create a Java Gradle project for testing your application.  Create a project and get started right away.  Your project will be setup following best practices for configuring testing environments, loading test values during test setup, managing browsers to support parallel testing.
+* Create a new testing project with a single command.
+* Creates a consistent testing project structure across different applications.
+* Publish page models to maven and re-use in other testing projects.
 
-![home page pagemodel](docs/images/home_page_pagemodel.png)
+[Getting started](#getting-started)
+
+#### Test organization:
+Test against any local or remote browsers.  Easy to configure different browser environments with no hassle.  Run tests using a headless browser in docker for easy pipeline integration.
+* Target different test data sets and test environments.
+* Target different local or remote browsers with specific capabilities.
+* Web drivers are managed to support running tests in parallel.
+* Docker images to easily run tests in a build pipeline.
+
+#### Stable testing for your project:
+Development of the Page Model Tools project happens across the pagemodel testing engine and the pagemodel java generator leaving the pagemodel language and testing api stable.
+Updating to newer versions of Page Model Tools do not require changes to your pagemodels or tests, update the pagemodel version and your page models will be regenerated and updated to use the new version.
 
 ## Getting Started:
 
@@ -27,7 +45,7 @@ Until org.pagemodel is published to a maven repository, it must be built from so
 2. build org.pagemodel.gen.gradle and publish to maven local
 3. build org.pagemodel projects and publish to maven local
 ###### Prerquisites:
-* Java 8 JDK
+* Java 8 JDK with JAVA_HOME set
 * Chrome browser
 * Docker (optional)
 
@@ -59,15 +77,15 @@ cd ..
 ###### Linux and MacOS:
 ```
 cp page-model-tools/org.pagemodel.gen.project/build/libs/org.pagemodel.gen.project-0.8.0-SNAPSHOT.jar .
-java -jar org.pagemodel.gen.project-0.8.0-SNAPSHOT.jar XYZ com.example.xyz.test ./XYZTests/
+java -jar org.pagemodel.gen.project-0.8.0-SNAPSHOT.jar XYZ com.example ./XYZTests/
 cd XYZTests
 ./gradlew --rerun-tasks test --console=plain
 ```
 
 ###### Windows:
 ```
-cp page-model-tools\org.pagemodel.gen.project\build\libs\org.pagemodel.gen.project-0.8.0-SNAPSHOT.jar .
-java -jar org.pagemodel.gen.project-0.8.0-SNAPSHOT.jar XYZ com.example.xyz.test XYZTests
+copy page-model-tools\org.pagemodel.gen.project\build\libs\org.pagemodel.gen.project-0.8.0-SNAPSHOT.jar .
+java -jar org.pagemodel.gen.project-0.8.0-SNAPSHOT.jar XYZ com.example XYZTests
 cd XYZTests
 gradlew.bat --rerun-tasks test --console=plain
 ```
@@ -129,20 +147,39 @@ gradlew.bat --rerun-tasks XYZPageModels:build
 gradlew.bat --rerun-tasks XYZTestSanity:test --console=plain
 ```
 --------------------------------------------------------------------------------
-## Testing beyond Selenium:
-Page Model tools adds testing tools for **Email**, **SSH**, and **Accessibility** testing for comprehensive end-to-end testing.
+## Mail, SSH, and WCAG Accessibility testing:
+Page Model tools adds testing tools for **Email**, **SSH**, and **Accessibility** testing for comprehensive end-to-end testing.  These tools are needed for testing many workflows, but missing in other web testing toolsets.
 
 Fetch emails for account registration code.  Fetch automated emails to test the content and styling.  Send emails to test auto-reply emails or other email workflows.
 
 Use `.testMail()` or `Mail.testMail(context)` to begin mail testing.
 
-Many things needed to test on a server are not available through a web UI.  SSH into servers to check logs or run commands during tests.
+Many things needed to test on a server are not available through a web UI.  SSH into servers to check logs, or run commands during tests e.g adjust the server clock for timeout testing.
 
 Use `.testSSH()` or `SSH.testSSH(context)` to begin SSH testing.
 
 Run the accessibility scanner to test for WCAG violations.
 
 Use `.testPage().testAccessibility()` to run an accessibility scan.
+
+
+## Fluent tests:
+Tests are written as fluent method chains:
+
+[Page and Element test methods](docs/test-methods.md)
+
+![test code](docs/images/test_code.png)
+
+## Simple page models:
+Page Models are defined in simple .pagemodel files declaring page elements and reusable components.  Syntax highlighers for the .pagemodel file format are included.
+
+Java page model classes are generated from .pagemodel files automatically with a gradle plugin.
+
+[.pagemodel examples](docs/page-model-example.md) [.pagemodel syntax](docs/page-model-gen-readme.md)
+
+###### HomePage.pagemodel:
+
+![home page pagemodel](docs/images/home_page_pagemodel.png)
 
 ## Page Model Tools classes:
 

@@ -16,28 +16,26 @@
 
 package org.pagemodel.web.testers;
 
-import org.pagemodel.web.WebTestContext;
-import org.pagemodel.core.testers.TestEvaluator;
-import org.pagemodel.web.PageModel;
-import org.pagemodel.web.utils.PageException;
-import org.pagemodel.web.PageUtils;
-import org.pagemodel.web.utils.RefreshTracker;
-import org.pagemodel.web.utils.Screenshot;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Point;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.pagemodel.core.testers.TestEvaluator;
+import org.pagemodel.web.PageModel;
+import org.pagemodel.web.PageUtils;
+import org.pagemodel.web.WebTestContext;
+import org.pagemodel.web.utils.RefreshTracker;
+import org.pagemodel.web.utils.Screenshot;
 
-import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P> {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	protected static final int DEFAULT_SCRIPT_TIMEOUT_SECONDS = 20;
 
 	public PageTester(P page, WebTestContext testContext, TestEvaluator testEvaluator) {
 		super(page, testContext, testEvaluator);
@@ -59,6 +57,37 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 		return new WebElementTester<>(ClickAction.make(() -> testContext.getDriver().findElement(By.tagName("body")), page));
 	}
 
+	public P testJavaScript(String javascript, int timeoutSeconds, Object...args) {
+		executeJavaScript(javascript, timeoutSeconds, false, args);
+		return page;
+	}
+
+	public JavaScriptReturnTester<P,P> testJavaScriptWithReturn(String javascript, int timeoutSeconds, Object...args) {
+		return executeJavaScript(javascript, timeoutSeconds, false, args);
+	}
+
+	public P testJavaScriptAsync(String javascript, int timeoutSeconds, Object...args) {
+		executeJavaScript(javascript, timeoutSeconds, true, args);
+		return page;
+	}
+
+	public JavaScriptReturnTester<P,P> testJavaScriptAsyncWithReturn(String javascript, int timeoutSeconds, Object...args) {
+		return executeJavaScript(javascript, timeoutSeconds, true, args);
+	}
+
+	private JavaScriptReturnTester<P,P> executeJavaScript(String javascript, int timeoutSeconds, boolean async, Object...args) {
+		Object[] objRef = new Object[1];
+		return getEvaluator().testExecute(
+				() -> "javaScript [" + javascript + "] on page:[" + page.getClass().getSimpleName() + "]",
+				() -> {
+					testContext.getDriver().manage().timeouts().setScriptTimeout(timeoutSeconds, TimeUnit.SECONDS);
+					JavascriptExecutor jse = (JavascriptExecutor) testContext.getDriver();
+					objRef[0] = async ? jse.executeAsyncScript(javascript, args) : jse.executeScript(javascript, args);
+				},
+				new JavaScriptReturnTester<>(() -> objRef[0], page, javascript, page, getEvaluator()),
+				page.getContext());
+	}
+
 	public PageWait<P> waitFor() {
 		return new PageWait<>(page, testContext, new WebTestEvaluator.Wait(testContext, WebElementTester.WebElementWait.DEFAULT_WAIT_SEC));
 	}
@@ -68,51 +97,73 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 	}
 
 	public P setWindowSize(int width, int height) {
-		log.info("Set window size to dimension (" + width + " X " + height + ") on page [" + page.getClass().getSimpleName() + "]");
-		testContext.getDriver().manage().window().setSize(new Dimension(width, height));
-		return page;
+		return getEvaluator().testExecute(
+				() -> "set window size to dimension (" + width + " X " + height + ") on page [" + page.getClass().getSimpleName() + "]",
+				() -> testContext.getDriver().manage().window().setSize(new Dimension(width, height)),
+				page, page.getContext());
 	}
 
 	public P maximizeWindow() {
-		return getEvaluator().testCondition(() -> "Maximize window on page [" + page.getClass().getSimpleName() + "]", () -> {
-			testContext.getDriver().manage().window().maximize();
-			return true;
-		}, page, testContext);
+		return getEvaluator().testExecute(
+				() -> "maximize window on page [" + page.getClass().getSimpleName() + "]",
+				() -> testContext.getDriver().manage().window().maximize(),
+				page, testContext);
 	}
 
 	public P fullscreenWindow() {
-		return getEvaluator().testCondition(() -> "Fullscreen window on page [" + page.getClass().getSimpleName() + "]", () -> {
-			testContext.getDriver().manage().window().fullscreen();
-			return true;
-		}, page, testContext);
+		return getEvaluator().testExecute(
+				() -> "fullscreen window on page [" + page.getClass().getSimpleName() + "]",
+				() -> testContext.getDriver().manage().window().fullscreen(),
+				page, testContext);
 	}
 
 	public P setWindowPosition(int x, int y) {
-		log.info("Set window position to point (x:" + x + " ,y:" + y + ") on page [" + page.getClass().getSimpleName() + "]");
-		testContext.getDriver().manage().window().setPosition(new Point(x, y));
-		return page;
+		return getEvaluator().testExecute(
+				() -> "set window position to point (x:" + x + " ,y:" + y + ") on page [" + page.getClass().getSimpleName() + "]",
+				() -> testContext.getDriver().manage().window().setPosition(new Point(x, y)),
+				page, testContext);
 	}
 
-	public P moveWindowPosition(int offsetX, int offsetY) {
-		log.info("Moving window position by offset (x:" + offsetX + " ,y:" + offsetY + ") on page [" + page.getClass().getSimpleName() + "]");
-		Point pos = testContext.getDriver().manage().window().getPosition();
-		testContext.getDriver().manage().window().setPosition(new Point(pos.x + offsetX, pos.y + offsetY));
-		return page;
+	public P moveWindowPositionByOffset(int offsetX, int offsetY) {
+		return getEvaluator().testExecute(
+				() -> "move window position by offset (x:" + offsetX + " ,y:" + offsetY + ") on page [" + page.getClass().getSimpleName() + "]",
+				() -> {
+					Point pos = testContext.getDriver().manage().window().getPosition();
+					testContext.getDriver().manage().window().setPosition(new Point(pos.x + offsetX, pos.y + offsetY));
+				},
+				page, testContext);
 	}
 
 	public P takeScreenshot(String filePrefix) {
-		log.info("Taking screenshot of page [" + page.getClass().getSimpleName() + "], title: [" + testContext.getDriver().getTitle() + "], url: [" + testContext.getDriver().getCurrentUrl() + "]");
-		Screenshot.takeScreenshot(testContext, filePrefix + "_" + page.getClass().getSimpleName());
-		return page;
+		return getEvaluator().testExecute(
+				() ->  "take screenshot of page [" + page.getClass().getSimpleName() + "], title: [" + testContext.getDriver().getTitle() + "], url: [" + testContext.getDriver().getCurrentUrl() + "]",
+				() -> Screenshot.takeScreenshot(testContext, filePrefix + "_" + page.getClass().getSimpleName()),
+				page, page.getContext());
 	}
 
 	public P refreshPage() {
 		return RefreshTracker.refreshPage(page);
 	}
 
+	public <T extends PageModel<? super T>> T switchToDefaultContent(Class<T> clazz) {
+		return getEvaluator().testExecute(
+				() ->  "switch to default content on page [" + page.getClass().getSimpleName() + "]",
+				() -> page.getContext().getDriver().switchTo().defaultContent(),
+				page.testPage().testPageModel(clazz),
+				page.getContext());
+	}
+
+	public <T extends PageModel<? super T>> T switchToParentFrame(Class<T> clazz) {
+		return getEvaluator().testExecute(
+				() ->  "switch to parent frame on page [" + page.getClass().getSimpleName() + "]",
+				() -> page.getContext().getDriver().switchTo().parentFrame(),
+				page.testPage().testPageModel(clazz),
+				page.getContext());
+	}
+
 	public <T extends PageModel<? super T>> T testPageModel(Class<T> clazz) {
 		try {
-			log.info("Testing page model [" + clazz.getSimpleName() + "] from page [" + page.getClass().getSimpleName() + "]");
+			getEvaluator().log("test page model [" + clazz.getSimpleName() + "] from page [" + page.getClass().getSimpleName() + "]");
 			for(Constructor<?> c : clazz.getConstructors()){
 				if(c.getParameterTypes().length == 1 && c.getParameterTypes()[0].isAssignableFrom(testContext.getClass())){
 					return (T)c.newInstance(testContext);
@@ -125,14 +176,10 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 	}
 
 	public <T extends PageModel<? super T>> T navigateTo(String url, Class<T> clazz) {
-		try {
-			log.info(getEvaluator().getActionMessage(() -> "navigate to: [" + clazz.getName() + "], url [" + url + "]"));
-			testContext.getDriver().navigate().to(url);
-			return PageUtils.waitForNavigateToPage(clazz, testContext);
-		} catch (PageException ex) {
-			throw ex;
-		} catch (Exception ex) {
-			throw testContext.createException("navigate to: [" + clazz.getName() + "], url [" + url + "]", ex);
-		}
+		return getEvaluator().testExecute(
+				() ->  "navigate to: [" + clazz.getName() + "], url [" + url + "]",
+				() -> testContext.getDriver().navigate().to(url),
+				PageUtils.waitForNavigateToPage(clazz, testContext),
+				page.getContext());
 	}
 }

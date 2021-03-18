@@ -38,6 +38,10 @@ public class SSHConnectionTester<R> {
 		sshTester = new SSHTester<>(returnObj, testContext);
 	}
 
+	public SSHTestContext getContext(){
+		return sshTester.testContext;
+	}
+
 	public SSHTester<R> connect() {
 		return sshTester.connect();
 	}

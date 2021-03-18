@@ -86,8 +86,8 @@ public class ExtendedPageTester<P extends PageModel<? super P>> extends PageTest
 	}
 
 	@Override
-	public P moveWindowPosition(int offsetX, int offsetY) {
-		return super.moveWindowPosition(offsetX, offsetY);
+	public P moveWindowPositionByOffset(int offsetX, int offsetY) {
+		return super.moveWindowPositionByOffset(offsetX, offsetY);
 	}
 
 	@Override

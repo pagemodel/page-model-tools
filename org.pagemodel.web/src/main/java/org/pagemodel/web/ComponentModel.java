@@ -43,7 +43,7 @@ public abstract class ComponentModel<R, N extends PageModel<? super N>, C extend
 		super(clickAction);
 	}
 
-	protected WebElement findComponentElement(By by) {
+	protected LocatedWebElement findComponentElement(By by) {
 		WebElement element = callRef();
 		try {
 			WebElement el = element.findElement(by);
@@ -53,7 +53,7 @@ public abstract class ComponentModel<R, N extends PageModel<? super N>, C extend
 		}
 	}
 
-	protected List<WebElement> findComponentElements(By by) {
+	protected <T extends LocatedWebElement> List<? super T> findComponentElements(By by) {
 		WebElement element = callRef();
 		try {
 			return Arrays.asList(element.findElements(by).stream().map(el -> new LocatedWebElement(el, by, element)).toArray(WebElement[]::new));
@@ -62,7 +62,7 @@ public abstract class ComponentModel<R, N extends PageModel<? super N>, C extend
 		}
 	}
 
-	protected WebElement findPageElement(By by) {
+	protected LocatedWebElement findPageElement(By by) {
 		WebElement element = callRef();
 		try {
 			WebElement el = page.getContext().getDriver().findElement(by);
@@ -72,7 +72,7 @@ public abstract class ComponentModel<R, N extends PageModel<? super N>, C extend
 		}
 	}
 
-	protected List<WebElement> findPageElements(By by) {
+	protected <T extends LocatedWebElement> List<? super T> findPageElements(By by) {
 		WebElement element = callRef();
 		try {
 			return Arrays.asList(page.getContext().getDriver().findElements(by).stream().map(el -> new LocatedWebElement(el, by, element)).toArray(WebElement[]::new));

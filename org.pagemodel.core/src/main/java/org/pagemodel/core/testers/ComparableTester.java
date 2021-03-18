@@ -92,7 +92,7 @@ public class ComparableTester<C extends Comparable<C>, R> {
 		return new StringTester<>(() -> callRef().toString(), returnObj, testContext, getEvaluator());
 	}
 
-	public ComparableTester<C, R> transform(ThrowingFunction<C,C,?> transform) {
+	public <T extends Comparable<T>> ComparableTester<T, R> transform(ThrowingFunction<C,T,?> transform) {
 		return new ComparableTester<>(() -> ThrowingFunction.unchecked(transform).apply(callRef()), returnObj, testContext, getEvaluator());
 	}
 

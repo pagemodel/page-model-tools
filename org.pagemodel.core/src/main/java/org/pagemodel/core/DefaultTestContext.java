@@ -90,6 +90,20 @@ public class DefaultTestContext implements TestContext {
 	}
 
 	@Override
+	public DefaultTestContext removeStored(String key) {
+		return getEvaluator().testCondition(() -> "Removing: key:[" + key + "], value:[" + storedObjects.get(key) + "]", () -> {
+			if (key == null) {
+				throw new NullPointerException("Attempting to remove value with null key");
+			}
+			if (!storedObjects.containsKey(key)) {
+				throw new IllegalArgumentException("No value stored with key [" + key + "]");
+			}
+			storedObjects.remove(key);
+			return true;
+		}, this, this);
+	}
+
+	@Override
 	public <E extends RuntimeException> E createException(String message, Throwable cause) {
 		return (E)new RuntimeException(message, cause);
 	}

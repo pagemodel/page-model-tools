@@ -46,6 +46,8 @@ public interface TestContext {
 		return load(key);
 	}
 
+	TestContext removeStored(String key);
+
 	<E extends RuntimeException> E createException(String message, Throwable cause);
 
 	default <E extends RuntimeException> E createException(String message) {

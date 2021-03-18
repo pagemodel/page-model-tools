@@ -29,6 +29,7 @@ enum ElementType {
 	Image,
 	Tab,
 	Control,
+	IFrame("IFrameTester"),
 	Row,
 	Dialog,
 	Modal,

@@ -1,0 +1,25 @@
+TestChains
+
+Tester<T, R>:
+  Callable<T> valueRefrence: gets the object to be tested
+  R returnObject: object to return after testing
+  TestEvaluator: performs tests on the value, handles logging, creates exceptions
+  
+Primitive Testers:
+  StringTester
+  ComparableTester (Integer, Double, Date)
+  ListTester
+
+Complex Tester:
+  Wraps a complex object
+  Returns a primitive tester for any methods returning a primitive type
+  Returns a complex tester for any methods returning a complex type
+  Return the returnObject or itself after performing tests
+  Return a builder, tester, itself, or the returnObject after performing object actions
+
+
+Copyright 2021 Matthew Stevenson <pagemodel.org>
+This work is licensed under a Creative Commons Attribution 4.0 International License
+http://creativecommons.org/licenses/by/4.0/
+
+@author: Matt Stevenson <matt@pagemodel.org>

@@ -38,8 +38,7 @@ public class ExtendedTestContext extends DefaultWebTestContext implements SSHTes
 		if(browser != null && !browser.isEmpty()){
 			browser = DEFAULT_BROWSER;
 		}
-		WebDriverConfig webDriverConfig = new WebDriverConfig();
-		webDriverConfig.setLocalBrowserName(browser);
+		WebDriverConfig webDriverConfig = WebDriverConfig.local(browser);
 		this.webDriverConfig = webDriverConfig;
 	}
 
@@ -47,8 +46,7 @@ public class ExtendedTestContext extends DefaultWebTestContext implements SSHTes
 		super(driver);
 		this.sshAuthenticator = sshAuthenticator;
 		if(webDriverConfig == null){
-			webDriverConfig = new WebDriverConfig();
-			webDriverConfig.setLocalBrowserName(DEFAULT_BROWSER);
+			webDriverConfig = WebDriverConfig.local(DEFAULT_BROWSER);
 		}
 		this.webDriverConfig = webDriverConfig;
 	}

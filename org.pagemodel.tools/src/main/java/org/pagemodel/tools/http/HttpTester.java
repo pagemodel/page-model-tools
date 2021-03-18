@@ -31,7 +31,7 @@ public class HttpTester<R> {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	protected HttpResponseTester<R> responseTester;
 
-	private final R returnObj;
+	protected R returnObj;
 	private final TestContext testContext;
 	private HttpsURLConnection con;
 

@@ -18,16 +18,13 @@ package org.pagemodel.web.testers;
 
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.pagemodel.web.WebTestContext;
 import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.core.utils.ThrowingCallable;
 import org.pagemodel.web.PageModel;
 import org.pagemodel.web.PageUtils;
+import org.pagemodel.web.WebTestContext;
 import org.pagemodel.web.utils.RefreshTracker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.lang.invoke.MethodHandles;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 
@@ -59,7 +56,7 @@ public class WebTestEvaluator {
 		}
 
 		@Override
-		public Boolean apply(Callable<Boolean> test) {
+		protected Boolean callTest(Callable<Boolean> test) {
 			FluentWait wait = new WebDriverWait(testContext.getDriver(), waitSec)
 					.ignoring(Throwable.class).ignoring(Exception.class);
 			wait.until(driver -> ThrowingCallable.unchecked(test).call());
@@ -68,7 +65,6 @@ public class WebTestEvaluator {
 	}
 
 	public static class WaitAndRefresh<R> extends Wait {
-		private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 		protected Function<R, R> pageSetupFunction;
 		protected R returnObj;
 		protected PageModel page;
@@ -99,7 +95,7 @@ public class WebTestEvaluator {
 		}
 
 		@Override
-		public Boolean apply(Callable<Boolean> test) {
+		protected Boolean callTest(Callable<Boolean> test) {
 			if (pageSetupFunction != null) {
 				returnObj = pageSetupFunction.apply(returnObj);
 			}
@@ -119,7 +115,7 @@ public class WebTestEvaluator {
 					if (pageSetupFunction != null) {
 						returnObj = pageSetupFunction.apply(returnObj);
 					}
-					log.info(getTestMessage(getTestMessageRef(), getSourceDisplayRef()));
+					log(getTestMessage(getTestMessageRef(), getSourceDisplayRef()));
 					FluentWait wait = new WebDriverWait(testContext.getDriver(), waitStep)
 							.ignoring(Throwable.class).ignoring(Exception.class);
 					wait.until(driver -> ThrowingCallable.unchecked(test).call());

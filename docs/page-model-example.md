@@ -305,6 +305,8 @@ NotificationDisplay @@NotificationDialog xpath "//div[@id='notifications']/div[i
 `i%notificationNum%` - The xpath string contains `i%notificationNum%`, declaring an `integer` variable named `notificationNumber` needed for locating a dynamic element.  This would define `testNotificationDisplay(int notificationNumber)` using selenium `driver.findElement(By.xpath("//div[@id='notifications']/div[" + notificationNumber + "]"))`.
 
 ## Further Reading
+Documentation for [Page and Element test methods](test-methods.md)
+
 Read more about the full [.pagemodel file format syntax](page-model-gen-readme.md#file-format).
 
 See the [selenium usage map](selenium-usage-map.md) for details on the selenium functionality exposed by Page Model Tools classes.

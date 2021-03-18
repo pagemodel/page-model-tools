@@ -16,25 +16,32 @@
 
 package org.pagemodel.tools;
 
+import com.google.gson.Gson;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.openqa.selenium.By;
-import org.openqa.selenium.Platform;
+import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.ie.InternetExplorerOptions;
-import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.opera.OperaDriver;
+import org.openqa.selenium.remote.CapabilityType;
+import org.openqa.selenium.remote.LocalFileDetector;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.safari.SafariDriver;
+import org.openqa.selenium.safari.SafariOptions;
 import org.pagemodel.web.DefaultWebTestContext;
 import org.pagemodel.web.utils.PageException;
 import org.slf4j.Logger;
@@ -44,6 +51,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -59,8 +67,8 @@ public abstract class WebDriverFactory {
 	public static final int DEFAULT_SCRIPT_TIMEOUT_SECONDS = 20;
 	public final static String DOWNLOAD_DIRECTORY;
 
-	public final static BrowserOptions browserOptions = new BrowserOptions();
-	private final static Map<String, Function<WebDriverConfig,WebDriver>> browserFactoryMap = new HashMap<>();
+//	public final static BrowserOptions browserOptions = new BrowserOptions();
+	private final static Map<String, Function<MutableCapabilities,WebDriver>> browserFactoryMap = new HashMap<>();
 
 	static {
 		String home = System.getProperty("user.home");
@@ -72,6 +80,9 @@ public abstract class WebDriverFactory {
 		browserFactoryMap.put("firefox", WebDriverFactory::openFirefox);
 		browserFactoryMap.put("ie", WebDriverFactory::openInternetExplorer);
 		browserFactoryMap.put("edge", WebDriverFactory::openEdge);
+		browserFactoryMap.put("safari", WebDriverFactory::openSafari);
+		browserFactoryMap.put("opera", WebDriverFactory::openOpera);
+		browserFactoryMap.put("operablink", WebDriverFactory::openOpera);
 		browserFactoryMap.put("htmlunit", WebDriverFactory::openHtmlUnit);
 	}
 
@@ -81,30 +92,19 @@ public abstract class WebDriverFactory {
 	 */
 	@Deprecated()
 	public static WebDriver open(String browser, String url) {
-		WebDriverConfig webDriverConfig = new WebDriverConfig();
-		webDriverConfig.setLocalBrowserName(browser);
+		WebDriverConfig webDriverConfig = WebDriverConfig.local(browser);
 		return create(webDriverConfig, url);
 	}
 
 	public static WebDriver create(WebDriverConfig config, String url){
 		WebDriver driver;
-		String browser;
 		if (config.getRemoteUrl() != null) {
-			DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
-			desiredCapabilities.setPlatform(Platform.fromString(config.getPlatForm()));
-			desiredCapabilities.setVersion(config.getVersion());
-			desiredCapabilities.setBrowserName(config.getBrowserName());
+			log.info("Opening url [" + url + "] with capablities: " + new Gson().toJson(config.getCapabilities().toJson()) + ", remote url: [" + config.getRemoteUrl() + "]");
+			driver = getRemoteWebDriver(config.getRemoteUrl(), config.getCapabilities());
 
-			for (Map.Entry<String, String> entry : config.getBrowserOptions().entrySet()) {
-				desiredCapabilities.setCapability(entry.getKey(), entry.getValue());
-			}
-			browser = config.getBrowserName();
-			log.info("Opening url [" + url + "] in browser " + browser + " on " + config.getPlatForm());
-			driver = getRemoteWebDriver(browser, config.getRemoteUrl(), desiredCapabilities);
 		}else{
-			browser = config.getLocalBrowserName();
-			log.info("Opening url [" + url + "] in browser [" + browser + "]");
-			driver = getWebDriver(config);
+			log.info("Opening url [" + url + "] with capablities: " + new Gson().toJson(config.getCapabilities().toJson()));
+			driver = getWebDriver(config.getCapabilities());
 		}
 		try {
 			driver.get(url);
@@ -112,7 +112,7 @@ public abstract class WebDriverFactory {
 		} catch (Throwable e){
 			close(driver);
 			throw new PageException(new DefaultWebTestContext(driver),
-					"Error: Failed opening url ["+ url + "] in browser " + browser);
+					"Error: Failed opening url ["+ url + "] with capablities: " + new Gson().toJson(config));
 		}
 		return driver;
 	}
@@ -135,14 +135,14 @@ public abstract class WebDriverFactory {
 		}
 	}
 
-	public static WebDriver getWebDriver(WebDriverConfig webDriverConfig) {
-		String browser = webDriverConfig.getLocalBrowserName();
+	public static WebDriver getWebDriver(MutableCapabilities capabilities) {
+		String browser = capabilities.getBrowserName();
 		if(!browserFactoryMap.containsKey(browser)){
 			throw new RuntimeException("Error: Unknown browser type [" + browser + "].  "
 					+ "Available browser types are: " + Arrays.toString(browserFactoryMap.keySet().toArray(new String[0])));
 		}
 		try {
-			WebDriver driver = browserFactoryMap.get(browser).apply(webDriverConfig);
+			WebDriver driver = browserFactoryMap.get(browser).apply(capabilities);
 			driver.manage().timeouts().pageLoadTimeout(DEFAULT_PAGE_LOAD_TIMEOUT_SECONDS, TimeUnit.SECONDS);
 			driver.manage().timeouts().implicitlyWait(DEFAULT_IMPLICITLY_WAIT_SECONDS, TimeUnit.SECONDS);
 			driver.manage().timeouts().setScriptTimeout(DEFAULT_SCRIPT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
@@ -152,91 +152,130 @@ public abstract class WebDriverFactory {
 		}
 	}
 
-	public static RemoteWebDriver getRemoteWebDriver(String browser, String remoteURL, DesiredCapabilities caps) {
+	public static RemoteWebDriver getRemoteWebDriver(String remoteURL, Capabilities caps) {
 		try {
-			caps.setBrowserName(browser);
-			return new RemoteWebDriver(new URL(remoteURL), caps);
+			RemoteWebDriver driver = new RemoteWebDriver(new URL(remoteURL), caps);
+			driver.setFileDetector(new LocalFileDetector());
+
+			return driver;
 		} catch (MalformedURLException e) {
 			log.error("Could not open web driver to remote URL: " + remoteURL, e);
 			throw new RuntimeException(e);
 		}
 	}
 
-	private static WebDriver openChrome(WebDriverConfig webDriverConfig) {
+	private static WebDriver openChrome(MutableCapabilities capabilities) {
 		WebDriverManager.chromedriver().setup();
-		ChromeOptions options = new ChromeOptions();
-		options.addArguments(browserOptions.getBrowserOptions("chrome"));
-		if(webDriverConfig.getLocalBrowserOptions() != null) {
-			options.addArguments(webDriverConfig.getLocalBrowserOptions());
-		}
-		return new ChromeDriver(options);
-	}
-
-	private static WebDriver openChromeHeadless(WebDriverConfig webDriverConfig) {
-		WebDriverManager.chromedriver().setup();
-		ChromeOptions options = new ChromeOptions();
-		options.setHeadless(true);
-		options.addArguments(browserOptions.getBrowserOptions("headless"));
-		if(webDriverConfig.getLocalBrowserOptions() != null) {
-			options.addArguments(webDriverConfig.getLocalBrowserOptions());
-		}
+		ChromeOptions options = loadChromeOptions(capabilities);
 		ChromeDriverService driverService = ChromeDriverService.createDefaultService();
-		WebDriver driver = new ChromeDriver(driverService, options);
-
-		// The following code adds a special command to enable downloading files with headless chrome
-		// by default headless chrome is set to not allow downloads for security.
-		// Downloading works on MacOS, but is failing on Windows VM
-		String command = new StringBuilder().append("{")
-				.append("\"cmd\":\"Page.setDownloadBehavior\"").append(",")
-				.append("\"params\":{")
-				.append("\"downloadPath\":\"" + DOWNLOAD_DIRECTORY + "\"").append(",")
-				.append("\"behavior\":\"allow\"").append("}")
-				.append("}").toString();
-		HttpClient httpClient = HttpClientBuilder.create().build();
-		try {
-			String u = driverService.getUrl().toString() + "/session/" + ((ChromeDriver) driver).getSessionId() + "/chromium/send_command";
-			HttpPost request = new HttpPost(u);
-			request.addHeader("content-type", "application/json");
-			request.setEntity(new StringEntity(command));
-			httpClient.execute(request);
-		} catch (Exception ex) {
-			log.error("Error starting chrome headless", ex);
-			throw new RuntimeException(ex);
+		ChromeDriver driver = new ChromeDriver(driverService, options);
+		if(new Gson().toJson(capabilities.toJson()).contains("--headless")) {
+			String command = new StringBuilder().append("{")
+					.append("\"cmd\":\"Page.setDownloadBehavior\"").append(",")
+					.append("\"params\":{")
+					.append("\"downloadPath\":\"" + DOWNLOAD_DIRECTORY + "\"").append(",")
+					.append("\"behavior\":\"allow\"").append("}")
+					.append("}").toString();
+			HttpClient httpClient = HttpClientBuilder.create().build();
+			try {
+				String u = driverService.getUrl().toString() + "/session/" + ((ChromeDriver) driver).getSessionId() + "/chromium/send_command";
+				HttpPost request = new HttpPost(u);
+				request.addHeader("content-type", "application/json");
+				request.setEntity(new StringEntity(command));
+				httpClient.execute(request);
+			} catch (Exception ex) {
+				log.error("Error starting chrome headless", ex);
+				throw new RuntimeException(ex);
+			}
 		}
 		return driver;
 	}
 
-	private static WebDriver openFirefox(WebDriverConfig webDriverConfig) {
-		WebDriverManager.firefoxdriver().setup();
-		FirefoxOptions options = new FirefoxOptions();
-		options.addArguments(browserOptions.getBrowserOptions("firefox"));
-		if(webDriverConfig.getLocalBrowserOptions() != null) {
-			options.addArguments(webDriverConfig.getLocalBrowserOptions());
+	/**
+	 * Convert a Capabilities to ChromeOptions, fixes bug in ChromeOptions that ignores and overwrites any
+	 * goog:chromeOptions in ChromeOptions.merge(Capabilities)
+	 * @param capabilities
+	 * @return
+	 */
+	protected static ChromeOptions loadChromeOptions(Capabilities capabilities){
+		if(ChromeOptions.class.isAssignableFrom(capabilities.getClass())){
+			return (ChromeOptions) capabilities;
 		}
-//        FirefoxProfile fp = new FirefoxProfile();
-//        fp.setAcceptUntrustedCertificates(true);
-//        fp.setAssumeUntrustedCertificateIssuer(true);
-//        DesiredCapabilities dc = DesiredCapabilities.firefox();
-//        dc.setCapability(CapabilityType.ACCEPT_SSL_CERTS,true);
+		ChromeOptions options = new ChromeOptions().merge(capabilities);
+		Map<String,Object> capMap = capabilities.asMap();
+		if(capMap.containsKey(ChromeOptions.CAPABILITY)){
+			Object chromeOptObj = capMap.get(ChromeOptions.CAPABILITY);
+			if(Map.class.isAssignableFrom(chromeOptObj.getClass())){
+				Map<Object,Object> chromeOptMap = (Map<Object,Object>)chromeOptObj;
+				for(Map.Entry entry : chromeOptMap.entrySet()) {
+					if (entry.getKey().equals("args")) {
+						if (String[].class.isAssignableFrom(entry.getValue().getClass())) {
+							String[] args = (String[]) entry.getValue();
+							options.addArguments(args);
+						}else if (List.class.isAssignableFrom(entry.getValue().getClass())) {
+							List args = (List) entry.getValue();
+							options.addArguments(args);
+						}
+					}else if (entry.getKey().equals("binary")) {
+						if (String.class.isAssignableFrom(entry.getValue().getClass())) {
+							String binary = (String) entry.getValue();
+							options.setBinary(binary);
+						}
+					}else if (entry.getKey().equals("extensions")) {
+						if (String[].class.isAssignableFrom(entry.getValue().getClass())) {
+							String[] extensions = (String[]) entry.getValue();
+							options.addEncodedExtensions(extensions);
+						}else if (List.class.isAssignableFrom(entry.getValue().getClass())) {
+							List extensions = (List) entry.getValue();
+							options.addEncodedExtensions(extensions);
+						}
+					}else {
+						if (String.class.isAssignableFrom(entry.getKey().getClass())) {
+							options.setExperimentalOption((String)entry.getKey(), entry.getValue());
+						}
+					}
+				}
+			}
+		}
+		options.setCapability(CapabilityType.BROWSER_NAME, "chrome");
+		return options;
+	}
+
+	private static WebDriver openChromeHeadless(Capabilities capabilities) {
+		ChromeOptions options = loadChromeOptions(capabilities);
+		options.setHeadless(true);
+		return openChrome(options);
+	}
+
+	private static WebDriver openFirefox(Capabilities capabilities) {
+		WebDriverManager.firefoxdriver().setup();
+		FirefoxOptions options = new FirefoxOptions(capabilities);
 		return new FirefoxDriver(options);
 	}
 
-	private static WebDriver openInternetExplorer(WebDriverConfig webDriverConfig) {
+	private static WebDriver openInternetExplorer(Capabilities capabilities) {
 		WebDriverManager.iedriver().setup();
-		InternetExplorerOptions options = new InternetExplorerOptions();
-		options.addCommandSwitches(browserOptions.getBrowserOptions("ie").toArray(new String[0]));
-		if(webDriverConfig.getLocalBrowserOptions() != null) {
-			options.addCommandSwitches(webDriverConfig.getLocalBrowserOptions());
-		}
+		InternetExplorerOptions options = new InternetExplorerOptions(capabilities);
 		return new InternetExplorerDriver(options);
 	}
 
-	private static WebDriver openEdge(WebDriverConfig webDriverConfig) {
+	private static WebDriver openEdge(Capabilities capabilities) {
 		WebDriverManager.edgedriver().setup();
-		return new EdgeDriver();
+		return new EdgeDriver(new EdgeOptions().merge(capabilities));
 	}
 
-	private static WebDriver openHtmlUnit(WebDriverConfig webDriverConfig) {
+	private static WebDriver openOpera(Capabilities capabilities) {
+		WebDriverManager.operadriver().setup();
+		// Replicate loadChromeOptions for Opera to fix use of deprecated constructor.  OperaOptions has the same bug as ChromeOptions.
+		return new OperaDriver(capabilities);
+	}
+
+	private static WebDriver openSafari(Capabilities capabilities) {
+		SafariOptions options = new SafariOptions(capabilities);
+		return new SafariDriver(options);
+	}
+
+	private static WebDriver openHtmlUnit(Capabilities capabilities) {
 		return new HtmlUnitDriver(true);
 	}
 }

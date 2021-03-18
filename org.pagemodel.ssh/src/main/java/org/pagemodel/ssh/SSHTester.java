@@ -31,7 +31,7 @@ public class SSHTester<R> {
 	public final static int DEFAULT_SSH_CMD_TIMEOUT = 20;
 
 	private final R returnObj;
-	private final SSHTestContext testContext;
+	protected final SSHTestContext testContext;
 	private SSHSession sshSession;
 	private boolean connected = false;
 	private SSHAuthenticator authenticator;
