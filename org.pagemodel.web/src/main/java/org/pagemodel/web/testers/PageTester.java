@@ -16,10 +16,7 @@
 
 package org.pagemodel.web.testers;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.Dimension;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.Point;
+import org.openqa.selenium.*;
 import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.web.PageModel;
 import org.pagemodel.web.PageUtils;
@@ -39,10 +36,6 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 
 	public PageTester(P page, WebTestContext testContext, TestEvaluator testEvaluator) {
 		super(page, testContext, testEvaluator);
-	}
-
-	public PageTester(P page, WebTestContext testContext) {
-		this(page, testContext, new TestEvaluator.Now());
 	}
 
 	public WebElementTester<P, P> testFocusedElement() {
@@ -176,10 +169,13 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 	}
 
 	public <T extends PageModel<? super T>> T navigateTo(String url, Class<T> clazz) {
+		T retPage = PageUtils.makeInstance(clazz, testContext);
 		return getEvaluator().testExecute(
 				() ->  "navigate to: [" + clazz.getName() + "], url [" + url + "]",
-				() -> testContext.getDriver().navigate().to(url),
-				PageUtils.waitForNavigateToPage(clazz, testContext),
-				page.getContext());
+				() -> {
+					testContext.getDriver().navigate().to(url);
+					PageUtils.waitForModelDisplayed(retPage);
+				},
+				retPage, page.getContext());
 	}
 }

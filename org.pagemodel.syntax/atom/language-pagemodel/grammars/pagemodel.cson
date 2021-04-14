@@ -178,6 +178,10 @@
         'name' : 'string.pagemodel'
       }
       {
+        'match' : '([^\\x{0022}\\x{0025}is]*%)'
+        'name' : 'string.pagemodel'
+      }
+      {
         'match' : '(([^\\x{0022}\\x{0025}is]*([is](?:[^\\x{0025}\\x{0022}]))*))'
         'name' : 'string.pagemodel'
       }

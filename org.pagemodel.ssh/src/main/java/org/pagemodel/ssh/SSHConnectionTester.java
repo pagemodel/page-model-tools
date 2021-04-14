@@ -16,10 +16,11 @@
 
 package org.pagemodel.ssh;
 
-import org.pagemodel.core.utils.ThrowingFunction;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.xfer.FileSystemFile;
 import net.schmizz.sshj.xfer.LocalSourceFile;
+import org.pagemodel.core.testers.TestEvaluator;
+import org.pagemodel.core.utils.ThrowingFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,13 +34,19 @@ import java.net.URI;
 public class SSHConnectionTester<R> {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	protected SSHTester<R> sshTester;
+	private TestEvaluator testEvaluator;
 
-	public SSHConnectionTester(R returnObj, SSHTestContext testContext) {
-		sshTester = new SSHTester<>(returnObj, testContext);
+	public SSHConnectionTester(R returnObj, SSHTestContext testContext, TestEvaluator testEvaluator) {
+		sshTester = new SSHTester<>(returnObj, testContext, testEvaluator);
+		this.testEvaluator = testEvaluator;
 	}
 
 	public SSHTestContext getContext(){
 		return sshTester.testContext;
+	}
+
+	protected TestEvaluator getEvaluator(){
+		return testEvaluator;
 	}
 
 	public SSHTester<R> connect() {
@@ -51,7 +58,7 @@ public class SSHConnectionTester<R> {
 	}
 
 	public SSHTester<R> connect(String ipAddress, String username, String password, String sudoPassword) {
-		return sshTester.connect(new SSHAuthenticator.PasswordAuthenticator(ipAddress, username, password, sudoPassword));
+		return sshTester.connect(SSHAuthenticator.passwordAuth(ipAddress, username, password, sudoPassword));
 	}
 
 	public R testConnectionFails() {
@@ -59,7 +66,7 @@ public class SSHConnectionTester<R> {
 	}
 
 	public R testConnectionFails(String ipAddress, String username, String password) {
-		return sshTester.testConnectionFails(new SSHAuthenticator.PasswordAuthenticator(ipAddress, username, password, password));
+		return sshTester.testConnectionFails(SSHAuthenticator.passwordAuth(ipAddress, username, password, password));
 	}
 
 	public R testConnectionFails(SSHAuthenticator authenticator) {

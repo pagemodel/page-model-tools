@@ -35,14 +35,21 @@ public class MailTester<R> {
 
 	protected TestContext testContext;
 	protected R returnObj;
+	private TestEvaluator testEvaluator;
 
-	public MailTester(TestContext testContext, R returnObj) {
+	public MailTester(TestContext testContext, R returnObj, TestEvaluator testEvaluator) {
 		this.testContext = testContext;
 		this.returnObj = returnObj;
+		this.testEvaluator = testEvaluator;
+	}
+
+	protected TestEvaluator getEvaluator(){
+		return testEvaluator;
 	}
 
 	public MailMessageBuilder<R> composeMail(){
-		return new MailMessageBuilder<>(testContext, returnObj);
+		getEvaluator().log("Compose new mail");
+		return new MailMessageBuilder<>(returnObj, testContext, getEvaluator());
 	}
 
 	public R closeMail(){
@@ -88,8 +95,8 @@ public class MailTester<R> {
 	public static class SentMailTester<R> extends MailTester<R> {
 		private Callable<MailMessage> sentMailRef;
 
-		public SentMailTester(TestContext testContext, R returnObj, Callable<MailMessage> sentMailRef) {
-			super(testContext, returnObj);
+		public SentMailTester(Callable<MailMessage> sentMailRef, R returnObj, TestContext testContext, TestEvaluator testEvaluator) {
+			super(testContext, returnObj, testEvaluator);
 			this.sentMailRef = sentMailRef;
 		}
 

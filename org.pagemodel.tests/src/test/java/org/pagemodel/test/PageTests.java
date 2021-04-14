@@ -19,6 +19,7 @@ package org.pagemodel.test;
 import org.junit.Test;
 import org.pagemodel.core.utils.Unique;
 import org.pagemodel.tests.myapp.tools.MyAppUser;
+
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -30,23 +31,23 @@ public class PageTests extends MyAppTestBase {
 	public void testMyAppPages() {
 		MyAppUser admin = MyAppUser.admin(context);
 		MyAppUser.admin(context).loginToMainPage()
-				.testSiteStatusDisplay().text().equals("Online")
-				.testSiteVersionDisplay().text().startsWith("0.8.0")
-				.testStatusDateDisplay().text().storeValue("status_date")
+//				.testSiteStatusDisplay().text().equals("Online")
+//				.testSiteVersionDisplay().text().startsWith("0.8.0")
+//				.testStatusDateDisplay().text().storeValue("status_date")
 				.testStatusDateDisplay().text().asDate().storeValue("status_date3")
-				.testPage().waitFor().numberOfSeconds(1)
-				.testUpdateStatusButton().click()
-				.testStatusDateDisplay().text().notEquals(context.load("status_date"))
-
-				.testStatusDateDisplay().text().asDate()
-						.transform(date -> (int)TimeUnit.SECONDS.convert(date.getTime() - context.loadDate("status_date3").getTime(), TimeUnit.MILLISECONDS))
-						.lessThan(7)
+//				.testPage().waitFor().numberOfSeconds(1)
+//				.testUpdateStatusButton().click()
+//				.testStatusDateDisplay().text().notEquals(context.load("status_date"))
+//
+				.testStatusDateDisplay().waitAndRefreshFor().text().asDate()
+						.transform(date -> (int) TimeUnit.SECONDS.convert(date.getTime() - context.loadDate("status_date3").getTime(), TimeUnit.MILLISECONDS))
+						.greaterThan(5)
 				.testStatusDateDisplay().text().asDate().storeValue("status_date2")
 				.testStatusDateDisplay().waitAndRefreshFor().text().asDate().greaterThan(context.load("status_date2"))
 
 				.testTopNav().testUserInfoDisplay().text().equals("Logged in as " + admin.getUsername())
 				.testTopNav().testUserInfoDisplay().text().endsWith(admin.getUsername())
-				.testTopNav().testUserInfoDisplay().text().testMatch("Logged in as (.*)").equals(admin.getUsername())
+				.testTopNav().testUserInfoDisplay().text().testMatch("Logged in as (.*)", 1).equals(admin.getUsername())
 				.testTopNav().testUserInfoDisplay().text().transform(str -> str.replace("Logged in as ", "")).equals(admin.getUsername())
 
 				.testNotificationDisplay(1).testTitleDisplay().text().equals("Notification 1")

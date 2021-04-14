@@ -16,12 +16,12 @@
 
 package org.pagemodel.web.testers;
 
-import org.pagemodel.web.WebTestContext;
-
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.NoAlertPresentException;
 import org.pagemodel.core.testers.StringTester;
 import org.pagemodel.core.testers.TestEvaluator;
+import org.pagemodel.web.PageModel;
+import org.pagemodel.web.WebTestContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,13 +35,10 @@ public class AlertTester<R> {
 
 	protected final R returnObj;
 	protected final WebTestContext testContext;
+	protected PageModel<?> page;
 	private TestEvaluator testEvaluator;
 
-	public AlertTester(R returnObj, WebTestContext testContext) {
-		this(returnObj, testContext, new TestEvaluator.Now());
-	}
-
-	public AlertTester(R returnObj, WebTestContext testContext, TestEvaluator testEvaluator) {
+	public AlertTester(PageModel<?> page, R returnObj, WebTestContext testContext, TestEvaluator testEvaluator) {
 		this.returnObj = returnObj;
 		this.testContext = testContext;
 		this.testEvaluator = testEvaluator;
@@ -76,7 +73,7 @@ public class AlertTester<R> {
 	}
 
 	public StringTester<R> text() {
-		return new StringTester<>(getAlert()::getText, returnObj, testContext, getEvaluator());
+		return new StringTester<>(() -> getAlert().getText(), returnObj, testContext, getEvaluator());
 	}
 
 	public R sendKeys(String text) {
@@ -87,11 +84,11 @@ public class AlertTester<R> {
 	}
 
 	public AlertTester<R> waitFor() {
-		return new AlertTester<>(returnObj, testContext, new WebTestEvaluator.Wait(testContext, WebElementTester.WebElementWait.DEFAULT_WAIT_SEC));
+		return new AlertTester<>(page, returnObj, testContext, new WebTestEvaluator.Wait(testContext, WebElementTester.WebElementWait.DEFAULT_WAIT_SEC));
 	}
 
 	public AlertTester<R> waitAndRefreshFor() {
-		return new AlertTester<>(returnObj, testContext, new WebTestEvaluator.WaitAndRefresh<>(testContext, WebElementTester.WebElementRefresh.DEFAULT_WAIT_SEC, returnObj, null));
+		return new AlertTester<>(page, returnObj, testContext, new WebTestEvaluator.WaitAndRefresh<>(testContext, WebElementTester.WebElementRefresh.DEFAULT_WAIT_SEC, returnObj, page));
 	}
 
 	protected Alert getAlert() {

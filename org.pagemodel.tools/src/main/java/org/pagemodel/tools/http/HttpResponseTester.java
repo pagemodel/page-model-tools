@@ -19,6 +19,7 @@ package org.pagemodel.tools.http;
 import org.pagemodel.core.testers.ComparableTester;
 import org.pagemodel.core.testers.StringTester;
 import org.pagemodel.core.TestContext;
+import org.pagemodel.core.testers.TestEvaluator;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
@@ -32,15 +33,21 @@ public class HttpResponseTester<R> {
 	private final TestContext testContext;
 	private HttpsURLConnection connection;
 	private HttpTester<?> parent;
+	private TestEvaluator testEvaluator;
 
-	public HttpResponseTester(HttpsURLConnection connection, HttpTester<?> parent, TestContext testContext) {
+	public HttpResponseTester(HttpsURLConnection connection, HttpTester<?> parent, TestContext testContext, TestEvaluator testEvaluator) {
 		this.connection = connection;
 		this.testContext = testContext;
 		this.parent = parent;
+		this.testEvaluator = testEvaluator;
+	}
+
+	protected TestEvaluator getEvaluator(){
+		return testEvaluator;
 	}
 
 	public ComparableTester<Integer, HttpResponseTester<R>> testResponseCode() {
-		return new ComparableTester<>(() -> connection.getResponseCode(), this, testContext);
+		return new ComparableTester<>(() -> connection.getResponseCode(), this, testContext, getEvaluator());
 	}
 
 	public StringTester<HttpResponseTester<R>> testResponseBody() {
@@ -61,7 +68,7 @@ public class HttpResponseTester<R> {
 			e.printStackTrace();
 		}
 		String body = builder.toString();
-		return new StringTester<>(() -> body, this, testContext);
+		return new StringTester<>(() -> body, this, testContext, getEvaluator());
 	}
 
 	public R disconnect() {

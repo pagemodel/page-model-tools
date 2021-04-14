@@ -23,6 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
@@ -33,8 +35,15 @@ public abstract class TestEvaluator {
 
 	public final static String TEST_ASSERT = "Assert";
 	public final static String TEST_EXECUTE = "Execute";
+	public final static String TEST_STORE = "Store";
+	public final static String TEST_LOAD = "Load";
+	public final static String TEST_REMOVE = "Remove";
+	public final static String TEST_SET = "Set";
+	public final static String TEST_ADD = "Add";
+	public final static String TEST_UPDATE = "Update";
+	public final static String TEST_FIND = "Find";
 
-	protected String testType;
+	protected String testType = TEST_ASSERT;
 	protected String label;
 	protected Callable<String> testMessageRef;
 	protected Callable<String> sourceDisplay;
@@ -43,8 +52,14 @@ public abstract class TestEvaluator {
 		return doTest(TEST_ASSERT, messageRef, test, returnObj, testContext);
 	}
 
-	public <T> T testExecute(Callable<String> messageRef, ThrowingRunnable<? extends Exception> test, T returnObj, TestContext testContext) {
-		return doTest(TEST_EXECUTE, messageRef,
+	public <T> T testExecute(Callable<String> messageRef, ThrowingRunnable<?> test, T returnObj, TestContext testContext) {
+		return testRun(TEST_EXECUTE, messageRef, test, returnObj, testContext);
+	}
+	public <T> T testRun(String testType, String message, ThrowingRunnable<?> test, T returnObj, TestContext testContext) {
+		return testRun(testType, () -> message, test, returnObj, testContext);
+	}
+	public <T> T testRun(String testType, Callable<String> messageRef, ThrowingRunnable<?> test, T returnObj, TestContext testContext) {
+		return doTest(testType, messageRef,
 				() -> {
 					test.run();
 					return true;
@@ -53,20 +68,28 @@ public abstract class TestEvaluator {
 	}
 
 	protected <T> T doTest(String testType, Callable<String> messageRef, Callable<Boolean> test, T returnObj, TestContext testContext) {
-		setTestMessageRef(testType, messageRef);
-		log(getTestMessage(getTestMessageRef(), getSourceDisplayRef()));
 		try {
-			if(callTest(test)){
-				return returnObj;
+			setTestMessageRef(testType, messageRef);
+			log(getTestMessage(getTestMessageRef(), getSourceDisplayRef()));
+			try {
+				if (callTest(test)) {
+					return returnObj;
+				}
+			} catch (Throwable ex) {
+				throw testContext.createException(getTestMessage(getTestMessageRef(), getSourceDisplayRef()), ex);
 			}
-		} catch (Throwable ex) {
-			throw testContext.createException(getTestMessage(getTestMessageRef(), getSourceDisplayRef()), ex);
+			throw testContext.createException(getTestMessage(getTestMessageRef(), getSourceDisplayRef()));
+		}finally {
+			setSourceDisplayRef(null);
 		}
-		throw testContext.createException(getTestMessage(getTestMessageRef(), getSourceDisplayRef()));
 	}
 
 	public void log(String message){
 		logger.info(message);
+	}
+
+	public void log(String message, Throwable t){
+		logger.info(message, t);
 	}
 
 	abstract protected Boolean callTest(Callable<Boolean> test);
@@ -114,7 +137,7 @@ public abstract class TestEvaluator {
 	}
 
 	public String getFindMessage(Callable<String> messageRef) {
-		return "Find" + getLabel() + " " + ThrowingCallable.nullOnError(messageRef).call();
+		return TEST_FIND + getLabel() + " " + ThrowingCallable.nullOnError(messageRef).call();
 	}
 
 	public String getTestMessage(Callable<String> messageRef){
@@ -124,14 +147,14 @@ public abstract class TestEvaluator {
 	public String getTestMessage(Callable<String> messageRef, Callable<String> sourceRef){
 		StringBuilder sb = new StringBuilder();
 		if (sourceRef != null) {
-			sb.append(String.format("Find%s %s\n%17s",getLabel(),ThrowingCallable.nullOnError(sourceRef).call(),"\t"));
+			sb.append(String.format("%s%s %s\n%17s", TEST_FIND, getLabel(),ThrowingCallable.nullOnError(sourceRef).call(),"\t"));
 		}
-		sb.append(String.format("Assert%s %s", getLabel(), ThrowingCallable.nullOnError(messageRef).call()));
+		sb.append(String.format("%s%s %s", testType, getLabel(), ThrowingCallable.nullOnError(messageRef).call()));
 		return sb.toString();
 	}
 
 	public String getActionMessage(Callable<String> messageRef){
-		return "Execute" + getLabel() + " " + ThrowingCallable.nullOnError(messageRef).call();
+		return TEST_EXECUTE + getLabel() + " " + ThrowingCallable.nullOnError(messageRef).call();
 	}
 
 	public String getLabel() {
@@ -206,18 +229,23 @@ public abstract class TestEvaluator {
 
 		@Override
 		public <T> T doTest(String testType, Callable<String> messageRef, Callable<Boolean> test, T returnObj, TestContext testContext) {
-			if(!testStatus){
-				return returnObj;
-			}
-			setTestMessageRef(testType, messageRef);
-			log(getTestMessage(getTestMessageRef(), getSourceDisplayRef()));
 			try {
-				if(callTest(test)){
+				if (!testStatus) {
 					return returnObj;
 				}
-			} catch (Throwable ex) { }
-			testStatus = false;
-			return returnObj;
+				setTestMessageRef(testType, messageRef);
+				log(getTestMessage(getTestMessageRef(), getSourceDisplayRef()));
+				try {
+					if (callTest(test)) {
+						return returnObj;
+					}
+				} catch (Throwable ex) {
+				}
+				testStatus = false;
+				return returnObj;
+			}finally {
+				setSourceDisplayRef(null);
+			}
 		}
 
 		@Override
@@ -270,7 +298,7 @@ public abstract class TestEvaluator {
 
 	public static class LogTests extends TestEvaluator {
 		private TestEvaluator testEvaluator;
-		private StringBuilder testLog = new StringBuilder();
+		private List<String> logMessages = new LinkedList<>();
 
 		public LogTests(TestEvaluator testEvaluator) {
 			this.testEvaluator = testEvaluator;
@@ -279,7 +307,7 @@ public abstract class TestEvaluator {
 		@Override
 		protected <T> T doTest(String testType, Callable<String> messageRef, Callable<Boolean> test, T returnObj, TestContext testContext) {
 			setTestMessageRef(testType, messageRef);
-			testLog.append(getTestMessage(getTestMessageRef(), getSourceDisplayRef())).append("\n");
+			logMessages.add(getTestMessage(getTestMessageRef(), getSourceDisplayRef()));
 			return returnObj;
 		}
 
@@ -288,7 +316,7 @@ public abstract class TestEvaluator {
 		}
 
 		public String getTestLog(){
-			return testLog.toString();
+			return String.join("\n", logMessages);
 		}
 
 		@Override

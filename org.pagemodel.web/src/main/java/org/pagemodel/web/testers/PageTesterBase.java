@@ -91,14 +91,11 @@ public class PageTesterBase<P extends PageModel<? super P>> {
 		}
 
 		private P waitDuration(long duration, TimeUnit unit) {
-			log.info("Sleeping " + duration + " " + unit.toString().toLowerCase() + ".");
-			try {
-				unit.sleep(duration);
-			} catch (InterruptedException ex) {
-				Thread.currentThread().interrupt();
-				throw new RuntimeException(ex);
-			}
-			return page;
+			return getEvaluator().testRun(
+					TestEvaluator.TEST_EXECUTE,
+					() -> "sleep: [" + duration + " " + unit.toString().toLowerCase() + "]",
+					() -> unit.sleep(duration),
+					page, testContext);
 		}
 	}
 }

@@ -39,7 +39,7 @@ public abstract class SectionModel<S extends SectionModel<? super S, P, R>, P ex
 
 	protected WebTestContext testContext;
 
-	public static <S extends SectionModel<? super S, P, R>, P extends PageModel<? super P>, R extends PageModel<? super R>> S make(final Class<S> sectionClass, ClickAction<P, R> clickAction) {
+	public static <S extends SectionModel<? super S, P, R>, P extends PageModel<? super P>, R extends PageModel<? super R>> S make(final Class<S> sectionClass, ClickAction<P, R> clickAction, TestEvaluator testEvaluator) {
 		try {
 			return sectionClass.getConstructor(ClickAction.class).newInstance(clickAction);
 		} catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
@@ -115,18 +115,17 @@ public abstract class SectionModel<S extends SectionModel<? super S, P, R>, P ex
 
 	@Override
 	public PageTester<S> testPage() {
-		return new PageTester<>((S) this, getContext());
+		return new PageTester<>((S) this, getContext(), getEvaluator());
 	}
 
 	@Override
 	public AlertTester<S> testAlert() {
-		return new AlertTester<>((S) this, getContext());
+		return new AlertTester<>(this, (S) this, getContext(), getEvaluator());
 	}
 
 	@Override
 	public <R extends PageModel<? super R>> R expectRedirect(Class<R> returnPageClass) {
-		R returnPage = PageUtils.makeInstance(returnPageClass, getContext());
-		return PageUtils.waitForModelDisplayed(returnPage);
+		return PageUtils.waitForNavigateToPage(returnPageClass, getContext());
 	}
 
 	@Override

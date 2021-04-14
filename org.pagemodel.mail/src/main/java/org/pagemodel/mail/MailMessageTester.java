@@ -21,10 +21,7 @@ import org.pagemodel.core.testers.ComparableTester;
 import org.pagemodel.core.testers.StringListTester;
 import org.pagemodel.core.testers.StringTester;
 import org.pagemodel.core.testers.TestEvaluator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -34,8 +31,6 @@ import java.util.concurrent.Callable;
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class MailMessageTester<R> {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
 	protected R returnObj;
 	protected final Callable<MailMessage> ref;
 	protected final TestContext testContext;
@@ -70,22 +65,22 @@ public class MailMessageTester<R> {
 	}
 
 	public StringListTester<MailMessageTester<R>> testRecipientsTo() {
-		getEvaluator().setSourceDisplayRef(() -> "recipients [to]");
+		getEvaluator().setSourceDisplayRef(() -> "recipients To");
 		return new StringListTester<>(() -> callRef().getRecipientsTo(), this, testContext, getEvaluator());
 	}
 
 	public StringListTester<MailMessageTester<R>> testRecipientsCc() {
-		getEvaluator().setSourceDisplayRef(() -> "recipients [cc]");
+		getEvaluator().setSourceDisplayRef(() -> "recipients CC");
 		return new StringListTester<>(() -> callRef().getRecipientsCc(), this, testContext, getEvaluator());
 	}
 
 	public StringListTester<MailMessageTester<R>> testRecipientsBcc() {
-		getEvaluator().setSourceDisplayRef(() -> "recipients [bcc]");
+		getEvaluator().setSourceDisplayRef(() -> "recipients BCC");
 		return new StringListTester<>(() -> callRef().getRecipientsBcc(), this, testContext, getEvaluator());
 	}
 
 	public StringListTester<MailMessageTester<R>> testRecipientsAll() {
-		getEvaluator().setSourceDisplayRef(() -> "recipients [to,cc,bcc]");
+		getEvaluator().setSourceDisplayRef(() -> "all recipients");
 		return new StringListTester<>(() -> {
 			List<String> recipients = new ArrayList<>(callRef().getRecipientsTo());
 			recipients.addAll(callRef().getRecipientsCc());

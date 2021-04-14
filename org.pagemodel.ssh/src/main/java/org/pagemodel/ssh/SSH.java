@@ -16,6 +16,7 @@
 
 package org.pagemodel.ssh;
 
+import org.pagemodel.core.testers.TestEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,18 +29,18 @@ public class SSH {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	public static SSHInner testSSH(SSHTestContext testContext) {
-		return new SSHInner(testContext);
+		return new SSHInner(testContext, testContext.getEvaluator());
 	}
 
 	public static SSHInner testSSH(SSHAuthenticator authenticator) {
 		SSHTestContext testContext = new SSHTestContext.DefaultSSHTestContext(authenticator);
-		return new SSHInner(testContext);
+		return new SSHInner(testContext, testContext.getEvaluator());
 	}
 
 	public static class SSHInner extends SSHConnectionTester<SSHInner> {
-		public SSHInner(SSHTestContext testContext) {
-			super(null, testContext);
-			this.sshTester = new SSHTester<>(this, testContext);
+		public SSHInner(SSHTestContext testContext, TestEvaluator testEvaluator) {
+			super(null, testContext, testEvaluator);
+			this.sshTester = new SSHTester<>(this, testContext, testEvaluator);
 		}
 	}
 }

@@ -21,6 +21,7 @@ import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.web.testers.ClickAction;
 import org.pagemodel.web.utils.Screenshot;
 import org.slf4j.Logger;
@@ -43,7 +44,10 @@ public class PageUtils {
 		try {
 			for(Constructor<?> c : clazz.getConstructors()){
 				if(c.getParameterTypes().length == 1 && c.getParameterTypes()[0].isAssignableFrom(context.getClass())){
-					return (T)c.newInstance(context);
+					T page = (T)c.newInstance(context);
+					//TODO: fix test evaluator message source to be cleared out
+//					return PageUtils.trySetEvaluator(page, context.getEvaluator());
+					return page;
 				}
 			}
 			throw new RuntimeException("Error creating Page Model for class: " + clazz.getName() + ".  Unable to find valid constructor.");
@@ -68,7 +72,7 @@ public class PageUtils {
 		try {
 			T page = null;
 			if (SectionModel.class.isAssignableFrom(clazz)) {
-				page = (T) SectionModel.make((Class) clazz, ClickAction.make(elementRef, (PageModel) sectionParent));
+				page = (T) SectionModel.make((Class) clazz, ClickAction.make(elementRef, (PageModel) sectionParent), sectionParent.getEvaluator());
 			} else {
 				for(Constructor<?> c : clazz.getConstructors()){
 					if(c.getParameterTypes().length == 1 && c.getParameterTypes()[0].isAssignableFrom(context.getClass())){
@@ -79,6 +83,8 @@ public class PageUtils {
 					throw new RuntimeException("Error creating Page Model for class: " + clazz.getName() + ".  Unable to find valid constructor.");
 				}
 			}
+			//TODO: fix test evaluator message source to be cleared out
+//			PageUtils.trySetEvaluator(page, context.getEvaluator());
 			boolean isDisplayed = waitForPageIsDisplayed(page, timeout);
 			if (isDisplayed) {
 				page.onPageLoad();
@@ -110,7 +116,7 @@ public class PageUtils {
 	static public boolean waitForPageIsDisplayed(PageModel page, int timeout) {
 		WebDriverWait wait = new WebDriverWait(page.getContext().getDriver(), timeout);
 		try {
-			log.info("Waiting for page, " + page.getClass().getSimpleName() + " to display.");
+			page.getEvaluator().log(TestEvaluator.TEST_ASSERT + " wait for model displayed: [" + page.getClass().getSimpleName() + "]");
 			wait.until(d -> {
 				page.getContext().getDriver().manage().timeouts().implicitlyWait(50, TimeUnit.MILLISECONDS);
 				try {
@@ -120,16 +126,34 @@ public class PageUtils {
 				}
 			});
 		} catch (TimeoutException te) {
-			log.info("Timed out waiting for page " + page.getClass().getName());
+			page.getEvaluator().log("Timed out waiting for page " + page.getClass().getName());
 			if(PageModel.DefaultPageModel.class.isAssignableFrom(page.getClass())){
 				((PageModel.DefaultPageModel)page).logModelDisplayed();
 			}else if(SectionModel.class.isAssignableFrom(page.getClass())){
 				((SectionModel)page).logModelDisplayed();
-			} else {
-				Screenshot.takeScreenshot(page.getContext(), "ERROR+" + page.getClass().getName());
+//			} else {
+//				Screenshot.takeScreenshot(page.getContext(), "ERROR+" + page.getClass().getName());
 			}
 			return false;
 		}
 		return true;
+	}
+
+	public static TestEvaluator getEvaluator(PageModel<?> page){
+		return page.getEvaluator();
+	}
+
+	public static <T extends PageModel<? super T>> T trySetEvaluator(T page, TestEvaluator testEvaluator){
+		if(page instanceof PageModel.DefaultPageModel) {
+			((PageModel.DefaultPageModel)page).setTestEvaluator(testEvaluator);
+			return page;
+		}else if(page instanceof SectionModel){
+			((SectionModel)page).setTestEvaluator(testEvaluator);
+			return page;
+		}
+		try {
+			page.getClass().getMethod("setTestEvaluator", TestEvaluator.class).invoke(page, testEvaluator);
+		}catch (Exception ex){ }
+		return page;
 	}
 }

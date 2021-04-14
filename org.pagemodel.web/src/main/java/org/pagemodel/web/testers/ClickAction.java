@@ -43,12 +43,13 @@ public class ClickAction<P extends PageModel<? super P>, N extends PageModel<? s
 
 	public static enum AlertAction {
 		ACCEPT,
-		DISMISS
+		DISMISS,
+		NONE
 	}
 
 	public static final int DEFAULT_NAV_WAIT_SEC = 10;
 	public static final boolean DEFAULT_ALERT_WAIT_FLAG = false;
-	public static final AlertAction DEFAULT_ALERT_ACTION = AlertAction.ACCEPT;
+	public static final AlertAction DEFAULT_ALERT_ACTION = AlertAction.NONE;
 	public static final int DEFAULT_ALERT_WAIT_SEC = 1;
 
 	private boolean navFlag;
@@ -85,7 +86,7 @@ public class ClickAction<P extends PageModel<? super P>, N extends PageModel<? s
 		if (currentPage.getClass().equals(returnClass)) {
 			return (T) currentPage;
 		} else if (SectionModel.class.isAssignableFrom(returnClass)) {
-			return (T) SectionModel.make((Class<S>) returnClass, ClickAction.make(elementRef, (T)currentPage));
+			return (T) SectionModel.make((Class<S>) returnClass, ClickAction.make(elementRef, (T)currentPage), currentPage.getEvaluator());
 		}
 		return PageUtils.makeInstance(returnClass, currentPage.getContext());
 	}

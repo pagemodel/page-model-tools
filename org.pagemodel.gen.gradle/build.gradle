@@ -3,6 +3,8 @@ apply plugin: 'maven'
 apply plugin: 'maven-publish'
 apply plugin: 'idea'
 
+sourceCompatibility = 1.8
+
 version = '0.8.0-SNAPSHOT'
 group = 'org.pagemodel'
 

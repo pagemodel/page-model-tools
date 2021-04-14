@@ -1,6 +1,6 @@
 AbstractPageModel org.pagemodel.tests.myapp.pages
 
-* TopNav @@MyAppTopNav id topNav
+* TopNav @@MyAppTopNav id "topNav"
 
 @ComponentModel MyAppTopNav
   * UserInfoDisplay ^id "userInfo"

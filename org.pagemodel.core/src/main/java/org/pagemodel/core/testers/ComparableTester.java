@@ -35,10 +35,6 @@ public class ComparableTester<C extends Comparable<C>, R> {
 	protected final TestContext testContext;
 	private TestEvaluator testEvaluator;
 
-	public ComparableTester(Callable<C> ref, R returnObj, TestContext testContext) {
-		this(ref, returnObj, testContext, new TestEvaluator.Now());
-	}
-
 	public ComparableTester(Callable<C> ref, R returnObj, TestContext testContext, TestEvaluator testEvaluator) {
 		this.ref = ref;
 		this.returnObj = returnObj;
@@ -59,13 +55,23 @@ public class ComparableTester<C extends Comparable<C>, R> {
 	}
 
 	public R equals(C val) {
-		return getEvaluator().testCondition(() -> "[" + callRef() + "] equals [" + val + "]",
-				() -> callRef().compareTo(val) == 0, returnObj, testContext);
+		return getEvaluator().testCondition(
+				() -> "[" + callRef() + "] equals [" + val + "]",
+				() -> {
+					C refVal = callRef();
+					return (refVal == null && val == null) || (refVal != null && val != null && refVal.compareTo(val) == 0);
+				},
+				returnObj, testContext);
 	}
 
 	public R notEquals(C val) {
-		return getEvaluator().testCondition(() -> "[" + callRef() + "] not equals [" + val + "]",
-				() -> callRef().compareTo(val) != 0, returnObj, testContext);
+		return getEvaluator().testCondition(
+				() -> "[" + callRef() + "] not equals [" + val + "]",
+				() -> {
+					C refVal = callRef();
+					return (refVal == null && val != null) || (refVal != null && (val == null || refVal.compareTo(val) != 0));
+				},
+				returnObj, testContext);
 	}
 
 	public R greaterThan(C val) {

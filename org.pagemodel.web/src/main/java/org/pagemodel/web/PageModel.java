@@ -26,16 +26,15 @@ public interface PageModel<P extends PageModel<? super P>> {
 	WebTestContext getContext();
 
 	default public PageTester<P> testPage() {
-		return new PageTester<>((P) this, getContext());
+		return new PageTester<>((P) this, getContext(), getEvaluator());
 	}
 
 	default public AlertTester<P> testAlert() {
-		return new AlertTester<>((P) this, getContext());
+		return new AlertTester<>(this, (P) this, getContext(), getEvaluator());
 	}
 
 	default public <R extends PageModel<? super R>> R expectRedirect(Class<R> returnPageClass) {
-		R returnPage = PageUtils.makeInstance(returnPageClass, getContext());
-		return PageUtils.waitForModelDisplayed(returnPage);
+		return PageUtils.waitForNavigateToPage(returnPageClass, getContext());
 	}
 
 	public TestEvaluator getEvaluator();

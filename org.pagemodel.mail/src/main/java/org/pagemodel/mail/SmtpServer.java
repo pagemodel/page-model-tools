@@ -63,7 +63,6 @@ public class SmtpServer extends MailServer{
 	}
 
 	public MailMessage send(MailMessage mailMessage) throws MessagingException, IOException {
-		log.info("Sending email from: " + mailMessage.getSender() + " with subject: " + mailMessage.getSubject() + ", to:" + Arrays.toString(mailMessage.getRecipientsTo().toArray(new String[0])));
 		Properties props = System.getProperties();
 		props.put("mail.transport.protocol", "smtp");
 		props.put("mail.smtp.host", getHost());

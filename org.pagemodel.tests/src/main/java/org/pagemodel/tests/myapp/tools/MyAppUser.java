@@ -48,33 +48,6 @@ public class MyAppUser {
 		this.testContext = testContext;
 	}
 
-	public LoginPage getLoginPage() {
-		return testContext.getLoginPage();
-	}
-
-	public HomePage loginToMainPage() {
-		if (!accountCreated) {
-			createAccount();
-		}
-		if (!accountRegistered) {
-			verifyAccount();
-		}
-		return testContext.getLoginPage()
-				.testUsernameField().sendKeys(userDetails.getUsername())
-				.testPasswordField().sendKeys(userDetails.getPassword())
-				.testSignInButton().click();
-	}
-
-	public <T extends PageModel<? super T>> T loginExpecting(Class<T> pageModel) {
-		if (!accountCreated) {
-			createAccount();
-		}
-		return testContext.getLoginPage()
-				.testUsernameField().sendKeys(userDetails.getUsername())
-				.testPasswordField().sendKeys(userDetails.getPassword())
-				.testSignInButton().clickAnd().expectRedirect(pageModel);
-	}
-
 	public String getUsername() {
 		return userDetails.getUsername();
 	}
@@ -117,6 +90,33 @@ public class MyAppUser {
 
 	public void setAccountRegistered(boolean accountRegistered) {
 		this.accountRegistered = accountRegistered;
+	}
+
+	public LoginPage getLoginPage() {
+		return testContext.getLoginPage();
+	}
+
+	public HomePage loginToMainPage() {
+		if (!accountCreated) {
+			createAccount();
+		}
+		if (!accountRegistered) {
+			verifyAccount();
+		}
+		return getLoginPage()
+				.testUsernameField().sendKeys(userDetails.getUsername())
+				.testPasswordField().sendKeys(userDetails.getPassword())
+				.testSignInButton().click();
+	}
+
+	public <T extends PageModel<? super T>> T loginExpecting(Class<T> pageModel) {
+		if (!accountCreated) {
+			createAccount();
+		}
+		return getLoginPage()
+				.testUsernameField().sendKeys(userDetails.getUsername())
+				.testPasswordField().sendKeys(userDetails.getPassword())
+				.testSignInButton().clickAnd().expectRedirect(pageModel);
 	}
 
 	public MyAppUser createAccount() {

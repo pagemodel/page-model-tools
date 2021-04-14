@@ -16,6 +16,7 @@
 
 package org.pagemodel.tools;
 
+import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.mail.MailTester;
 import org.pagemodel.web.PageModel;
 import org.pagemodel.ssh.SSHConnectionTester;
@@ -29,15 +30,15 @@ public interface ExtendedModelBase<P extends ExtendedModelBase<? super P>> exten
 	public ExtendedTestContext getContext();
 
 	default public MailTester<P> testMail() {
-		return new MailTester<>(getContext(), (P)this);
+		return new MailTester<>(getContext(), (P)this, new TestEvaluator.Now());
 	}
 
 	default public SSHConnectionTester<P> testSSH() {
-		return new SSHConnectionTester<>((P) this, getContext());
+		return new SSHConnectionTester<>((P) this, getContext(), getEvaluator());
 	}
 
 	default public P testSSH(ThrowingFunction<? super SSHConnectionTester<P>, P, ?> sshAction) {
-		return new SSHConnectionTester<>((P) this, getContext()).doAction(sshAction);
+		return new SSHConnectionTester<>((P) this, getContext(), getEvaluator()).doAction(sshAction);
 	}
 
 	@Override

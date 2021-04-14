@@ -54,8 +54,8 @@ public class MyAppTestBase {
 			mailProfiles = ProfileMap.loadFile(MailAuthenticator.class, "src/test/resources/profiles.mail.json");
 			driverProfiles = ProfileMap.loadFile(WebDriverConfig.class, "src/test/resources/profiles.driver.json");
 
-			webDriverConfig = driverProfiles.getProfile(readSystemProperty("driver", "chrome"));
 			myAppConfig = myAppProfiles.getProfile(readSystemProperty("myapp", "dev"));
+			webDriverConfig = driverProfiles.getProfile(readSystemProperty("driver", "headless"));
 			externalMailAuth = mailProfiles.getProfile(readSystemProperty("mail.external", "dev"));
 
 			externalPop = new PopServer(externalMailAuth);

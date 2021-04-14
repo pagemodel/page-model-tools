@@ -209,6 +209,10 @@ inside_double_quotes : context {
       styles [] = .string;
    }
    : pattern {
+      regex      \= ([^"%is]*%)
+      styles [] = .string;
+   }
+   : pattern {
       regex      \= (([^"%is]*([is](?:[^%"]))*))
       styles [] = .string;
    }

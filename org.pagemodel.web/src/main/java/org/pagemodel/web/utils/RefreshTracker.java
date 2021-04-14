@@ -18,6 +18,7 @@ package org.pagemodel.web.utils;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.core.utils.Unique;
 import org.pagemodel.web.PageModel;
 import org.pagemodel.web.PageUtils;
@@ -32,15 +33,25 @@ public class RefreshTracker extends PageModel.DefaultPageModel<RefreshTracker> {
 	private String id;
 
 	public static <T extends PageModel<? super T>> T refreshPage(T page) {
-		page.getEvaluator().log("Refreshing page [" + page.getContext().getDriver().getTitle() + "] after wait.");
-		return new RefreshTracker(page.getContext())
-				.addRefreshTrackingElement()
+		page.getEvaluator().log(TestEvaluator.TEST_EXECUTE + " page refresh: [" + page.getClass().getSimpleName() + "]");
+		TestEvaluator contextEval = page.getContext().getEvaluator();
+		page.getContext().setEvaluator(contextEval.quiet());
+		TestEvaluator origEval = page.getEvaluator();
+		TestEvaluator quiet = origEval.quiet();
+		PageUtils.trySetEvaluator(page, quiet);
+		RefreshTracker rt = new RefreshTracker(page.getContext());
+		rt.setTestEvaluator(quiet);
+		T retPage = rt.addRefreshTrackingElement()
 				.doAction(page::onPageLeave)
 				.doAction(() -> page.getContext().getDriver().navigate().refresh())
 				.testRefreshTrackingElement().waitFor().notExists()
 				.doAction(() -> { PageUtils.waitForModelDisplayed(page); })
 				.doAction(page::onPageLoad)
 				.testPage().testPageModel((Class<T>)page.getClass());
+		PageUtils.trySetEvaluator(retPage, origEval);
+		PageUtils.trySetEvaluator(page, origEval);
+		retPage.getContext().setEvaluator(contextEval);
+		return retPage;
 	}
 
 	public RefreshTracker(WebTestContext testContext) {
@@ -56,7 +67,7 @@ public class RefreshTracker extends PageModel.DefaultPageModel<RefreshTracker> {
 	}
 
 	private WebElementTester<RefreshTracker, RefreshTracker> testRefreshTrackingElement() {
-		return new WebElementTester<>(ClickAction.make(this::getRefreshTrackingElement, this));
+		return new WebElementTester<>(this, ClickAction.make(this::getRefreshTrackingElement, this), getEvaluator());
 	}
 
 	protected RefreshTracker addRefreshTrackingElement() {

@@ -24,9 +24,12 @@ import java.util.UUID;
  */
 public class Unique {
 	public static String shortString(){
+		//TODO: find better algorithm for generating random alpha-numeric string
 		UUID uuid = UUID.randomUUID();
 		long l = ByteBuffer.wrap(uuid.toString().getBytes()).getLong();
-		return Long.toString(l, Character.MAX_RADIX);
+		String ret = Long.toString(l, Character.MAX_RADIX);
+		// length is always 12 or 13, if 13 the first char is always '1', for consistency always return 12 char string.
+		return ret.length() > 12 ? ret.substring(1, 13) : ret;
 	}
 
 	public static String string(String string){

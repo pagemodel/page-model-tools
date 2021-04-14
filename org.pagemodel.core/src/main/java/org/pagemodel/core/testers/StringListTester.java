@@ -38,10 +38,6 @@ public class StringListTester<R> {
 	protected final TestContext testContext;
 	private TestEvaluator testEvaluator;
 
-	public StringListTester(Callable<List<String>> ref, R returnObj, TestContext testContext) {
-		this(ref, returnObj, testContext, new TestEvaluator.Now());
-	}
-
 	public StringListTester(Callable<List<String>> ref, R returnObj, TestContext testContext, TestEvaluator testEvaluator) {
 		this.ref = ref;
 		this.returnObj = returnObj;

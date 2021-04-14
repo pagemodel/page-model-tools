@@ -20,12 +20,12 @@ package org.pagemodel.core.utils;
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 @FunctionalInterface
-public interface ThrowingRunnable<E extends Throwable> {
-	static <E extends Throwable> Runnable unchecked(ThrowingRunnable<E> runnable) {
+public interface ThrowingRunnable<E extends Exception> {
+	static <E extends Exception> Runnable unchecked(ThrowingRunnable<E> runnable) {
 		return () -> {
 			try {
 				runnable.run();
-			} catch (Throwable e) {
+			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
 		};

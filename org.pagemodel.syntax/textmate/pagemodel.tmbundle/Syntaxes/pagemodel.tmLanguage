@@ -280,6 +280,12 @@
         </dict>
         <dict>
           <key>match</key>
+          <string>([^\x{0022}\x{0025}is]*%)</string>
+          <key>name</key>
+          <string>string.pagemodel</string>
+        </dict>
+        <dict>
+          <key>match</key>
           <string>(([^\x{0022}\x{0025}is]*([is](?:[^\x{0025}\x{0022}]))*))</string>
           <key>name</key>
           <string>string.pagemodel</string>

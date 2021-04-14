@@ -18,6 +18,7 @@ package org.pagemodel.ssh;
 
 import org.pagemodel.core.testers.ComparableTester;
 import org.pagemodel.core.testers.StringTester;
+import org.pagemodel.core.testers.TestEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,15 +39,21 @@ public class SSHCommandTester<R> {
 	private Integer returnCode;
 	protected R returnObj;
 	protected final SSHTestContext testContext;
+	private TestEvaluator testEvaluator;
 
 	private boolean exectued = false;
 
-	public SSHCommandTester(String command, Integer timeoutSec, SSHTester<?> parent, R returnObj, SSHTestContext testContext) {
+	public SSHCommandTester(String command, Integer timeoutSec, SSHTester<?> parent, R returnObj, SSHTestContext testContext, TestEvaluator testEvaluator) {
 		this.command = command;
 		this.timeoutSec = timeoutSec;
 		this.parent = parent;
 		this.returnObj = returnObj;
 		this.testContext = testContext;
+		this.testEvaluator = testEvaluator;
+	}
+
+	protected TestEvaluator getEvaluator(){
+		return testEvaluator;
 	}
 
 	public ComparableTester<Integer, SSHCommandTester<R>> testReturnCode() {
@@ -54,33 +61,33 @@ public class SSHCommandTester<R> {
 			executeCommand();
 		}
 		if (returnCode == null) {
-			SSHCommandTester<R> returnCodeCmd = new SSHCommandTester<>("echo $?", timeoutSec, parent, returnObj, testContext);
+			SSHCommandTester<R> returnCodeCmd = new SSHCommandTester<>("echo $?", timeoutSec, parent, returnObj, testContext, getEvaluator());
 			returnCodeCmd.executeCommand();
 			String rcString = returnCodeCmd.output;
 			returnCode = Integer.valueOf(rcString);
 		}
-		return new ComparableTester<>(() -> returnCode, this, testContext);
+		return new ComparableTester<>(() -> returnCode, this, testContext, getEvaluator());
 	}
 
 	public StringTester<SSHCommandTester<R>> testOutput() {
 		if (!exectued) {
 			executeCommand();
 		}
-		return new StringTester<>(() -> output, this, testContext);
+		return new StringTester<>(() -> output, this, testContext, getEvaluator());
 	}
 
 	public SSHCommandTester<R> runCommand(String command, int timeoutSec) {
 		if (!exectued) {
 			executeCommand();
 		}
-		return new SSHCommandTester<>(command, timeoutSec, parent, returnObj, testContext);
+		return new SSHCommandTester<>(command, timeoutSec, parent, returnObj, testContext, getEvaluator());
 	}
 
 	public SSHCommandTester<R> runCommand(String command) {
 		if (!exectued) {
 			executeCommand();
 		}
-		return new SSHCommandTester<>(command, SSHTester.DEFAULT_SSH_CMD_TIMEOUT, parent, returnObj, testContext);
+		return new SSHCommandTester<>(command, SSHTester.DEFAULT_SSH_CMD_TIMEOUT, parent, returnObj, testContext, getEvaluator());
 	}
 
 	public SSHCommandTester<R> sudoToRoot() {
@@ -91,14 +98,14 @@ public class SSHCommandTester<R> {
 		if (!exectued) {
 			executeCommand();
 		}
-		return new SSHCommandTester<>("sudo-root:" + sudoOpts + ":" + parent.getAuthenticator().getSudoPassword(), SSHTester.DEFAULT_SSH_CMD_TIMEOUT, parent, returnObj, testContext);
+		return new SSHCommandTester<>("sudo-root:" + sudoOpts + ":" + parent.getAuthenticator().getSudoPassword(), SSHTester.DEFAULT_SSH_CMD_TIMEOUT, parent, returnObj, testContext, getEvaluator());
 	}
 
 	public SSHCommandTester<R> exitSudo() {
 		if (!exectued) {
 			executeCommand();
 		}
-		return new SSHCommandTester<>("exit-sudo", SSHTester.DEFAULT_SSH_CMD_TIMEOUT, parent, returnObj, testContext);
+		return new SSHCommandTester<>("exit-sudo", SSHTester.DEFAULT_SSH_CMD_TIMEOUT, parent, returnObj, testContext, getEvaluator());
 	}
 
 	public R disconnect() {

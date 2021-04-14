@@ -23,10 +23,7 @@ import org.pagemodel.core.testers.StringTester;
 import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.web.LocatedWebElement;
 import org.pagemodel.web.PageModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
@@ -37,7 +34,6 @@ import java.util.function.Function;
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class WebElementTester<R, N extends PageModel<? super N>> {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	protected R returnObj;
 	protected Callable<WebElement> elementRef;
@@ -156,12 +152,12 @@ public class WebElementTester<R, N extends PageModel<? super N>> {
 
 	public StringTester<R> text() {
 		getEvaluator().setSourceDisplayRef(() -> "text: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]");
-		return new StringTester<>(() -> callRef().getText().trim().replaceAll("\\s+", " "), getReturnObj(), page.getContext(), getEvaluator());
+		return new StringTester<>(() -> callRef().getText() == null ? null : callRef().getText().trim().replaceAll("\\s+", " "), getReturnObj(), page.getContext(), getEvaluator());
 	}
 
 	public StringTester<R> tagName() {
 		getEvaluator().setSourceDisplayRef(() -> "tag name: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]");
-		return new StringTester<>(() -> callRef().getTagName().toLowerCase(), getReturnObj(), page.getContext(), getEvaluator());
+		return new StringTester<>(() -> callRef().getTagName() == null ? null : callRef().getTagName().toLowerCase(), getReturnObj(), page.getContext(), getEvaluator());
 	}
 
 	public StringTester<R> attribute(String attribute) {
@@ -201,7 +197,7 @@ public class WebElementTester<R, N extends PageModel<? super N>> {
 
 	public WebActionTester<R> sendKeysAnd(CharSequence... keys) {
 		doSendKeys(keys);
-		return new WebActionTester<>(page.getContext(), page, this);
+		return new WebActionTester<>(page.getContext(), page, this, getEvaluator());
 	}
 
 	protected R doSendKeys(CharSequence... keys) {
@@ -216,7 +212,7 @@ public class WebElementTester<R, N extends PageModel<? super N>> {
 	}
 
 	public N click() {
-		log.info(getEvaluator().getActionMessage(() -> "click: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]"));
+		getEvaluator().log(getEvaluator().getActionMessage(() -> "click: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]"));
 		return clickAction.click(() -> getEvaluator().quiet().testCondition(() -> "clickable: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
 				() -> ExpectedConditions.and((ExpectedCondition<Boolean>) driver -> callRef().hasElement(),
 						ExpectedConditions.elementToBeClickable(callRef()))
@@ -224,12 +220,12 @@ public class WebElementTester<R, N extends PageModel<? super N>> {
 	}
 
 	public WebActionTester<R> clickAnd() {
-		log.info(getEvaluator().getActionMessage(() -> "clickAnd: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]"));
+		getEvaluator().log(getEvaluator().getActionMessage(() -> "clickAnd: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]"));
 		clickAction.doClick(() -> getEvaluator().quiet().testCondition(() -> "clickable: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
 				() -> ExpectedConditions.and((ExpectedCondition<Boolean>) driver -> callRef().hasElement(),
 						ExpectedConditions.elementToBeClickable(callRef()))
 						.apply(page.getContext().getDriver()), getReturnObj(), page.getContext()));
-		return new WebActionTester<>(page.getContext(), page, this);
+		return new WebActionTester<>(page.getContext(), page, this, getEvaluator());
 	}
 
 	public WebElementWait<R, N> waitFor() {
@@ -293,7 +289,6 @@ public class WebElementTester<R, N extends PageModel<? super N>> {
 	 * @author Matt Stevenson <matt@pagemodel.org>
 	 */
 	public static class WebElementWait<R, N extends PageModel<? super N>> extends WebElementTester<R, N> {
-		private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 		public static int DEFAULT_WAIT_SEC = 10;
 
 		private WebTestEvaluator.Wait testEvaluator;
@@ -319,7 +314,6 @@ public class WebElementTester<R, N extends PageModel<? super N>> {
 	 * @author Matt Stevenson <matt@pagemodel.org>
 	 */
 	public static class WebElementRefresh<R, N extends PageModel<? super N>> extends WebElementTester<R,N> {
-		private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 		public static int DEFAULT_WAIT_SEC = 10;
 
 		private WebTestEvaluator.WaitAndRefresh<R> testEvaluator;

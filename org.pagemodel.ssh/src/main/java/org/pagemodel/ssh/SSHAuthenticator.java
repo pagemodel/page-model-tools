@@ -19,125 +19,81 @@ package org.pagemodel.ssh;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
  */
-public interface SSHAuthenticator {
+public class SSHAuthenticator {
+	private String ipAddress;
+	private String username;
+	private String password;
+	private String keyFilePath;
+	private String keyFilePassword;
+	private String sudoPassword;
 
-	public SSHClient connectAndAuthenticate() throws IOException;
-
-	public String getHost();
-
-	public String getUsername();
-
-	public String getPassword();
-
-	public String getSudoPassword();
-
-	class PasswordAuthenticator implements SSHAuthenticator {
-		private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-		private String ipAddress;
-		private String username;
-		private String password;
-		private String sudoPassword;
-
-		public PasswordAuthenticator(String ipAddress, String username, String password, String sudoPassword) {
-			this.ipAddress = ipAddress;
-			this.username = username;
-			this.password = password;
-			this.sudoPassword = sudoPassword;
-		}
-
-		@Override
-		public SSHClient connectAndAuthenticate() throws IOException {
-			SSHClient ssh = new SSHClient();
-			ssh.addHostKeyVerifier(new PromiscuousVerifier());
-			ssh.connect(ipAddress);
-			ssh.authPassword(username, password);
-			return ssh;
-		}
-
-		@Override
-		public String getHost() {
-			return ipAddress;
-		}
-
-		@Override
-		public String getUsername() {
-			return username;
-		}
-
-		@Override
-		public String getPassword() {
-			return password;
-		}
-
-		@Override
-		public String getSudoPassword() {
-			return sudoPassword;
-		}
-
+	public static SSHAuthenticator passwordAuth(String ipAddress, String username, String password, String sudoPassword) {
+		return new SSHAuthenticator(ipAddress, username, password, null, null, sudoPassword);
 	}
 
-	class KeyAuthenticator implements SSHAuthenticator {
-		private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	public static SSHAuthenticator keyAuth(String ipAddress, String username, String keyFilePath, String keyFilePassword, String sudoPassword) {
+		return new SSHAuthenticator(ipAddress, username, null, keyFilePath, keyFilePassword, sudoPassword);
+	}
 
-		private String ipAddress;
-		private String username;
-		private String password;
-		private String keyFilePath;
-		private String keyFilePassword;
-		private String sudoPassword;
+	public SSHAuthenticator(String ipAddress, String username, String password, String keyFilePath, String keyFilePassword, String sudoPassword) {
+		this.ipAddress = ipAddress;
+		this.username = username;
+		this.password = password;
+		this.keyFilePath = keyFilePath;
+		this.keyFilePassword = keyFilePassword;
+		this.sudoPassword = sudoPassword;
+	}
 
-		public KeyAuthenticator(String ipAddress, String username, String password, String keyFilePath, String keyFilePassword, String sudoPassword) {
-			this.ipAddress = ipAddress;
-			this.username = username;
-			this.password = password;
-			this.keyFilePath = keyFilePath;
-			this.keyFilePassword = keyFilePassword;
-			this.sudoPassword = sudoPassword;
+	public SSHClient connectAndAuthenticate() throws IOException {
+		if(keyFilePath != null && new File(keyFilePath).exists()) {
+			return connectAndAuthenticateKeyFile();
+		}else {
+			return connectAndAuthenticatePassword();
 		}
+	}
 
-		@Override
-		public SSHClient connectAndAuthenticate() throws IOException {
-			SSHClient ssh = new SSHClient();
-			ssh.addHostKeyVerifier(new PromiscuousVerifier());
-			ssh.connect(ipAddress);
-			KeyProvider kp;
-			if (keyFilePassword == null) {
-				kp = ssh.loadKeys(keyFilePath);
-			} else {
-				kp = ssh.loadKeys(keyFilePath, keyFilePassword);
-			}
-			ssh.authPublickey(username, kp);
-			return ssh;
-		}
+	public SSHClient connectAndAuthenticatePassword() throws IOException {
+		SSHClient ssh = new SSHClient();
+		ssh.addHostKeyVerifier(new PromiscuousVerifier());
+		ssh.connect(ipAddress);
+		ssh.authPassword(username, password);
+		return ssh;
+	}
 
-		@Override
-		public String getHost() {
-			return ipAddress;
+	public SSHClient connectAndAuthenticateKeyFile() throws IOException {
+		SSHClient ssh = new SSHClient();
+		ssh.addHostKeyVerifier(new PromiscuousVerifier());
+		ssh.connect(ipAddress);
+		KeyProvider kp;
+		if (keyFilePassword == null) {
+			kp = ssh.loadKeys(keyFilePath);
+		} else {
+			kp = ssh.loadKeys(keyFilePath, keyFilePassword);
 		}
+		ssh.authPublickey(username, kp);
+		return ssh;
+	}
 
-		@Override
-		public String getUsername() {
-			return username;
-		}
+	public String getHost() {
+		return ipAddress;
+	}
 
-		@Override
-		public String getPassword() {
-			return password;
-		}
+	public String getUsername() {
+		return username;
+	}
 
-		@Override
-		public String getSudoPassword() {
-			return sudoPassword;
-		}
+	public String getPassword() {
+		return password;
+	}
+
+	public String getSudoPassword() {
+		return sudoPassword;
 	}
 }

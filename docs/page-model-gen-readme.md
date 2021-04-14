@@ -120,7 +120,7 @@ TopNav @@@MyTopNavClass id "topNav"
 ##### find_by:
 The find_by consists of a by_type and by_locator, representing a Selenium By locator.
 Available by_types are:
-  `id`, `cssSelector`, `xpath`, `className`, `linkText`, `tagName`
+  `id`, `cssSelector`, `xpath`, `name`, `className`, `linkText`, `tagName`, `partialLinkText`
 The `by_locator` is the locator string for the given `by_type`.
 The locator may contain string or integer variables for a user to select from multiple elements (such as a row by row number) or match dynamic content (such as a user element by username).
 A `username` string variable would be added as `s%username%`.

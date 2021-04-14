@@ -49,7 +49,10 @@ public class DefaultTestContext implements TestContext {
 
 	@Override
 	public <T> void store(String key, T value) {
-		log.info("Storing: key:[" + key + "], value:[" + value + "]");
+		getEvaluator().log(TestEvaluator.TEST_EXECUTE + " store: key:[" + key + "], value:[" + value + "]");
+		if (key == null) {
+			throw new NullPointerException("Attempting to store value with null key");
+		}
 		if (value == null) {
 			throw new NullPointerException("Attempting to store null value for key [" + key + "]");
 		}
@@ -61,7 +64,7 @@ public class DefaultTestContext implements TestContext {
 
 	@Override
 	public <T> T load(Class<T> clazz, String key) {
-		return getEvaluator().testCondition(() -> "Loading: key:[" + key + "], value:[" + storedObjects.get(key) + "]", () -> {
+		return getEvaluator().quiet().testCondition(() -> "load: key:[" + key + "], value:[" + storedObjects.get(key) + "]", () -> {
 			if (key == null) {
 				throw new NullPointerException("Attempting to load value with null key");
 			}
@@ -78,7 +81,7 @@ public class DefaultTestContext implements TestContext {
 
 	@Override
 	public <T> T load(String key) {
-		return getEvaluator().testCondition(() -> "Loading: key:[" + key + "], value:[" + storedObjects.get(key) + "]", () -> {
+		return getEvaluator().quiet().testCondition(() -> "load: key:[" + key + "], value:[" + storedObjects.get(key) + "]", () -> {
 			if (key == null) {
 				throw new NullPointerException("Attempting to load value with null key");
 			}

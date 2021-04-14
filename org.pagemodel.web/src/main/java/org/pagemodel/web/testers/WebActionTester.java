@@ -16,6 +16,7 @@
 
 package org.pagemodel.web.testers;
 
+import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.web.PageModel;
 import org.pagemodel.web.PageUtils;
 import org.pagemodel.web.WebTestContext;
@@ -34,29 +35,43 @@ public class WebActionTester<R> {
 	private final PageModel page;
 	private final WebTestContext testContext;
 	private final WebElementTester<R, ?> keySender;
+	private TestEvaluator testEvaluator;
 
-	public WebActionTester(WebTestContext testContext, PageModel page, WebElementTester<R, ?> keySender) {
+	public WebActionTester(WebTestContext testContext, PageModel page, WebElementTester<R, ?> keySender, TestEvaluator testEvaluator) {
 		this.testContext = testContext;
 		this.page = page;
 		this.keySender = keySender;
+		this.testEvaluator = testEvaluator;
 	}
 
 	public AlertTester<R> testAlert() {
-		return new AlertTester<>(keySender.getReturnObj(), testContext);
+		return new AlertTester<>(page, keySender.getReturnObj(), testContext, getEvaluator());
+	}
+
+	protected TestEvaluator getEvaluator(){
+		return testEvaluator;
 	}
 
 	public <R extends PageModel<? super R>> R expectRedirect(Class<R> returnPageClass) {
-		log.info("Expecting redirect: from [" + page.getClass().getName() + "] to [" + returnPageClass.getName() + "]");
-		R retPage = PageUtils.makeInstance(returnPageClass, testContext);
-		retPage = PageUtils.waitForModelDisplayed(retPage);
-		retPage.onPageLoad();
-		return retPage;
+		R retPageInst = null;
+		try{
+			retPageInst = PageUtils.makeInstance(returnPageClass, testContext);
+		}catch (Throwable t){}
+		final R retPage = retPageInst;
+		return getEvaluator().testRun(
+				TestEvaluator.TEST_ASSERT,
+				() -> "redirect: from [" + page.getClass().getSimpleName() + "] to [" + returnPageClass.getSimpleName() + "]",
+				() -> PageUtils.waitForModelDisplayed(retPage).onPageLoad(),
+				retPage, testContext);
 	}
 
 	public R noRedirect() {
-		log.info("Expecting no redirect: on page [" + page.getClass().getName() + "]");
-		PageUtils.waitForModelDisplayed(page);
-		return keySender.getReturnObj();
+		//TODO: why do we have to cast? intellij shows it as redundant, but will not compile without
+		return (R)getEvaluator().testRun(
+				TestEvaluator.TEST_ASSERT,
+				() -> "no redirect: [" + page.getClass().getSimpleName() + "]",
+				() -> PageUtils.waitForModelDisplayed(page),
+				keySender.getReturnObj(), testContext);
 	}
 
 	public R sendKeys(CharSequence... keys) {

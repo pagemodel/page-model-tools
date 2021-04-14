@@ -38,10 +38,6 @@ public class StringTester<R> {
 	protected final TestContext testContext;
 	private TestEvaluator testEvaluator;
 
-	public StringTester(Callable<String> ref, R returnObj, TestContext testContext) {
-		this(ref, returnObj, testContext, new TestEvaluator.Now());
-	}
-
 	public StringTester(Callable<String> ref, R returnObj, TestContext testContext, TestEvaluator testEvaluator) {
 		this.ref = ref;
 		this.returnObj = returnObj;
@@ -73,12 +69,12 @@ public class StringTester<R> {
 
 	public R equals(String string) {
 		return getEvaluator().testCondition(() -> "[" + callRef() + "] equals [" + string + "]",
-				() -> callRef().equals(string), returnObj, testContext);
+				() -> callRef() == null && string == null || callRef().equals(string), returnObj, testContext);
 	}
 
 	public R notEquals(String string) {
 		return getEvaluator().testCondition(() -> "[" + callRef() + "] not equals [" + string + "]",
-				() -> !callRef().equals(string), returnObj, testContext);
+				() -> callRef() == null && string != null || !callRef().equals(string), returnObj, testContext);
 	}
 
 	public R matches(String regex) {
@@ -127,21 +123,22 @@ public class StringTester<R> {
 	}
 
 	public R storeMatch(String key, String pattern) {
-		return storeMatch(key, pattern, 1);
+		return storeMatch(key, pattern, 0);
 	}
 
 	public R storeMatch(String key, String pattern, int group) {
-		log.info("Storing pattern match pattern:[" + pattern + "], string:[" + callRef() + "], match group:[" + group + "]");
-		Matcher matcher = Pattern.compile(pattern).matcher(callRef());
-		if (!matcher.find()) {
-			throw testContext.createException("Error: Unable to store match.  String [" + callRef() + "] does not match regex [" + pattern + "]");
-		}
-		testContext.store(key, matcher.group(group));
-		return returnObj;
+		return getEvaluator().testRun(
+				TestEvaluator.TEST_FIND,
+				() -> "pattern match: pattern:[" + pattern + "], string:[" + callRef() + "], match group:[" + group + "]",
+				() -> {
+					Matcher matcher = Pattern.compile(pattern).matcher(callRef());
+					matcher.find();
+					testContext.store(key, matcher.group(group));
+				}, returnObj, testContext);
 	}
 
 	public StringTester<R> testMatch(String pattern) {
-		return testMatch(pattern, 1);
+		return testMatch(pattern, 0);
 	}
 
 	public StringTester<R> testMatch(String pattern, int group) {

@@ -104,7 +104,6 @@ public class MailServer {
 			throw new NullPointerException("Null mail domain for " + getHost());
 		}
 		String email = localPart + "@" + getDomain();
-		log.info("Generated email address: " + email);
 		try {
 			return new InternetAddress(email).toString();
 		} catch (AddressException e) {

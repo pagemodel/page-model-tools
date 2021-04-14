@@ -16,6 +16,7 @@
 
 package org.pagemodel.ssh;
 
+import org.pagemodel.core.testers.TestEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,16 +36,22 @@ public class SSHTester<R> {
 	private SSHSession sshSession;
 	private boolean connected = false;
 	private SSHAuthenticator authenticator;
+	private TestEvaluator testEvaluator;
 
-	public SSHTester(R returnObj, SSHTestContext testContext) {
+	public SSHTester(R returnObj, SSHTestContext testContext, TestEvaluator testEvaluator) {
 		this.returnObj = returnObj;
 		this.testContext = testContext;
 		this.authenticator = testContext.getSshAuthenticator();
+		this.testEvaluator = testEvaluator;
+	}
+
+	protected TestEvaluator getEvaluator(){
+		return testEvaluator;
 	}
 
 	public SSHCommandTester<R> runCommand(String command, Integer timeoutSec) {
 		startSession();
-		return new SSHCommandTester<>(command, timeoutSec, this, returnObj, testContext);
+		return new SSHCommandTester<>(command, timeoutSec, this, returnObj, testContext, getEvaluator());
 	}
 
 	public SSHCommandTester<R> runCommand(String command) {

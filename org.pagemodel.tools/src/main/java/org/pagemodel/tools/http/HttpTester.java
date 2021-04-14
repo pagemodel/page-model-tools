@@ -17,6 +17,7 @@
 package org.pagemodel.tools.http;
 
 import org.pagemodel.core.TestContext;
+import org.pagemodel.core.testers.TestEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,11 +35,17 @@ public class HttpTester<R> {
 	protected R returnObj;
 	private final TestContext testContext;
 	private HttpsURLConnection con;
+	private TestEvaluator testEvaluator;
 
-	public HttpTester(R returnObj, TestContext testContext) {
+	public HttpTester(R returnObj, TestContext testContext, TestEvaluator testEvaluator) {
 		this.testContext = testContext;
 		this.returnObj = returnObj;
 		this.con = null;
+		this.testEvaluator = testEvaluator;
+	}
+
+	protected TestEvaluator getEvaluator(){
+		return testEvaluator;
 	}
 
 	public HttpResponseTester<HttpTester<R>> testSend(String fullUrl) {
@@ -50,7 +57,7 @@ public class HttpTester<R> {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		return new HttpResponseTester<>(this.con, this, testContext);
+		return new HttpResponseTester<>(this.con, this, testContext, getEvaluator());
 	}
 
 	public R disconnect() {

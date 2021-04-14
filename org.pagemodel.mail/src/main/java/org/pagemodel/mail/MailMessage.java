@@ -168,6 +168,11 @@ public class MailMessage {
 	}
 
 	@Override
+	public String toString() {
+		return "mail(subject:[" + subject + "], sender:[" + sender + "], recipientsTo:[" + String.join(", ", recipientsTo) + "])";
+	}
+
+	@Override
 	public boolean equals(Object o) {
 		if (this == o)
 			return true;

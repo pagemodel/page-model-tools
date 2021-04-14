@@ -17,6 +17,7 @@
 package org.pagemodel.tools.http;
 
 import org.pagemodel.core.TestContext;
+import org.pagemodel.core.testers.TestEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,12 +30,12 @@ public class Http {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	public static Http.HttpInner testHttp(TestContext testContext) {
-		return new Http.HttpInner(testContext);
+		return new Http.HttpInner(testContext, testContext.getEvaluator());
 	}
 
 	public static class HttpInner extends HttpTester<HttpInner> {
-		public HttpInner(TestContext testContext) {
-			super(null, testContext);
+		public HttpInner(TestContext testContext, TestEvaluator testEvaluator) {
+			super(null, testContext, testEvaluator);
 			this.returnObj = this;
 		}
 	}

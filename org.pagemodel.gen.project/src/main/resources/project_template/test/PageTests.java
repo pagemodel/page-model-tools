@@ -11,7 +11,7 @@ public class PageTests extends MyAppTestBase {
 		MyAppUser admin = MyAppUser.admin(context);
 		MyAppUser.admin(context).loginToMainPage()
 				.testSiteStatusDisplay().text().equals("Online")
-				.testSiteVersionDisplay().text().startsWith("0.8.0")
+				.testSiteVersionDisplay().text().startsWith("0.8")
 				.testStatusDateDisplay().text().storeValue("status_date")
 				.testPage().waitFor().numberOfSeconds(1)
 				.testUpdateStatusButton().click()
@@ -22,7 +22,7 @@ public class PageTests extends MyAppTestBase {
 
 				.testTopNav().testUserInfoDisplay().text().equals("Logged in as " + admin.getUsername())
 				.testTopNav().testUserInfoDisplay().text().endsWith(admin.getUsername())
-				.testTopNav().testUserInfoDisplay().text().testMatch("Logged in as (.*)").equals(admin.getUsername())
+				.testTopNav().testUserInfoDisplay().text().testMatch("Logged in as (.*)", 1).equals(admin.getUsername())
 				.testTopNav().testUserInfoDisplay().text().transform(str -> str.replace("Logged in as ", "")).equals(admin.getUsername())
 
 				.testNotificationDisplay(1).testTitleDisplay().text().equals("Notification 1")

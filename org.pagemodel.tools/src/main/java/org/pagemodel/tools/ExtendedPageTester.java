@@ -36,10 +36,6 @@ public class ExtendedPageTester<P extends PageModel<? super P>> extends PageTest
 		super(page, testContext, testEvaluator);
 	}
 
-	public ExtendedPageTester(P page, WebTestContext testContext) {
-		super(page, testContext);
-	}
-
 	@Override
 	public WebElementTester<P, P> testFocusedElement() {
 		return super.testFocusedElement();

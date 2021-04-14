@@ -1,0 +1,579 @@
+'fileTypes' : [
+  'pmlog'
+  'pm.log'
+]
+'name' : 'pagemodellog'
+'patterns' : [
+  {
+    'include' : '#main'
+  }
+]
+'scopeName' : 'source.pagemodellog'
+'uuid' : 'b08bd165-0898-45a5-a385-220c8e073e46'
+'repository' : {
+  'main' : {
+    'patterns' : [
+      {
+        'include' : '#numeric'
+      }
+      {
+        'match' : '(^\\[[0-9\\x{003a}.]*\\] )'
+        'name' : 'text.pagemodellog'
+      }
+      {
+        'match' : '(Assert|Execute)( javaScript )(\\[)(.*)(\\])( on page:)(\\[)(.*)(\\])'
+        'captures' : {
+          '1' : {
+            'name' : 'constant.language.pagemodellog'
+          }
+          '2' : {
+            'name' : 'keyword.pagemodellog'
+          }
+          '3' : {
+            'name' : 'text.pagemodellog'
+          }
+          '4' : {
+            'name' : 'string.pagemodellog'
+          }
+          '5' : {
+            'name' : 'text.pagemodellog'
+          }
+          '6' : {
+            'name' : 'text.pagemodellog'
+          }
+          '7' : {
+            'name' : 'text.pagemodellog'
+          }
+          '8' : {
+            'name' : 'keyword.pagemodellog'
+          }
+          '9' : {
+            'name' : 'text.pagemodellog'
+          }
+        }
+      }
+      {
+        'match' : '(Waiting for page, )(.*)( to display.)'
+        'captures' : {
+          '1' : {
+            'name' : 'text.pagemodellog'
+          }
+          '2' : {
+            'name' : 'text.pagemodellog'
+          }
+          '3' : {
+            'name' : 'text.pagemodellog'
+          }
+        }
+      }
+      {
+        'match' : '(test page model \\[)([^\\]]*)(\\] from page \\[)([^\\]]*)(\\])'
+        'captures' : {
+          '1' : {
+            'name' : 'text.pagemodellog'
+          }
+          '2' : {
+            'name' : 'keyword.pagemodellog'
+          }
+          '3' : {
+            'name' : 'text.pagemodellog'
+          }
+          '4' : {
+            'name' : 'keyword.pagemodellog'
+          }
+          '5' : {
+            'name' : 'text.pagemodellog'
+          }
+        }
+      }
+      {
+        'match' : '(Testing page model \\[)([^\\]]*)(\\] from page \\[)([^\\]]*)(\\])'
+        'captures' : {
+          '1' : {
+            'name' : 'text.pagemodellog'
+          }
+          '2' : {
+            'name' : 'keyword.pagemodellog'
+          }
+          '3' : {
+            'name' : 'text.pagemodellog'
+          }
+          '4' : {
+            'name' : 'keyword.pagemodellog'
+          }
+          '5' : {
+            'name' : 'text.pagemodellog'
+          }
+        }
+      }
+      {
+        'match' : '(Sleeping )([0-9]*)( [a-z]*\\.)'
+        'captures' : {
+          '1' : {
+            'name' : 'text.pagemodellog'
+          }
+          '2' : {
+            'name' : 'constant.numeric.pagemodellog'
+          }
+          '3' : {
+            'name' : 'text.pagemodellog'
+          }
+        }
+      }
+      {
+        'match' : '(Refreshing page \\[[^\\]]*\\] after wait.)'
+        'name' : 'text.pagemodellog'
+      }
+      {
+        'match' : '(Inserting <div id=\'refresh-.*\'/> to verify page refresh\\.)'
+        'name' : 'text.pagemodellog'
+      }
+      {
+        'match' : '(Expecting no redirect: on page \\[[^\\]]*\\])'
+        'name' : 'text.pagemodellog'
+      }
+      {
+        'match' : '(Using chromedriver )([0-9.]*)( .*)'
+        'captures' : {
+          '1' : {
+            'name' : 'text.pagemodellog'
+          }
+          '2' : {
+            'name' : 'keyword.other.special-method.pagemodellog'
+          }
+          '3' : {
+            'name' : 'text.pagemodellog'
+          }
+        }
+      }
+      {
+        'match' : '(Exporting webdriver.chrome.drive.*)'
+        'name' : 'text.pagemodellog'
+      }
+      {
+        'match' : '(Opening url \\[)(.*)(\\] with capablities: )(.*)'
+        'captures' : {
+          '1' : {
+            'name' : 'text.pagemodellog'
+          }
+          '2' : {
+            'name' : 'keyword.other.special-method.pagemodellog'
+          }
+          '3' : {
+            'name' : 'text.pagemodellog'
+          }
+          '4' : {
+            'name' : 'keyword.other.special-method.pagemodellog'
+          }
+        }
+      }
+      {
+        'match' : '(Assert|Execute|Find)( wait for | wait and refresh for )?([^\\x{003a}]*: )([a-zA-Z]*: ?)?(element\\(by\\(.*\\), found\\(.*\\)\\))( on page \\[)(.*)(\\])'
+        'captures' : {
+          '1' : {
+            'name' : 'constant.language.pagemodellog'
+          }
+          '2' : {
+            'name' : 'keyword.other.special-method.pagemodellog'
+          }
+          '3' : {
+            'name' : 'keyword.pagemodellog'
+          }
+          '4' : {
+            'name' : 'text.pagemodellog'
+          }
+          '5' : {
+            'name' : 'support.function.pagemodellog'
+          }
+          '6' : {
+            'name' : 'text.pagemodellog'
+          }
+          '7' : {
+            'name' : 'keyword.pagemodellog'
+          }
+          '8' : {
+            'name' : 'text.pagemodellog'
+          }
+        }
+      }
+      {
+        'match' : '(Assert|Execute|Find)( wait for | wait and refresh for )?([^\\x{003a}]*: )([a-zA-Z]*:)( to |, )?(element\\(by\\(.*\\), found\\(.*\\)\\))( on page \\[)(.*)(\\])'
+        'captures' : {
+          '1' : {
+            'name' : 'constant.language.pagemodellog'
+          }
+          '2' : {
+            'name' : 'keyword.other.special-method.pagemodellog'
+          }
+          '3' : {
+            'name' : 'keyword.pagemodellog'
+          }
+          '4' : {
+            'name' : 'text.pagemodellog'
+          }
+          '5' : {
+            'name' : 'text.pagemodellog'
+          }
+          '6' : {
+            'name' : 'support.function.pagemodellog'
+          }
+          '7' : {
+            'name' : 'text.pagemodellog'
+          }
+          '8' : {
+            'name' : 'keyword.pagemodellog'
+          }
+          '9' : {
+            'name' : 'text.pagemodellog'
+          }
+        }
+      }
+      {
+        'match' : '(Assert|Execute|Find)( wait for | wait and refresh for )?([^\\x{003a}]*: )([a-zA-Z]*:)?(\\[)(.*)(\\])( to |, )(element\\(by\\(.*\\), found\\(.*\\)\\))( on page \\[)(.*)(\\])'
+        'captures' : {
+          '1' : {
+            'name' : 'constant.language.pagemodellog'
+          }
+          '2' : {
+            'name' : 'keyword.other.special-method.pagemodellog'
+          }
+          '3' : {
+            'name' : 'keyword.pagemodellog'
+          }
+          '4' : {
+            'name' : 'text.pagemodellog'
+          }
+          '5' : {
+            'name' : 'text.pagemodellog'
+          }
+          '6' : {
+            'name' : 'string.pagemodellog'
+          }
+          '7' : {
+            'name' : 'text.pagemodellog'
+          }
+          '8' : {
+            'name' : 'text.pagemodellog'
+          }
+          '9' : {
+            'name' : 'support.function.pagemodellog'
+          }
+          '10' : {
+            'name' : 'text.pagemodellog'
+          }
+          '11' : {
+            'name' : 'keyword.pagemodellog'
+          }
+          '12' : {
+            'name' : 'text.pagemodellog'
+          }
+        }
+      }
+      {
+        'match' : '(Assert|Execute|Find)( wait for | wait and refresh for )?([^\\x{003a}]*: )(\\[)(.*)(\\])'
+        'captures' : {
+          '1' : {
+            'name' : 'constant.language.pagemodellog'
+          }
+          '2' : {
+            'name' : 'keyword.other.special-method.pagemodellog'
+          }
+          '3' : {
+            'name' : 'keyword.pagemodellog'
+          }
+          '4' : {
+            'name' : 'text.pagemodellog'
+          }
+          '5' : {
+            'name' : 'string.pagemodellog'
+          }
+          '6' : {
+            'name' : 'text.pagemodellog'
+          }
+        }
+      }
+      {
+        'match' : '(element\\(by\\(.*\\), found\\(.*\\)\\))( on page \\[)(.*)(\\])'
+        'captures' : {
+          '1' : {
+            'name' : 'support.function.pagemodellog'
+          }
+          '2' : {
+            'name' : 'text.pagemodellog'
+          }
+          '3' : {
+            'name' : 'keyword.pagemodellog'
+          }
+          '4' : {
+            'name' : 'text.pagemodellog'
+          }
+        }
+      }
+      {
+        'match' : '(Assert)( \\[)(.*)(\\] )([a-zA-Z0-9\\x{0020}]*)( \\[)(.*)(\\])'
+        'captures' : {
+          '1' : {
+            'name' : 'constant.language.pagemodellog'
+          }
+          '2' : {
+            'name' : 'text.pagemodellog'
+          }
+          '3' : {
+            'name' : 'string.pagemodellog'
+          }
+          '4' : {
+            'name' : 'text.pagemodellog'
+          }
+          '5' : {
+            'name' : 'keyword.pagemodellog'
+          }
+          '6' : {
+            'name' : 'text.pagemodellog'
+          }
+          '7' : {
+            'name' : 'string.pagemodellog'
+          }
+          '8' : {
+            'name' : 'text.pagemodellog'
+          }
+        }
+      }
+      {
+        'match' : '(Assert)( \\[)(.*)(\\] )(is empty)'
+        'captures' : {
+          '1' : {
+            'name' : 'constant.language.pagemodellog'
+          }
+          '2' : {
+            'name' : 'text.pagemodellog'
+          }
+          '3' : {
+            'name' : 'string.pagemodellog'
+          }
+          '4' : {
+            'name' : 'text.pagemodellog'
+          }
+          '5' : {
+            'name' : 'keyword.pagemodellog'
+          }
+        }
+      }
+      {
+        'match' : '(Storing)(: key:\\[)(.*)(\\], value:\\[)(.*)(\\])'
+        'captures' : {
+          '1' : {
+            'name' : 'constant.language.pagemodellog'
+          }
+          '2' : {
+            'name' : 'text.pagemodellog'
+          }
+          '3' : {
+            'name' : 'string.pagemodellog'
+          }
+          '4' : {
+            'name' : 'text.pagemodellog'
+          }
+          '5' : {
+            'name' : 'string.pagemodellog'
+          }
+          '6' : {
+            'name' : 'text.pagemodellog'
+          }
+        }
+      }
+      {
+        'match' : '(Assert Loading)(: key:\\[)(.*)(\\], value:\\[)(.*)(\\])'
+        'captures' : {
+          '1' : {
+            'name' : 'constant.language.pagemodellog'
+          }
+          '2' : {
+            'name' : 'text.pagemodellog'
+          }
+          '3' : {
+            'name' : 'string.pagemodellog'
+          }
+          '4' : {
+            'name' : 'text.pagemodellog'
+          }
+          '5' : {
+            'name' : 'string.pagemodellog'
+          }
+          '6' : {
+            'name' : 'text.pagemodellog'
+          }
+        }
+      }
+      {
+        'match' : '(Assert Removing)(: key:\\[)(.*)(\\], value:\\[)(.*)(\\])'
+        'captures' : {
+          '1' : {
+            'name' : 'constant.language.pagemodellog'
+          }
+          '2' : {
+            'name' : 'text.pagemodellog'
+          }
+          '3' : {
+            'name' : 'string.pagemodellog'
+          }
+          '4' : {
+            'name' : 'text.pagemodellog'
+          }
+          '5' : {
+            'name' : 'string.pagemodellog'
+          }
+          '6' : {
+            'name' : 'text.pagemodellog'
+          }
+        }
+      }
+      {
+        'match' : '(Test Failure:|org.pagemodel.web.utils.PageException:)'
+        'name' : 'invalid.pagemodellog'
+      }
+      {
+        'match' : '(^\\s*at)( )(org\\.openqa|org\\.gradle|org\\.junit|java|sun|com.sun)(\\.[a-zA-Z0-9\\.\\x{0024}]*)(\\()(.*|[a-zA-Z0-9]*\\.java:[0-9]*)(\\))'
+        'captures' : {
+          '1' : {
+            'name' : 'invalid.pagemodellog'
+          }
+          '2' : {
+            'name' : 'comment.pagemodellog'
+          }
+          '3' : {
+            'name' : 'comment.pagemodellog'
+          }
+          '4' : {
+            'name' : 'comment.pagemodellog'
+          }
+          '5' : {
+            'name' : 'comment.pagemodellog'
+          }
+          '6' : {
+            'name' : 'comment.pagemodellog'
+          }
+          '7' : {
+            'name' : 'comment.pagemodellog'
+          }
+        }
+      }
+      {
+        'match' : '(^\\s*at)( )(org\\.pagemodel)(\\.[a-zA-Z0-9\\.\\x{0024}]*)(\\()(.*|[a-zA-Z0-9]*\\.java)(:)([0-9]*)(\\))'
+        'captures' : {
+          '1' : {
+            'name' : 'invalid.pagemodellog'
+          }
+          '2' : {
+            'name' : 'text.pagemodellog'
+          }
+          '3' : {
+            'name' : 'text.pagemodellog'
+          }
+          '4' : {
+            'name' : 'text.pagemodellog'
+          }
+          '5' : {
+            'name' : 'text.pagemodellog'
+          }
+          '6' : {
+            'name' : 'keyword.pagemodellog'
+          }
+          '7' : {
+            'name' : 'text.pagemodellog'
+          }
+          '8' : {
+            'name' : 'constant.numeric.pagemodellog'
+          }
+          '9' : {
+            'name' : 'text.pagemodellog'
+          }
+        }
+      }
+      {
+        'match' : '(^\\s*at)( [a-zA-Z0-9.\\x{0024}]*)(\\()(.*|[a-zA-Z0-9]*\\.java)(:)([0-9]*)(\\))'
+        'captures' : {
+          '1' : {
+            'name' : 'invalid.pagemodellog'
+          }
+          '2' : {
+            'name' : 'keyword.other.special-method.pagemodellog'
+          }
+          '3' : {
+            'name' : 'text.pagemodellog'
+          }
+          '4' : {
+            'name' : 'keyword.pagemodellog'
+          }
+          '5' : {
+            'name' : 'text.pagemodellog'
+          }
+          '6' : {
+            'name' : 'constant.numeric.pagemodellog'
+          }
+          '7' : {
+            'name' : 'text.pagemodellog'
+          }
+        }
+      }
+      {
+        'match' : '(Executing)( SSH command )(\\[)(.*)(\\])'
+        'captures' : {
+          '1' : {
+            'name' : 'constant.language.pagemodellog'
+          }
+          '2' : {
+            'name' : 'keyword.pagemodellog'
+          }
+          '3' : {
+            'name' : 'text.pagemodellog'
+          }
+          '4' : {
+            'name' : 'string.pagemodellog'
+          }
+          '5' : {
+            'name' : 'text.pagemodellog'
+          }
+        }
+      }
+      {
+        'match' : '(Connecting to SSH.*)'
+        'name' : 'text.pagemodellog'
+      }
+      {
+        'match' : '(Disconnecting from SSH.*)'
+        'name' : 'text.pagemodellog'
+      }
+      {
+        'match' : '(SSH )([a-zA-Z0-9\\x{0020}.\\x{002c}]*)'
+        'captures' : {
+          '1' : {
+            'name' : 'text.pagemodellog'
+          }
+          '2' : {
+            'name' : 'keyword.other.special-method.pagemodellog'
+          }
+        }
+      }
+      {
+        'match' : '(ChromeDriver was started successfully.)'
+        'name' : 'text.pagemodellog'
+      }
+      {
+        'match' : '(.*org.openqa.selenium.remote.ProtocolHandshake.*)'
+        'name' : 'text.pagemodellog'
+      }
+      {
+        'match' : '(INFO: Detected dialect: W3C)'
+        'name' : 'text.pagemodellog'
+      }
+    ]
+  }
+  'numeric' : {
+    'patterns' : [
+      {
+        'match' : '(\\b\\d+)'
+        'name' : 'constant.numeric.pagemodellog'
+      }
+    ]
+  }
+}
