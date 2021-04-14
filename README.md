@@ -73,6 +73,7 @@ cd ..
 1. after building the sources, get the built `org.pagemodel.gen.project-0.8.0-SNAPSHOT.jar`
 2. run the jar to generate a new project
 3. run the sample tests in your project
+4. see [project structure](docs/project-structure.md) for an overview of the project files
 
 ###### Linux and MacOS:
 ```
@@ -180,54 +181,3 @@ Java page model classes are generated from .pagemodel files automatically with a
 ###### HomePage.pagemodel:
 
 ![home page pagemodel](docs/images/home_page_pagemodel.png)
-
-## Page Model Tools classes:
-
-### PageModel
-represents a web page; a collection of named Web Elements
-
-### WebElementTester
-allows testing and interacting with a Web Element
-
-### ClickAction
-defines expectations and behavior when clicking a Web Element
-
-### ComponentModel
-special WebElementTester with a collection of named child Web Elements
-
-### SectionModel
-special ComponentModel which is larger or requires more user interaction
-
-### TestContext
-manages a single browser instance and holds test variables and state information
-
-provides storage to store and load captured values during testing
-
-created for each test to allow parallel testing
-
-## User-created application classes:
-
-### XYZConfig
-server information, admin user details, ssh credentials, mail credentials
-
-contains any extra variables needed by the tests
-
-### XYZUserDetails
-user information which can be saved, loaded, and randomly generated
-
-username, email, password, role
-
-### XYZUser
-active user object loaded from user details
-
-can create, register, and login a user
-
-### XYZTestContext
-contains a XYZConfig defining the XYZ application server to test and external mail server to use
-
-holds a single browser connection to the XYZ application server
-
-can navigate to the login page and other external pages
-
-### XYZPageModels/src/main/resources/pagemodels/
-directory containing .pagemodel files for each page in the XYZ web application
