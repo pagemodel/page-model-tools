@@ -128,7 +128,9 @@ XYZTestSanity/src/test/resources/profiles.xyz.json
 XYZPageModels/src/main/resources/pagemodels/
 ```
 See [Page Model Examples](docs/page-model-example.md) for more about the .pagemodel files.
-Dowload [DemoProject-0.8.0.tar.gz](docs/emoProject-0.8.0.tar.gz) for a demo project using https://demoblaze.com with a step-by-step git history of creating the project.
+
+Dowload [DemoProject-0.8.0.tar.gz](docs/DemoProject-0.8.0.tar.gz) for a demo project using https://demoblaze.com with a step-by-step git history of creating the project.
+
 ##### Rebuild to regenerate page model classes:
 ###### Linux and MacOS:
 ```
