@@ -23,6 +23,7 @@ Row - a table row or row of elements
 Dialog - a dialog box with child elements
 Modal - a modal dialog box that takes focus from the rest of the page
 Nav - a navigation component with navigation buttons or links
+Menu - a menu component
 Section - generic section
 Component - generic component
 
@@ -42,7 +43,4 @@ TopNav
 ---
 ```
 Copyright 2021 Matthew Stevenson <pagemodel.org>
-This work is licensed under a Creative Commons Attribution 4.0 International License
-http://creativecommons.org/licenses/by/4.0/
-@author: Matt Stevenson <matt@pagemodel.org>
 ```

@@ -1,13 +1,14 @@
 subprojects {
-    apply plugin: 'java'
-    apply plugin: 'eclipse'
-    apply plugin: 'maven'
-    apply plugin: 'distribution'
+    apply plugin: 'java-library'
     apply plugin: 'idea'
 
     sourceCompatibility = 1.8
 
-    version = '1.0.0_0.8.0-SNAPSHOT'
+    ext {
+        pagemodelNumber = '0.8.1'
+        pagemodelVersion = "${pagemodelNumber}"
+    }
+    version = "1.0.0_${pagemodelNumber}-SNAPSHOT"
     group = 'org.pagemodel.tests'
 
     buildscript {

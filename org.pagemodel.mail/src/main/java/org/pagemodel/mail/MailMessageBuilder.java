@@ -58,7 +58,8 @@ public class MailMessageBuilder<R> {
 		MailMessage[] refMail = new MailMessage[1];
 		return getEvaluator().testRun(
 				TestEvaluator.TEST_EXECUTE,
-				() -> "send mail: " + getMailMessage(),
+				"send mail", op -> op
+						.addValue("mail", getMailMessage().toJson()),
 				() -> refMail[0] = smtpServer.send(getMailMessage()),
 				new MailTester.SentMailTester<>(() -> refMail[0], returnObj, testContext, getEvaluator()),
 				testContext);
@@ -76,40 +77,45 @@ public class MailMessageBuilder<R> {
 
 	public MailMessageBuilder<R> from(String address){
 		return getEvaluator().testRun(
-				TestEvaluator.TEST_SET,
-				() -> "From address: [" + address + "]",
+				TestEvaluator.TEST_BUILD,
+				"set from", op -> op
+						.addValue("value", address),
 				() -> mailMessage.setSender(address),
 				this, testContext);
 	}
 
 	public MailMessageBuilder<R> to(String...addresses){
 		return getEvaluator().testRun(
-				TestEvaluator.TEST_ADD,
-				() -> "recipients To: " + Arrays.toString(addresses),
+				TestEvaluator.TEST_BUILD,
+				"set to", op -> op
+						.addValue("value", Arrays.toString(addresses)),
 				() -> mailMessage.addRecipientsTo(addresses),
 				this, testContext);
 	}
 
 	public MailMessageBuilder<R> cc(String...addresses){
 		return getEvaluator().testRun(
-				TestEvaluator.TEST_ADD,
-				() -> "recipients CC: " + Arrays.toString(addresses),
+				TestEvaluator.TEST_BUILD,
+				"set cc", op -> op
+						.addValue("value", Arrays.toString(addresses)),
 				() -> mailMessage.addRecipientsCc(addresses),
 				this, testContext);
 	}
 
 	public MailMessageBuilder<R> bcc(String...addresses){
 		return getEvaluator().testRun(
-				TestEvaluator.TEST_ADD,
-				() -> "recipients BCC: " + Arrays.toString(addresses),
+				TestEvaluator.TEST_BUILD,
+				"set bcc", op -> op
+						.addValue("value", Arrays.toString(addresses)),
 				() -> mailMessage.addRecipientsBcc(addresses),
 				this, testContext);
 	}
 
 	public MailMessageBuilder<R> clearRecipients(){
 		return getEvaluator().testRun(
-				TestEvaluator.TEST_REMOVE,
-				() -> "all recipients",
+				TestEvaluator.TEST_BUILD,
+				"clear recipients", op -> op
+						.addValue("actual", getMailMessage().getRecipientsAll()),
 				() -> {
 					mailMessage.recipientsTo.clear();
 					mailMessage.recipientsCc.clear();
@@ -124,8 +130,9 @@ public class MailMessageBuilder<R> {
 
 	public MailMessageBuilder<R> subjectUntagged(String subject){
 		return getEvaluator().testRun(
-				TestEvaluator.TEST_SET,
-				() -> "subject: [" + subject + "]",
+				TestEvaluator.TEST_BUILD,
+				"set subject", op -> op
+						.addValue("value", subject),
 				() -> mailMessage.setSubject(subject),
 				this, testContext);
 	}
@@ -136,8 +143,9 @@ public class MailMessageBuilder<R> {
 
 	public MailMessageBuilder<R> bodyUntagged(String content){
 		return getEvaluator().testRun(
-				TestEvaluator.TEST_SET,
-				() -> "body: [" + content + "]",
+				TestEvaluator.TEST_BUILD,
+				"set body", op -> op
+						.addValue("value", content),
 				() -> mailMessage.setBody(content),
 				this, testContext);
 	}
@@ -146,10 +154,38 @@ public class MailMessageBuilder<R> {
 		return bodyUntagged(Unique.string(content));
 	}
 
+	public MailMessageBuilder<R> htmlBodyUntagged(String content){
+		return getEvaluator().testRun(
+				TestEvaluator.TEST_BUILD,
+				"set html body", op -> op
+						.addValue("value", content),
+				() -> mailMessage.setHtmlBody(content),
+				this, testContext);
+	}
+
+	public MailMessageBuilder<R> htmlBody(String content){
+		return htmlBodyUntagged(Unique.string(content));
+	}
+
+	public MailMessageBuilder<R> textBodyUntagged(String content){
+		return getEvaluator().testRun(
+				TestEvaluator.TEST_BUILD,
+				"set text body", op -> op
+						.addValue("value", content),
+				() -> mailMessage.setTextBody(content),
+				this, testContext);
+	}
+
+	public MailMessageBuilder<R> textBody(String content){
+		return textBodyUntagged(Unique.string(content));
+	}
+
 	public MailMessageBuilder<R> header(String headerName, String value){
 		return getEvaluator().testRun(
-				TestEvaluator.TEST_ADD,
-				() -> "header: name [" + headerName + "],  value [" + value + "]",
+				TestEvaluator.TEST_BUILD,
+				"set header", op -> op
+						.addValue("name", headerName)
+						.addValue("value", value),
 				() -> mailMessage.setHeader(headerName, value),
 				this, testContext);
 	}
@@ -158,7 +194,8 @@ public class MailMessageBuilder<R> {
 		String path = file == null ? null : file.getAbsolutePath();
 		return getEvaluator().testRun(
 				TestEvaluator.TEST_LOAD,
-				() -> "MIME from file: [" + path + "]",
+				"read MIME", op -> op
+						.addValue("value", path),
 				() -> {
 					try {
 						MimeMessage mime = new MimeMessage(null, new FileInputStream(file));
@@ -175,7 +212,8 @@ public class MailMessageBuilder<R> {
 		String path = file == null ? null : file.getAbsolutePath();
 		return getEvaluator().testRun(
 				TestEvaluator.TEST_STORE,
-				() -> "MIME to file: [" + path + "]",
+				"write MIME", op -> op
+						.addValue("value", path),
 				() -> {
 					try {
 						MimeMessage mime = MimeMailAdapter.createMimeMessage(mailMessage, null);
@@ -188,32 +226,43 @@ public class MailMessageBuilder<R> {
 
 	public MailMessageBuilder<R> withAttachment(File contents, String contentType) {
 		return getEvaluator().testRun(
-				TestEvaluator.TEST_ADD,
-				() -> "attachment: file:[" + contents.getAbsolutePath() + "], contentType:[" + contentType + "]",
+				TestEvaluator.TEST_BUILD,
+				"add attachment", op -> op
+						.addValue("contentType", contentType)
+						.addValue("value", contents.getAbsolutePath()),
 				() -> mailMessage.addAttachment(contents, contentType),
 				this, testContext);
 	}
 
 	public MailMessageBuilder<R> withAttachment(String filename, String contents, String contentType) {
 		return getEvaluator().testRun(
-				TestEvaluator.TEST_ADD,
-				() -> "attachment: filename:[" + filename + "], contents:[" + contents + "], contentType:[" + contentType + "]",
+				TestEvaluator.TEST_BUILD,
+				"add attachment", op -> op
+						.addValue("value", contents)
+						.addValue("filename",filename)
+						.addValue("contentType",contentType),
 				() -> mailMessage.addAttachment(filename, contents, contentType),
 				this, testContext);
 	}
 
 	public MailMessageBuilder<R> withAttachment(String filename, File contents, String contentType) {
 		return getEvaluator().testRun(
-				TestEvaluator.TEST_ADD,
-				() -> "attachment: filename:[" + filename + "], contents:[" + contents.getAbsolutePath() + "], contentType:[" + contentType + "]",
+				TestEvaluator.TEST_BUILD,
+				"add attachment", op -> op
+						.addValue("value", contents.getAbsolutePath())
+						.addValue("filename",filename)
+						.addValue("contentType",contentType),
 				() -> mailMessage.addAttachment(filename, contents, contentType),
 				this, testContext);
 	}
 
 	public MailMessageBuilder<R> withAttachment(String filename, byte[] contents, String contentType) {
 		return getEvaluator().testRun(
-				TestEvaluator.TEST_ADD,
-				() -> "attachment: filename:[" + filename + "], contentSize:[" + contents.length + "], contentType:[" + contentType + "]",
+				TestEvaluator.TEST_BUILD,
+				"add attachment", op -> op
+						.addValue("value", "contentSize: " + contents.length)
+						.addValue("filename", filename)
+						.addValue("contentType", contentType),
 				() -> mailMessage.addAttachment(filename, contents, contentType),
 				this, testContext);
 	}

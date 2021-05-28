@@ -16,8 +16,8 @@
 
 package org.pagemodel.core.utils;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.pagemodel.core.testers.TestEvaluator;
+import org.pagemodel.core.utils.json.OutputFilter;
 
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
@@ -29,7 +29,7 @@ import java.util.Properties;
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class SystemProperties {
-	private static final Logger log = LoggerFactory.getLogger(SystemProperties.class);
+	private static TestEvaluator evalLogger = new TestEvaluator.Now();
 	public final static String USER_DEFAULTS_FILE = "../user.defaults";
 	private static Properties userDefaults;
 
@@ -41,30 +41,45 @@ public class SystemProperties {
 	 * @return system property, environment variable, or defaultVal
 	 */
 	public static String readSystemProperty(String property, String defaultVal) {
+		return readProperty(property, defaultVal, false);
+	}
+
+	public static String readSecret(String property, String defaultVal) {
+		return readProperty(property, defaultVal, true);
+	}
+
+	private static String readProperty(String property, String defaultVal, boolean secret) {
 		String propVal = System.getProperty(property);
 		if (propVal != null && !propVal.isEmpty()) {
-			log.info("Found property -D" + property + "=" + propVal);
-			return propVal;
+			return logProperty(property, propVal, "system property", secret);
 		}
 		propVal = System.getenv(property);
 		if (propVal != null && !propVal.isEmpty() && !propVal.equals("null")) {
-			log.info("Found environment variable " + property + "=******** [hash:" + sha256(propVal).substring(0,6) + "]");
-			return propVal;
+			return logProperty(property, propVal, "environment variable", secret);
 		}
-		log.trace("Unable to find " + property + ", using default: " + defaultVal);
-		return getUserDefault(property, defaultVal);
-	}
-
-	private static String getUserDefault(String property, String defaultVal){
 		if(userDefaults == null){
 			loadUserDefaults(USER_DEFAULTS_FILE);
 		}
 		String val = userDefaults.getProperty(property, null);
 		if(val != null){
-			log.info("Using user.default for property: [" + property +"], value: [" + val + "]");
-			return val;
+			return logProperty(property, val, "user.defaults", secret);
 		}
-		return defaultVal;
+		return logProperty(property, defaultVal, "default value (not found)", secret);
+	}
+
+	private static String logProperty(String property, String value, String source, boolean secret){
+		if(secret) {
+			OutputFilter.addMaskedString(value);
+		}
+		evalLogger.logEvent(TestEvaluator.TEST_LOAD, "property", op -> op
+				.addValue("property", property)
+				.addValue("value", value)
+				.doAdd(o -> {
+					if (secret){
+						o.addValue("hash", sha256(value).substring(0,6));
+					}
+				}).addValue("source", source));
+		return value;
 	}
 
 	private static void loadUserDefaults(String filePath){

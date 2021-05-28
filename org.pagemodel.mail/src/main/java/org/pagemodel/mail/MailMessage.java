@@ -16,19 +16,16 @@
 
 package org.pagemodel.mail;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.pagemodel.core.utils.json.JsonBuilder;
 
 import javax.mail.Message;
 import java.io.File;
-import java.lang.invoke.MethodHandles;
 import java.util.*;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class MailMessage {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	protected String sender;
 	protected List<String> recipientsTo = new ArrayList<>();
 	protected List<String> recipientsCc = new ArrayList<>();
@@ -36,7 +33,7 @@ public class MailMessage {
 	protected String subject;
 	protected String textBody;
 	protected String htmlBody;
-	protected Map<String, String> headers = new HashMap<>();
+	protected Map<String, List<String>> headers = new HashMap<>();
 	protected Date sentDate;
 	protected List<Attachment> attachments = new ArrayList<>();
 	protected Message message;
@@ -49,6 +46,13 @@ public class MailMessage {
 
 	public void setSender(String sender) {
 		this.sender = sender;
+	}
+
+	protected List<String> getRecipientsAll() {
+		List<String> all = new ArrayList<>(recipientsTo);
+		all.addAll(recipientsCc);
+		all.addAll(recipientsBcc);
+		return all;
 	}
 
 	public List<String> getRecipientsTo() {
@@ -125,13 +129,22 @@ public class MailMessage {
 	}
 
 	public void setHeader(String name, String value) {
-		headers.put(name, value);
-	}
-	public String getHeader(String name) {
-		return headers.get(name);
+		name = name.toLowerCase();
+		if(!headers.containsKey(name)){
+			headers.put(name, new LinkedList<>());
+		}
+		headers.get(name).add(value);
 	}
 
-	public Map<String, String> getHeaders() {
+	public String getHeader(String name) {
+		return headers.get(name.toLowerCase()).get(0);
+	}
+
+	public List<String> getHeaderList(String name) {
+		return headers.get(name.toLowerCase());
+	}
+
+	public Map<String, List<String>> getHeaders() {
 		return headers;
 	}
 
@@ -170,6 +183,14 @@ public class MailMessage {
 	@Override
 	public String toString() {
 		return "mail(subject:[" + subject + "], sender:[" + sender + "], recipientsTo:[" + String.join(", ", recipientsTo) + "])";
+	}
+
+	public Map<String,Object> toJson() {
+		return JsonBuilder.object()
+				.addValue("subject", subject)
+				.addValue("sender", sender)
+				.addValue("recipientsTo", String.join(", ", recipientsTo))
+				.toMap();
 	}
 
 	@Override

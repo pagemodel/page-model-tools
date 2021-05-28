@@ -17,22 +17,20 @@
 package org.pagemodel.mail;
 
 import com.sun.mail.smtp.SMTPTransport;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class SmtpServer extends MailServer{
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
 	private int smtpPort = 25;
 
 	public SmtpServer(MailAuthenticator mailAuthenticator) {

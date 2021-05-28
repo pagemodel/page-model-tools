@@ -232,7 +232,7 @@
         </dict>
         <dict>
           <key>match</key>
-          <string>(\S*(Field|Button|Link|Display|FileUpload|Checkbox|DropDown|Select|Radio|Image|Tab|Control|IFrame|Row|Dialog|Modal|Nav|Section|Component))</string>
+          <string>(\S*(Field|Button|Link|Display|FileUpload|Checkbox|DropDown|Select|Radio|Image|Tab|Control|IFrame|Row|Dialog|Modal|Nav|Menu|Section|Component))</string>
           <key>name</key>
           <string>constant.other.pagemodel</string>
         </dict>

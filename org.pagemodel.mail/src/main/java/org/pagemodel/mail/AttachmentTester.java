@@ -19,19 +19,16 @@ package org.pagemodel.mail;
 import org.pagemodel.core.TestContext;
 import org.pagemodel.core.testers.StringTester;
 import org.pagemodel.core.testers.TestEvaluator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.pagemodel.core.utils.ThrowingFunction;
+import org.pagemodel.core.utils.json.JsonBuilder;
 
-import java.lang.invoke.MethodHandles;
+import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.function.Function;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class AttachmentTester<R> {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
 	protected R returnObj;
 	protected final Callable<Attachment> ref;
 	protected final TestContext testContext;
@@ -57,32 +54,49 @@ public class AttachmentTester<R> {
 	}
 
 	public R exists() {
-		return getEvaluator().testCondition(() -> "exists: attachment(filename: [" + callRef().getFilename() + "])",
+		return getEvaluator().testCondition(
+				"exists", op -> op
+						.addValue("attachment", getAttachmentJson()),
 				() -> callRef() != null, returnObj, testContext);
 	}
 
 	public R notExists() {
-		return getEvaluator().testCondition(() -> "not exists: attachment(filename: [" + callRef().getFilename() + "])",
+		return getEvaluator().testCondition(
+				"not exists", op -> op
+						.addValue("attachment", getAttachmentJson()),
 				() -> callRef() == null, returnObj, testContext);
 	}
 
 	public StringTester<R> filename() {
-		getEvaluator().setSourceDisplayRef(() -> "filename: attachment(filename: [" + callRef().getFilename() + "])");
+		getEvaluator().setSourceFindEvent("filename", op -> op
+				.addValue("attachment", getAttachmentJson()));
 		return new StringTester<>(() -> callRef().getFilename(), returnObj, testContext, getEvaluator());
 	}
 
 	public StringTester<R> contentType() {
-		getEvaluator().setSourceDisplayRef(() -> "contentType: attachment(filename: [" + callRef().getFilename() + "])");
+		getEvaluator().setSourceFindEvent("content type", op -> op
+				.addValue("attachment", getAttachmentJson()));
 		return new StringTester<>(() -> callRef().getContentType(), returnObj, testContext, getEvaluator());
 	}
 
 	public StringTester<R> textContent() {
-		getEvaluator().setSourceDisplayRef(() -> "textContent: attachment(filename: [" + callRef().getFilename() + "])");
+		getEvaluator().setSourceFindEvent("text content", op -> op
+				.addValue("attachment", getAttachmentJson()));
 		return new StringTester<>(() -> new String(callRef().getByteContent()), returnObj, testContext, getEvaluator());
 	}
 
-	public R byteContent(Function<byte[],Boolean> byteTest) {
-		return getEvaluator().testCondition(() -> "byteContent: attachment(filename: [" + callRef().getFilename() + "])",
-				() -> byteTest.apply(callRef().getByteContent()), returnObj, testContext);
+	public R byteContent(ThrowingFunction<byte[],Boolean,?> byteTest) {
+		return getEvaluator().testCondition(
+				"byte content", op -> op
+						.addValue("attachment", getAttachmentJson()),
+				() -> ThrowingFunction.unchecked(byteTest).apply(callRef().getByteContent()), returnObj, testContext);
+	}
+
+	protected Map<String,Object> getAttachmentJson(){
+		Attachment attachment = callRef();
+		if(attachment == null){
+			return null;
+		}
+		return JsonBuilder.object().addValue("filename", attachment.getFilename()).toMap();
 	}
 }

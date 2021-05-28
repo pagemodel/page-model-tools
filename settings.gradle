@@ -1,2 +1,12 @@
-include "org.pagemodel.core", "org.pagemodel.web", "org.pagemodel.mail", "org.pagemodel.ssh", "org.pagemodel.tools",  "org.pagemodel.gen.project"
+pluginManagement {
+    includeBuild('org.pagemodel.gen.gradle')
+}
+
+includeBuild('org.pagemodel.gen.gradle'){
+    dependencySubstitution {
+        substitute module('org.pagemodel:org.pagemodel.gen.gradle') with project(':')
+    }
+}
+
+include "org.pagemodel.core", "org.pagemodel.web", "org.pagemodel.mail", "org.pagemodel.ssh", "org.pagemodel.tools",  "org.pagemodel.gen.project", "org.pagemodel.junit4"
 include "org.pagemodel.tests"

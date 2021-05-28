@@ -20,18 +20,13 @@ import org.pagemodel.core.testers.StringTester;
 import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.web.PageModel;
 import org.pagemodel.web.WebTestContext;
-import org.openqa.selenium.Rectangle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.lang.invoke.MethodHandles;
 import java.util.concurrent.TimeUnit;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class PageTesterBase<P extends PageModel<? super P>> {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	protected final P page;
 	protected final WebTestContext testContext;
@@ -48,28 +43,44 @@ public class PageTesterBase<P extends PageModel<? super P>> {
 	}
 
 	public StringTester<P> title() {
+		getEvaluator().addSourceEvent(TestEvaluator.TEST_FIND,
+				"page title", op -> op
+						.addValue("model", page.getClass().getName()));
 		return new StringTester<>(() -> testContext.getDriver().getTitle(), page, testContext, getEvaluator());
 	}
 
 	public StringTester<P> url() {
+		getEvaluator().addSourceEvent(TestEvaluator.TEST_FIND,
+				"page url", op -> op
+						.addValue("model", page.getClass().getName()));
 		return new StringTester<>(() -> testContext.getDriver().getCurrentUrl(), page, testContext, getEvaluator());
 	}
 
 	public StringTester<P> pageSource() {
+		getEvaluator().addSourceEvent(TestEvaluator.TEST_FIND,
+				"page source", op -> op
+						.addValue("model", page.getClass().getName()));
 		return new StringTester<>(() -> testContext.getDriver().getPageSource(), page, testContext, getEvaluator());
 	}
 
-	public RectangleTester<P> windowSize() {
-		return new RectangleTester<>(() -> new Rectangle(
-				testContext.getDriver().manage().window().getPosition(),
-				testContext.getDriver().manage().window().getSize()), page, testContext, getEvaluator());
+	public DimensionTester<P> windowSize(){
+		getEvaluator().addSourceEvent(TestEvaluator.TEST_FIND,
+				"window size", op -> op
+						.addValue("model", page.getClass().getName()));
+		return new DimensionTester<>(() -> testContext.getDriver().manage().window().getSize(), page, testContext, getEvaluator());
+	}
+
+	public PointTester<P> windowPosition(){
+		getEvaluator().addSourceEvent(TestEvaluator.TEST_FIND,
+				"window position", op -> op
+						.addValue("model", page.getClass().getName()));
+		return new PointTester<>(() -> testContext.getDriver().manage().window().getPosition(), page, testContext, getEvaluator());
 	}
 
 	/**
 	 * @author Matt Stevenson <matt@pagemodel.org>
 	 */
 	public static class PageWait<P extends PageModel<? super P>> extends PageTesterBase<P> {
-		private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 		private WebTestEvaluator.Wait testEvaluator;
 
@@ -93,7 +104,7 @@ public class PageTesterBase<P extends PageModel<? super P>> {
 		private P waitDuration(long duration, TimeUnit unit) {
 			return getEvaluator().testRun(
 					TestEvaluator.TEST_EXECUTE,
-					() -> "sleep: [" + duration + " " + unit.toString().toLowerCase() + "]",
+					"sleep", op -> op.addValue("value", duration + " " + unit.toString().toLowerCase()),
 					() -> unit.sleep(duration),
 					page, testContext);
 		}

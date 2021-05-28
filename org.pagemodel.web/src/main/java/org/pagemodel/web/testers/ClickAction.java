@@ -18,28 +18,29 @@ package org.pagemodel.web.testers;
 
 import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.core.utils.ThrowingConsumer;
 import org.pagemodel.core.utils.ThrowingFunction;
+import org.pagemodel.web.LocatedWebElement;
 import org.pagemodel.web.PageModel;
 import org.pagemodel.web.PageUtils;
 import org.pagemodel.web.SectionModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.pagemodel.web.utils.PageException;
 
-import java.lang.invoke.MethodHandles;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class ClickAction<P extends PageModel<? super P>, N extends PageModel<? super N>> {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
 	protected final Callable<WebElement> elementRef;
 	protected P page;
 	protected N returnPage;
+	protected TestEvaluator testEvaluator;
 
 	public static enum AlertAction {
 		ACCEPT,
@@ -47,10 +48,10 @@ public class ClickAction<P extends PageModel<? super P>, N extends PageModel<? s
 		NONE
 	}
 
-	public static final int DEFAULT_NAV_WAIT_SEC = 10;
-	public static final boolean DEFAULT_ALERT_WAIT_FLAG = false;
-	public static final AlertAction DEFAULT_ALERT_ACTION = AlertAction.NONE;
-	public static final int DEFAULT_ALERT_WAIT_SEC = 1;
+	public static int DEFAULT_NAV_WAIT_SEC = 10;
+	public static boolean DEFAULT_ALERT_WAIT_FLAG = false;
+	public static AlertAction DEFAULT_ALERT_ACTION = AlertAction.NONE;
+	public static int DEFAULT_ALERT_WAIT_SEC = 1;
 
 	private boolean navFlag;
 	private int navWait;
@@ -61,24 +62,24 @@ public class ClickAction<P extends PageModel<? super P>, N extends PageModel<? s
 	private ThrowingConsumer<P, ?> postAction;
 	private ThrowingFunction<ClickContext, N, ?> doClickOverride;
 
-	public static <T extends PageModel<? super T>> ClickAction<T, T> make(Callable<WebElement> elementRef, T page) {
+	public static <T extends PageModel<? super T>> ClickAction<T, T> make(Callable<WebElement> elementRef, T page, TestEvaluator testEvaluator) {
 		return new ClickAction<T, T>(elementRef, page, (Class<T>) page.getClass(), false,
-				DEFAULT_NAV_WAIT_SEC, DEFAULT_ALERT_WAIT_FLAG, DEFAULT_ALERT_WAIT_SEC, DEFAULT_ALERT_ACTION);
+				DEFAULT_NAV_WAIT_SEC, DEFAULT_ALERT_WAIT_FLAG, DEFAULT_ALERT_WAIT_SEC, DEFAULT_ALERT_ACTION, testEvaluator);
 	}
 
-	public static <T extends PageModel<? super T>, U extends PageModel<? super U>> ClickAction<T, U> makeNav(Callable<WebElement> elementRef, T page, Class<U> returnType) {
+	public static <T extends PageModel<? super T>, U extends PageModel<? super U>> ClickAction<T, U> makeNav(Callable<WebElement> elementRef, T page, Class<U> returnType, TestEvaluator testEvaluator) {
 		return new ClickAction<T, U>(elementRef, page, returnType, true,
-				DEFAULT_NAV_WAIT_SEC, DEFAULT_ALERT_WAIT_FLAG, DEFAULT_ALERT_WAIT_SEC, DEFAULT_ALERT_ACTION);
+				DEFAULT_NAV_WAIT_SEC, DEFAULT_ALERT_WAIT_FLAG, DEFAULT_ALERT_WAIT_SEC, DEFAULT_ALERT_ACTION, testEvaluator);
 	}
 
-	public static <T extends PageModel<? super T>, U extends PageModel<? super U>> ClickAction<T, U> makeNav(Callable<WebElement> elementRef, T page, U returnPage) {
+	public static <T extends PageModel<? super T>, U extends PageModel<? super U>> ClickAction<T, U> makeNav(Callable<WebElement> elementRef, T page, U returnPage, TestEvaluator testEvaluator) {
 		return new ClickAction<T, U>(elementRef, page, returnPage, true,
-				DEFAULT_NAV_WAIT_SEC, DEFAULT_ALERT_WAIT_FLAG, DEFAULT_ALERT_WAIT_SEC, DEFAULT_ALERT_ACTION);
+				DEFAULT_NAV_WAIT_SEC, DEFAULT_ALERT_WAIT_FLAG, DEFAULT_ALERT_WAIT_SEC, DEFAULT_ALERT_ACTION, testEvaluator);
 	}
 
 	private ClickAction(Callable<WebElement> elementRef, P page, Class<N> returnType, boolean navFlag, int navWaitSec,
-			boolean waitForAlert, int alertWaitSec, AlertAction alertAction) {
-		this(elementRef, page, determineClickReturn(elementRef, page, returnType), navFlag, navWaitSec, waitForAlert, alertWaitSec, alertAction);
+			boolean waitForAlert, int alertWaitSec, AlertAction alertAction, TestEvaluator testEvaluator) {
+		this(elementRef, page, determineClickReturn(elementRef, page, returnType), navFlag, navWaitSec, waitForAlert, alertWaitSec, alertAction, testEvaluator);
 	}
 
 	private static <T extends PageModel<? super T>, S extends SectionModel<? super S, T, T>> T determineClickReturn(
@@ -86,13 +87,13 @@ public class ClickAction<P extends PageModel<? super P>, N extends PageModel<? s
 		if (currentPage.getClass().equals(returnClass)) {
 			return (T) currentPage;
 		} else if (SectionModel.class.isAssignableFrom(returnClass)) {
-			return (T) SectionModel.make((Class<S>) returnClass, ClickAction.make(elementRef, (T)currentPage), currentPage.getEvaluator());
+			return (T) SectionModel.make((Class<S>) returnClass, ClickAction.make(elementRef, (T)currentPage, currentPage.getEvaluator()), currentPage.getEvaluator());
 		}
 		return PageUtils.makeInstance(returnClass, currentPage.getContext());
 	}
 
 	private ClickAction(Callable<WebElement> elementRef, P page, N returnPage, boolean navFlag, int navWaitSec,
-			boolean waitForAlert, int alertWaitSec, AlertAction alertAction) {
+			boolean waitForAlert, int alertWaitSec, AlertAction alertAction, TestEvaluator testEvaluator) {
 		this.elementRef = elementRef;
 		this.page = page;
 		this.returnPage = returnPage;
@@ -101,24 +102,41 @@ public class ClickAction<P extends PageModel<? super P>, N extends PageModel<? s
 		this.alertWaitFlag = waitForAlert;
 		this.alertWaitSec = alertWaitSec;
 		this.alertAction = alertAction;
+		this.testEvaluator = testEvaluator;
 	}
 
-	public ClickAction(Callable<WebElement> elementRef, P page, Class<N> returnType) {
+	public ClickAction(Callable<WebElement> elementRef, P page, Class<N> returnType, TestEvaluator testEvaluator) {
 		this(elementRef, page, returnType, true,
-				DEFAULT_NAV_WAIT_SEC, DEFAULT_ALERT_WAIT_FLAG, DEFAULT_ALERT_WAIT_SEC, DEFAULT_ALERT_ACTION);
+				DEFAULT_NAV_WAIT_SEC, DEFAULT_ALERT_WAIT_FLAG, DEFAULT_ALERT_WAIT_SEC, DEFAULT_ALERT_ACTION, testEvaluator);
 	}
 
-	public ClickAction(Callable<WebElement> elementRef, P page) {
+	public ClickAction(Callable<WebElement> elementRef, P page, TestEvaluator testEvaluator) {
 		this(elementRef, page, (Class<N>) page.getClass(), false,
-				DEFAULT_NAV_WAIT_SEC, DEFAULT_ALERT_WAIT_FLAG, DEFAULT_ALERT_WAIT_SEC, DEFAULT_ALERT_ACTION);
+				DEFAULT_NAV_WAIT_SEC, DEFAULT_ALERT_WAIT_FLAG, DEFAULT_ALERT_WAIT_SEC, DEFAULT_ALERT_ACTION, testEvaluator);
 	}
 
-	private WebElement callRef() {
+	protected LocatedWebElement callRef() {
 		try {
-			return elementRef.call();
-		} catch (Exception ex) {
-			return null;
+			WebElement el = elementRef.call();
+			if (el == null) {
+				return new LocatedWebElement(null, null, (String)null, page, null);
+			}
+			if (LocatedWebElement.class.isAssignableFrom(el.getClass())) {
+				return (LocatedWebElement) el;
+			} else {
+				return new LocatedWebElement(el, null, (String)null, page, null);
+			}
+		} catch (Throwable ex) {
+			return new LocatedWebElement(null, null, (String)null, page, null);
 		}
+	}
+
+	public TestEvaluator getTestEvaluator() {
+		return testEvaluator;
+	}
+
+	public void setTestEvaluator(TestEvaluator testEvaluator) {
+		this.testEvaluator = testEvaluator;
 	}
 
 	public Callable<WebElement> getElementRef() {
@@ -198,6 +216,9 @@ public class ClickAction<P extends PageModel<? super P>, N extends PageModel<? s
 		try {
 			beforeAction();
 		} catch (Throwable t) {
+			if(t instanceof PageException){
+				throw (PageException)t;
+			}
 			throw this.page.getContext().createException("Error: Click beforeAction failed", t);
 		}
 		if (doClickOverride != null) {
@@ -206,20 +227,42 @@ public class ClickAction<P extends PageModel<? super P>, N extends PageModel<? s
 				afterAction();
 				return ret;
 			} catch (Throwable t) {
+				if(t instanceof PageException){
+					throw (PageException)t;
+				}
 				throw this.page.getContext().createException("Error: Click failed", t);
 			}
 		} else {
 			try {
+				if(navWait != 0){
+					getPage().getContext().getDriver().manage().timeouts().pageLoadTimeout(navWait, TimeUnit.SECONDS);
+				}
 				doClick(testClickable);
+				if(navWait != 0){
+					getPage().getContext().getDriver().manage().timeouts().pageLoadTimeout(20, TimeUnit.SECONDS);
+				}
 				return afterAction();
 			} catch (Throwable t) {
+				if(t instanceof PageException){
+					throw (PageException)t;
+				}
 				throw this.page.getContext().createException("Error: Click failed", t);
 			}
 		}
 	}
 
 	protected void doClick(Runnable testClickable) {
-		testClickable.run();
+		if(testClickable == null) {
+			testEvaluator.quiet().testCondition(
+					"clickable", op -> op
+							.addValue("element", callRef().getElementJson(page)),
+					() -> ExpectedConditions.and((ExpectedCondition<Boolean>) driver -> callRef().hasElement(),
+							ExpectedConditions.elementToBeClickable(callRef()))
+							.apply(page.getContext().getDriver()),
+					this, page.getContext());
+		}else{
+			testClickable.run();
+		}
 		callRef().click();
 	}
 
@@ -252,7 +295,7 @@ public class ClickAction<P extends PageModel<? super P>, N extends PageModel<? s
 		if (navFlag) {
 			page.onPageLeave();
 		}
-		navPage = (T) PageUtils.waitForModelDisplayed(navPage, navWait);
+		navPage = PageUtils.waitForModelDisplayed(navPage, navWait);
 		if (navFlag) {
 			navPage.onPageLoad();
 		}

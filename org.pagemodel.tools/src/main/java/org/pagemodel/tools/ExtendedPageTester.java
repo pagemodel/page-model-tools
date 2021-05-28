@@ -18,15 +18,10 @@ package org.pagemodel.tools;
 
 import org.pagemodel.core.testers.StringTester;
 import org.pagemodel.core.testers.TestEvaluator;
+import org.pagemodel.tools.accessibility.AXEScanner;
 import org.pagemodel.web.PageModel;
 import org.pagemodel.web.WebTestContext;
-import org.pagemodel.tools.accessibility.AXEScanner;
-import org.pagemodel.web.testers.PageTester;
-import org.pagemodel.web.testers.PageTesterBase;
-import org.pagemodel.web.testers.RectangleTester;
-import org.pagemodel.web.testers.WebElementTester;
-
-import java.util.Arrays;
+import org.pagemodel.web.testers.*;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
@@ -117,24 +112,41 @@ public class ExtendedPageTester<P extends PageModel<? super P>> extends PageTest
 	}
 
 	@Override
-	public RectangleTester<P> windowSize() {
+	public DimensionTester<P> windowSize(){
 		return super.windowSize();
 	}
 
+	@Override
+	public PointTester<P> windowPosition(){
+		return super.windowPosition();
+	}
+
 	public P testAccessibility() {
-		return getEvaluator().testCondition(()->"Testing Accessibility: running AXE scan for page [" + testContext.getDriver().getTitle() + "], url [" + testContext.getDriver().getCurrentUrl() + "]",
-				() -> new AXEScanner().analyzeAccessibility(testContext, page.getClass().getSimpleName()),
+		return testAccessibility(AXEScanner.DEFAULT_TIMEOUT);
+	}
+
+	public P testAccessibility(int timeoutSec) {
+		return getEvaluator().testCondition(
+				"accessibility", op -> op
+						.addValue("model", page.getClass().getSimpleName()),
+				() -> new AXEScanner().analyzeAccessibility(testContext, page.getClass().getSimpleName(), timeoutSec),
 				page,
 				testContext);
 	}
 
 	public P testAccessibility(String... expectedViolations) {
-		return getEvaluator().testCondition(() -> "Testing Accessibility: running AXE scan for page [" + testContext.getDriver().getTitle() + "], url [" + testContext.getDriver().getCurrentUrl() + "]\n" +
-						"Expected AXE violations: " + Arrays.toString(expectedViolations),
+		return testAccessibility(AXEScanner.DEFAULT_TIMEOUT, expectedViolations);
+	}
+
+	public P testAccessibility(int timeoutSec, String... expectedViolations) {
+		return getEvaluator().testCondition(
+				"accessibility", op -> op
+						.addValue("expectedViolations", String.join(", ", expectedViolations))
+						.addValue("model", page.getClass().getSimpleName()),
 				() -> {
 					AXEScanner scanner = new AXEScanner();
 					scanner.setExpectedViolations(expectedViolations);
-					return scanner.analyzeAccessibility(testContext, page.getClass().getSimpleName());
+					return scanner.analyzeAccessibility(testContext, page.getClass().getSimpleName(), timeoutSec);
 				},
 				page,
 				testContext

@@ -25,10 +25,12 @@ import org.pagemodel.web.utils.PageException;
  */
 public class DefaultWebTestContext extends DefaultTestContext implements WebTestContext {
 	protected WebDriver driver;
+	protected boolean screenshotErrorFlag;
 
 	public DefaultWebTestContext(WebDriver driver) {
 		super();
 		this.driver = driver;
+		this.screenshotErrorFlag = true;
 	}
 
 	@Override
@@ -44,5 +46,15 @@ public class DefaultWebTestContext extends DefaultTestContext implements WebTest
 	@Override
 	public PageException createException(boolean screenshotOnError, String message, Throwable cause) {
 		return new PageException(this, screenshotOnError, message, cause);
+	}
+
+	@Override
+	public void setLogExceptions(boolean flag){
+		this.screenshotErrorFlag = flag;
+	}
+
+	@Override
+	public boolean getLogExceptions(){
+		return this.screenshotErrorFlag;
 	}
 }

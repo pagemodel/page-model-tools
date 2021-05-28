@@ -21,17 +21,13 @@ import org.openqa.selenium.Rectangle;
 import org.pagemodel.core.TestContext;
 import org.pagemodel.core.testers.ComparableTester;
 import org.pagemodel.core.testers.TestEvaluator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.lang.invoke.MethodHandles;
 import java.util.concurrent.Callable;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class RectangleTester<R> {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	protected final R returnObj;
 	protected final Callable<Rectangle> ref;

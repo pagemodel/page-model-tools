@@ -17,12 +17,9 @@
 package org.pagemodel.web.testers;
 
 import org.pagemodel.core.testers.TestEvaluator;
+import org.pagemodel.core.utils.json.JsonBuilder;
 import org.pagemodel.web.PageModel;
-import org.pagemodel.web.utils.PageException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.List;
 
@@ -30,14 +27,13 @@ import java.util.List;
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class CheckboxTester<R, N extends PageModel<? super N>> extends WebElementTester<R, N> {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	public CheckboxTester(R returnObj, ClickAction<?, N> clickAction, TestEvaluator testEvaluator) {
 		super(returnObj, clickAction, testEvaluator);
 	}
 
-	public CheckboxTester(ClickAction<?, N> clickAction) {
-		super(clickAction);
+	public CheckboxTester(ClickAction<?, N> clickAction, TestEvaluator testEvaluator) {
+		super(clickAction, testEvaluator);
 	}
 
 	public R setCheckbox(boolean value) {
@@ -49,38 +45,42 @@ public class CheckboxTester<R, N extends PageModel<? super N>> extends WebElemen
 	}
 
 	public R setChecked() {
-		log.info(getEvaluator().getActionMessage(() -> "set checked: " + getElementDisplay() + " on page [" + page.getClass().getName() + "]"));
-		getEvaluator().quiet().testCondition(() -> "exists: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
+		getEvaluator().logEvent(TestEvaluator.TEST_EXECUTE, "set checked", op -> op
+				.addValue("element", getElementJson()));
+		getEvaluator().quiet().testCondition("exists", op -> op
+						.addValue("element", getElementJson()),
 				() -> callRef().hasElement(), page, page.getContext());
 		try {
-			if (checkedAttrVals.contains(callRef().getAttribute("checked"))) {
+			if (callRef().getAttribute("checked") != null) {
 				return getReturnObj();
 			}
 			callRef().click();
-			return getEvaluator().quiet().testCondition(() -> "checked: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
-					() -> checkedAttrVals.contains(callRef().getAttribute("checked")), getReturnObj(), page.getContext());
-		}catch (PageException ex){
-			throw ex;
+			return getEvaluator().quiet().testCondition("checked", op -> op
+						.addValue("element", getElementJson()),
+					() -> callRef().getAttribute("checked") != null, getReturnObj(), page.getContext());
 		}catch (Exception ex){
-			throw page.getContext().createException("set checked: " + getElementDisplay() + " on page [" + page.getClass().getName() + "]", ex);
+			throw page.getContext().createException(JsonBuilder.toMap(getEvaluator().getExecuteEvent(
+					"set checked", op -> op.addValue("element", getElementJson()))), ex);
 		}
 	}
 
 	public R setUnchecked() {
-		log.info(getEvaluator().getActionMessage(() -> "set unchecked: " + getElementDisplay() + " on page [" + page.getClass().getName() + "]"));
-		getEvaluator().quiet().testCondition(() -> "exists: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
+		getEvaluator().logEvent(TestEvaluator.TEST_EXECUTE, "set unchecked", op -> op
+				.addValue("element", getElementJson()));
+		getEvaluator().quiet().testCondition("exists", op -> op
+						.addValue("element", getElementJson()),
 				() -> callRef().hasElement(), page, page.getContext());
 		try{
-			if (!checkedAttrVals.contains(callRef().getAttribute("checked"))) {
+			if (callRef().getAttribute("checked") == null) {
 				return getReturnObj();
 			}
 			callRef().click();
-			return getEvaluator().quiet().testCondition(() -> "unchecked: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
-					() -> !checkedAttrVals.contains(callRef().getAttribute("checked")), getReturnObj(), page.getContext());
-		}catch (PageException ex){
-			throw ex;
+			return getEvaluator().quiet().testCondition("unchecked", op -> op
+						.addValue("element", getElementJson()),
+					() -> callRef().getAttribute("checked") == null, getReturnObj(), page.getContext());
 		}catch (Exception ex){
-			throw page.getContext().createException("set unchecked: " + getElementDisplay() + " on page [" + page.getClass().getName() + "]", ex);
+			throw page.getContext().createException(JsonBuilder.toMap(getEvaluator().getExecuteEvent(
+					"set unchecked", op -> op.addValue("element", getElementJson()))), ex);
 		}
 	}
 
@@ -88,13 +88,19 @@ public class CheckboxTester<R, N extends PageModel<? super N>> extends WebElemen
 
 	@Override
 	public R notSelected() {
-		return getEvaluator().testCondition(() -> "unchecked: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
-				() -> !checkedAttrVals.contains(callRef().getAttribute("checked")), getReturnObj(), page.getContext());
+		return getEvaluator().testCondition(
+				"unchecked", op -> op
+						.addValue("element", getElementJson()),
+				() -> callRef().getAttribute("checked") == null,
+				getReturnObj(), page.getContext());
 	}
 
 	@Override
 	public R isSelected() {
-		return getEvaluator().testCondition(() -> "checked: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
-				() -> checkedAttrVals.contains(callRef().getAttribute("checked")), getReturnObj(), page.getContext());
+		return getEvaluator().testCondition(
+				"checked", op -> op
+						.addValue("element", getElementJson()),
+				() -> callRef().getAttribute("checked") != null,
+				getReturnObj(), page.getContext());
 	}
 }

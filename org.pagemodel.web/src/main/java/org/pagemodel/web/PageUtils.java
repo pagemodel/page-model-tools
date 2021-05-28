@@ -23,11 +23,9 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.web.testers.ClickAction;
+import org.pagemodel.web.testers.WebTestEvaluator;
 import org.pagemodel.web.utils.Screenshot;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Callable;
@@ -37,7 +35,6 @@ import java.util.concurrent.TimeUnit;
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class PageUtils {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	public static final int DEFAULT_PAGE_LOAD_TIMEOUT_SECONDS = 20;
 
 	public static <T extends PageModel<? super T>> T makeInstance(final Class<T> clazz, final WebTestContext context) {
@@ -72,7 +69,7 @@ public class PageUtils {
 		try {
 			T page = null;
 			if (SectionModel.class.isAssignableFrom(clazz)) {
-				page = (T) SectionModel.make((Class) clazz, ClickAction.make(elementRef, (PageModel) sectionParent), sectionParent.getEvaluator());
+				page = (T) SectionModel.make((Class) clazz, ClickAction.make(elementRef, (PageModel) sectionParent, sectionParent.getEvaluator()), sectionParent.getEvaluator());
 			} else {
 				for(Constructor<?> c : clazz.getConstructors()){
 					if(c.getParameterTypes().length == 1 && c.getParameterTypes()[0].isAssignableFrom(context.getClass())){
@@ -116,7 +113,10 @@ public class PageUtils {
 	static public boolean waitForPageIsDisplayed(PageModel page, int timeout) {
 		WebDriverWait wait = new WebDriverWait(page.getContext().getDriver(), timeout);
 		try {
-			page.getEvaluator().log(TestEvaluator.TEST_ASSERT + " wait for model displayed: [" + page.getClass().getSimpleName() + "]");
+			new WebTestEvaluator.Wait(page.getContext(),timeout).logEvent(
+					TestEvaluator.TEST_ASSERT,
+					"model displayed", op -> op
+							.addValue("model",  page.getClass().getSimpleName()));
 			wait.until(d -> {
 				page.getContext().getDriver().manage().timeouts().implicitlyWait(50, TimeUnit.MILLISECONDS);
 				try {
@@ -126,7 +126,10 @@ public class PageUtils {
 				}
 			});
 		} catch (TimeoutException te) {
-			page.getEvaluator().log("Timed out waiting for page " + page.getClass().getName());
+			new WebTestEvaluator.Wait(page.getContext(),timeout).logEvent(
+					TestEvaluator.TEST_ASSERT,
+					"model displayed", op -> op
+							.addValue("model",  page.getClass().getSimpleName()));
 			if(PageModel.DefaultPageModel.class.isAssignableFrom(page.getClass())){
 				((PageModel.DefaultPageModel)page).logModelDisplayed();
 			}else if(SectionModel.class.isAssignableFrom(page.getClass())){
@@ -155,5 +158,26 @@ public class PageUtils {
 			page.getClass().getMethod("setTestEvaluator", TestEvaluator.class).invoke(page, testEvaluator);
 		}catch (Exception ex){ }
 		return page;
+	}
+
+
+
+	public static void logPageSource(WebTestContext testContext, String testType, String...messages){
+		String msg = String.join("\n", messages);
+		if(testType == null || testType.isEmpty()){
+			testType = TestEvaluator.TEST_LOG;
+		}
+		Screenshot.takeScreenshot(testContext, ("Page" + testType).replaceAll("\\s", ""));
+		testContext.getEvaluator().logEvent(testType, "page source", op -> op
+				.doAdd(o -> {
+					if(!msg.isEmpty()){
+						o.addValue("message", msg);
+					}
+				})
+				.addValue("url", testContext.getDriver().getCurrentUrl())
+				.addValue("title", testContext.getDriver().getTitle())
+				.addValue("handle", testContext.getDriver().getWindowHandle())
+				.addValue("iframe", testContext.getDriver().getPageSource())
+				.addValue("html-src", testContext.getDriver().getPageSource()));
 	}
 }

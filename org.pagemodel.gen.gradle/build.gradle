@@ -1,16 +1,15 @@
-apply plugin: 'java'
-apply plugin: 'maven'
+apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 apply plugin: 'idea'
 
 sourceCompatibility = 1.8
 
-version = '0.8.0-SNAPSHOT'
+version = '0.8.1'
 group = 'org.pagemodel'
 
 dependencies {
-    compile gradleApi()
-    compile 'org.slf4j:slf4j-api:1.7.25'
+    api gradleApi()
+    api 'org.slf4j:slf4j-api:1.7.25'
 }
 
 buildscript {

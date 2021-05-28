@@ -17,11 +17,19 @@
 package org.pagemodel.tools;
 
 import org.openqa.selenium.WebDriver;
+import org.pagemodel.core.testers.ComparableTester;
+import org.pagemodel.core.testers.StringTester;
+import org.pagemodel.core.testers.TestEvaluator;
+import org.pagemodel.core.testers.TesterHelper;
+import org.pagemodel.core.utils.TestRuntimeException;
+import org.pagemodel.core.utils.json.JsonObjectBuilder;
 import org.pagemodel.mail.MailTestContext;
 import org.pagemodel.ssh.SSHAuthenticator;
 import org.pagemodel.ssh.SSHTestContext;
 import org.pagemodel.web.DefaultWebTestContext;
 import org.pagemodel.web.utils.PageException;
+
+import java.util.function.Consumer;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
@@ -32,16 +40,6 @@ public class ExtendedTestContext extends DefaultWebTestContext implements SSHTes
 	private WebDriverConfig webDriverConfig;
 	protected SSHAuthenticator sshAuthenticator;
 
-	public ExtendedTestContext(WebDriver driver, SSHAuthenticator sshAuthenticator, String browser) {
-		super(driver);
-		this.sshAuthenticator = sshAuthenticator;
-		if(browser != null && !browser.isEmpty()){
-			browser = DEFAULT_BROWSER;
-		}
-		WebDriverConfig webDriverConfig = WebDriverConfig.local(browser);
-		this.webDriverConfig = webDriverConfig;
-	}
-
 	public ExtendedTestContext(WebDriver driver, SSHAuthenticator sshAuthenticator, WebDriverConfig webDriverConfig) {
 		super(driver);
 		this.sshAuthenticator = sshAuthenticator;
@@ -51,11 +49,32 @@ public class ExtendedTestContext extends DefaultWebTestContext implements SSHTes
 		this.webDriverConfig = webDriverConfig;
 	}
 
+	private void openBrowser(String url){
+		if (getDriver() != null) {
+			quit();
+		}
+		setDriver(WebDriverFactory.create(webDriverConfig, url));
+	}
+
 	protected void openPage(String url){
-		if (getDriver() == null){
-			setDriver(WebDriverFactory.create(webDriverConfig, url));
-		}else{
-			getDriver().get(url);
+		openBrowser(url);
+	}
+
+	protected void openPageRetry(String url, int retries) {
+		for( ; retries > 0; retries--) {
+			try {
+				openBrowser(url);
+				return;
+			} catch (Throwable t) {
+				if (retries <= 0) {
+					throw t;
+				}
+				try{
+					Thread.sleep(500);
+				}catch (InterruptedException ex){
+					throw new TestRuntimeException(this, ex);
+				}
+			}
 		}
 	}
 
@@ -71,6 +90,74 @@ public class ExtendedTestContext extends DefaultWebTestContext implements SSHTes
 
 	@Override
 	public PageException createException(String message, Throwable cause) {
-		return createException(true, message, cause);
+		return createException(getLogExceptions(), message, cause);
+	}
+
+	@Experimental
+	public <T extends StringTester<T>> T testString(String string){
+		T tester = (T)new StringTester<>(() -> string, (T)null, this, getEvaluator());
+		TesterHelper.setReturn(tester, tester);
+		return tester;
+	}
+
+	@Experimental
+	public <T extends StringTester<T>> T testStoredString(String key){
+		return testString(load(key));
+	}
+
+	@Experimental
+	public <T extends ComparableTester<C, T>, C extends Comparable<C>> T testComparable(C value){
+		T tester = (T)new ComparableTester<>(() -> value, (T)null, this, getEvaluator());
+		TesterHelper.setReturn(tester, tester);
+		return tester;
+	}
+
+	@Experimental
+	public <T extends ComparableTester<C, T>, C extends Comparable<C>> T testStoredComparable(Class<C> clazz, String key){
+		return testComparable(load(clazz, key));
+	}
+
+	@Experimental
+	public boolean ignoreException(Runnable action){
+		boolean logExceptions = getLogExceptions();
+		setLogExceptions(false);
+		try {
+			action.run();
+			return true;
+		}catch(Throwable t){
+		}finally {
+			setLogExceptions(logExceptions);
+		}
+		return false;
+	}
+
+	@Experimental
+	public Throwable catchException(Runnable action){
+		boolean logExceptions = getLogExceptions();
+		setLogExceptions(false);
+		try {
+			action.run();
+		}catch(Throwable t){
+			return t;
+		}finally {
+			setLogExceptions(logExceptions);
+		}
+		return null;
+	}
+
+	@Experimental
+	public void log(String message){
+		this.getEvaluator().logMessage(message);
+	}
+
+	@Experimental
+	public void log(String message, Throwable t){
+		this.getEvaluator().logException(message, t);
+
+	}
+
+	@Experimental
+	public void log(String action, Consumer<JsonObjectBuilder> eventParams){
+		this.getEvaluator().logEvent(TestEvaluator.TEST_LOG, action, eventParams);
 	}
 }

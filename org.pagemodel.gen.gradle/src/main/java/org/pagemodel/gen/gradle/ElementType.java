@@ -23,8 +23,9 @@ enum ElementType {
 	Display,
 	FileUpload,
 	Checkbox("CheckboxTester"),
-	DropDown("SelectTester"),
+	DropDown("DropDownTester"),
 	Select("SelectTester"),
+	MultiSelect("MultiSelectTester"),
 	Radio,
 	Image,
 	Tab,
@@ -34,6 +35,7 @@ enum ElementType {
 	Dialog,
 	Modal,
 	Nav,
+	Menu,
 	Section,
 	Component;
 

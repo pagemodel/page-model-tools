@@ -16,16 +16,14 @@
 
 package org.pagemodel.mail;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
@@ -37,8 +35,6 @@ import java.util.regex.Pattern;
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class MimeMailAdapter {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
 	public static MailMessage readMessage(Message message) throws MessagingException, IOException {
 		if(message == null){
 			throw new NullPointerException("Error: MimeMessage is null");
@@ -59,7 +55,8 @@ public class MimeMailAdapter {
 		readBody(message.getContent(), mailMessage);
 		readAttachments(message, mailMessage);
 		mailMessage.setSentDate(message.getSentDate());
-		mailMessage.setMessage(message);
+		MimeMessage messageCopy = new MimeMessage((MimeMessage) message);
+		mailMessage.setMessage(messageCopy);
 		return mailMessage;
 	}
 
@@ -73,17 +70,39 @@ public class MimeMailAdapter {
 		}
 	}
 
-	protected static void readAttachments(Message message, MailMessage mailMessage) throws MessagingException, IOException {
+	protected static void readAttachments(Part message, MailMessage mailMessage) throws MessagingException, IOException {
 		if(message.getContentType().contains("multipart")) {
 			MimeMultipart mp = (MimeMultipart) message.getContent();
 			for (int i = 0; i < mp.getCount(); ++i){
 				BodyPart bp = mp.getBodyPart(i);
-				if (bp.getDisposition() != null && bp.getDisposition().contains("attachment")){
-					// toString not the proper way to read attachments, will fail
-					Attachment att = new Attachment.TextAttachment(bp.getFileName(), bp.getContent().toString(), bp.getContentType());
-					mailMessage.addAttachment(att);
+				String filename = bp.getFileName();
+				Object content = bp.getContent();
+				String contentType = bp.getContentType();
+				if (filename != null && content != null && contentType != null){
+					if(bp.getContentType().equals("text/plain")) {
+						mailMessage.addAttachment(new Attachment.TextAttachment(filename, content.toString(), contentType));
+					}else if(bp.getContentType().contains("multipart")) {
+						readAttachments(bp, mailMessage);
+					}else{
+						byte[] bytes = getStreamBytes(bp.getDataHandler().getInputStream());
+						mailMessage.addAttachment(new Attachment(filename, bytes, contentType));
+					}
 				}
 			}
+		}
+	}
+
+	private static byte[] getStreamBytes(InputStream in){
+		try {
+			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+			int nRead;
+			byte[] data = new byte[16384];
+			while ((nRead = in.read(data, 0, data.length)) != -1) {
+				buffer.write(data, 0, nRead);
+			}
+			return buffer.toByteArray();
+		}catch(Exception ex){
+			throw new RuntimeException(ex);
 		}
 	}
 
@@ -147,7 +166,9 @@ public class MimeMailAdapter {
 		mime.setSubject(mailMessage.getSubject());
 		Set<String> headers = mailMessage.getHeaders().keySet();
 		for(String s : headers){
-			mime.addHeader(s, mailMessage.getHeaders().get(s));
+			for(String val : mailMessage.getHeaderList(s)) {
+				mime.addHeader(s, val);
+			}
 		}
 
 		MimeMultipart multi = buildMultipart(mailMessage);
@@ -162,7 +183,7 @@ public class MimeMailAdapter {
 	}
 
 	public static void simulateThunderbirdSubjectMime(MimeMessage mime) throws MessagingException {
-		log.trace("modifying mime to simulate Thunderbird-style mime");
+//		log.trace("modifying mime to simulate Thunderbird-style mime");
 		Pattern p = Pattern.compile("(=[0-9A-Fa-f][0-9A-Fa-f])");
 		for (String s : mime.getHeader("Subject")) {
 			Matcher m = p.matcher(s);
@@ -171,7 +192,7 @@ public class MimeMailAdapter {
 				m.appendReplacement(sb, m.group(1).toLowerCase());
 			}
 			m.appendTail(sb);
-			log.info("reseting subject to thunderbird style: " + sb.toString());
+//			log.info("reseting subject to thunderbird style: " + sb.toString());
 			mime.setHeader("Subject", sb.toString());
 		}
 	}

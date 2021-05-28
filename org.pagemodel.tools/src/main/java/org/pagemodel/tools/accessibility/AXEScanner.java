@@ -19,15 +19,17 @@ package org.pagemodel.tools.accessibility;
 import com.deque.axe.AXE;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.web.WebTestContext;
 import org.pagemodel.web.utils.Screenshot;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.lang.invoke.MethodHandles;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -37,9 +39,9 @@ import java.util.concurrent.TimeUnit;
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class AXEScanner {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
 	protected static final URL SCRIPT_URL = AXEScanner.class.getClassLoader().getResource("axe.min.js");
+
+	public final static int DEFAULT_TIMEOUT = 30;
 
 	public final static String LOG_DIR = "build/accessibility/";
 
@@ -64,10 +66,14 @@ public class AXEScanner {
 	}
 
 	public <T> boolean analyzeAccessibility(WebTestContext testContext, String testName) {
-		return analyzeAccessibility(testContext, testName, LOG_DIR);
+		return analyzeAccessibility(testContext, testName, LOG_DIR, DEFAULT_TIMEOUT);
 	}
 
-	public <T> boolean analyzeAccessibility(WebTestContext testContext, String testName, String logDir) {
+	public <T> boolean analyzeAccessibility(WebTestContext testContext, String testName, int timeoutSec) {
+		return analyzeAccessibility(testContext, testName, LOG_DIR, timeoutSec);
+	}
+
+	public <T> boolean analyzeAccessibility(WebTestContext testContext, String testName, String logDir, int timeoutSec) {
 		File destFolder = new File(logDir);
 		if (!destFolder.exists()) {
 			destFolder.mkdirs();
@@ -77,18 +83,33 @@ public class AXEScanner {
 			Screenshot.takeScreenshot(testContext, outFileName);
 		}
 		testContext.getDriver().manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS);
-		JSONObject responseJSON = new AXE.Builder(testContext.getDriver(), SCRIPT_URL).analyze();
+		JSONObject responseJSON = new AXE.Builder(testContext.getDriver(), SCRIPT_URL)
+				.setTimeout(timeoutSec)
+				.analyze();
 		JSONArray violation = responseJSON.getJSONArray("violations");
+		List<String> foundExpectedViolations = new ArrayList<>();
+		List<String> foundViolations = new ArrayList<>();
 		if (violation.length() != 0) {
 			boolean passScan = true;
 			for (int i = 0; i < violation.length(); i++) {
 				String violationName = violation.getJSONObject(i).getString("help");
 				if (!expectedViolations.contains(violationName)) {
 					passScan = false;
-					log.error("Found unexpected violation: " + violationName);
+					foundViolations.add(violationName);
 				} else {
-					log.info("Ignoring expected violation: " + violationName);
+					foundExpectedViolations.add(violationName);
 				}
+			}
+			TestEvaluator eval = testContext.getEvaluator();
+			if(!foundExpectedViolations.isEmpty()){
+				eval.logEvent(TestEvaluator.TEST_ASSERT,
+						"ignore expected violations", obj -> obj
+							.addValue("value", String.join(", ",foundExpectedViolations)));
+			}
+			if(!foundViolations.isEmpty()){
+				eval.logEvent(TestEvaluator.TEST_ERROR,
+						"accessibility violations", obj -> obj
+							.addValue("value", String.join(", ",foundViolations)));
 			}
 			if (!passScan) {
 				AXE.writeResults(logDir + "/" + outFileName + "_" + System.currentTimeMillis(), violation);

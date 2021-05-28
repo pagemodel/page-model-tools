@@ -8,10 +8,7 @@ import org.pagemodel.core.utils.ThrowingFunction;
 import org.pagemodel.core.utils.ThrowingRunnable;
 import org.pagemodel.web.testers.AlertTester;
 import org.pagemodel.web.testers.PageTester;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -21,7 +18,7 @@ import java.util.function.Consumer;
  * @param <P> PageModel implementation type
  * @author Matt Stevenson <matt@pagemodel.org>
  */
-public interface PageModel<P extends PageModel<? super P>> {
+public interface PageModel<P extends PageModel<? super P>> extends ModelBase {
 
 	WebTestContext getContext();
 
@@ -88,8 +85,6 @@ public interface PageModel<P extends PageModel<? super P>> {
 	}
 
 	public static abstract class DefaultPageModel<T extends PageModel<? super T>> implements PageModel<T> {
-		private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
 		protected final WebTestContext testContext;
 		private TestEvaluator testEvaluator;
 
@@ -135,20 +130,20 @@ public interface PageModel<P extends PageModel<? super P>> {
 			return page -> {};
 		}
 
-		protected LocatedWebElement findPageElement(By by) {
+		protected LocatedWebElement findPageElement(String name, By by) {
 			try {
 				WebElement el = getContext().getDriver().findElement(by);
-				return new LocatedWebElement(el, by, null);
+				return new LocatedWebElement(el, name, by, this, null);
 			} catch (Exception e) {
-				return new LocatedWebElement(null, by, null);
+				return new LocatedWebElement(null, name, by, this, null);
 			}
 		}
 
-		protected <T extends LocatedWebElement> List<? super T> findPageElements(By by) {
+		protected <T extends LocatedWebElement> List<? super T> findPageElements(String name, By by) {
 			try {
-				return Arrays.asList(getContext().getDriver().findElements(by).stream().map(el -> new LocatedWebElement(el, by, null)).toArray(WebElement[]::new));
+				return Arrays.asList(getContext().getDriver().findElements(by).stream().map(el -> new LocatedWebElement(el, name, by, this, null)).toArray(WebElement[]::new));
 			} catch (Exception e) {
-				return Arrays.asList(new LocatedWebElement(null, by, null));
+				return Arrays.asList(new LocatedWebElement(null, name, by, this, null));
 			}
 		}
 	}

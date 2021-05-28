@@ -27,6 +27,9 @@ public interface ThrowingCallable {
 			try {
 				return callable.call();
 			} catch (Throwable e) {
+				if(RuntimeException.class.isAssignableFrom(e.getClass())){
+					throw (RuntimeException) e;
+				}
 				throw new RuntimeException(e);
 			}
 		};

@@ -30,8 +30,8 @@ public class ComponentModelWriter extends PageModelWriter {
 		sb.append(System.lineSeparator())
 				.append(indent).append(getComponentClassDef(pageModel)).append(System.lineSeparator())
 				.append(classIndent).append("public ").append(pageModel.modelName)
-				.append("(ClickAction<?, ").append(getComponentPageParam(pageModel)).append("> clickAction) {").append(System.lineSeparator())
-				.append(methodIndent).append("super(clickAction);").append(System.lineSeparator())
+				.append("(ClickAction<?, ").append(getComponentPageParam(pageModel)).append("> clickAction, TestEvaluator testEvaluator) {").append(System.lineSeparator())
+				.append(methodIndent).append("super(clickAction, testEvaluator);").append(System.lineSeparator())
 				.append(classIndent).append("}").append(System.lineSeparator()).append(System.lineSeparator())
 
 				.append(classIndent).append("public ").append(pageModel.modelName)
@@ -42,10 +42,9 @@ public class ComponentModelWriter extends PageModelWriter {
 				.append(classIndent).append("public class ").append(pageModel.modelName).append("_section extends ")
 				.append(pageModel.modelName).append("<").append(getComponentSectionTypeParams(pageModel)).append("> {").append(System.lineSeparator())
 				.append(methodIndent).append("public ").append(pageModel.modelName).append("_section(ClickAction<?, ")
-				.append(getComponentPageParam(pageModel)).append("> clickAction) {").append(System.lineSeparator())
-				.append(innerIndent).append("super(clickAction);").append(System.lineSeparator())
+				.append(getComponentPageParam(pageModel)).append("> clickAction, TestEvaluator testEvaluator) {").append(System.lineSeparator())
+				.append(innerIndent).append("super(clickAction, testEvaluator);").append(System.lineSeparator())
 				.append(innerIndent).append("setReturnObj(this);").append(System.lineSeparator())
-				.append(innerIndent).append("setEvaluator(").append(pageModel.modelName).append(".this.getEvaluator());").append(System.lineSeparator())
 				.append(methodIndent).append("}").append(System.lineSeparator()).append(System.lineSeparator())
 
 				.append(methodIndent).append("public ").append(getComponentPageParam(pageModel)).append(" testSectionParent() {").append(System.lineSeparator())
@@ -54,7 +53,7 @@ public class ComponentModelWriter extends PageModelWriter {
 				.append(classIndent).append("}").append(System.lineSeparator()).append(System.lineSeparator())
 
 				.append(classIndent).append("public ").append(pageModel.modelName).append("_section asSection(){").append(System.lineSeparator())
-				.append(methodIndent).append("return new ").append(pageModel.modelName).append("_section(clickAction);").append(System.lineSeparator())
+				.append(methodIndent).append("return new ").append(pageModel.modelName).append("_section(clickAction, getEvaluator());").append(System.lineSeparator())
 				.append(classIndent).append("}").append(System.lineSeparator());
 
 		return sb;

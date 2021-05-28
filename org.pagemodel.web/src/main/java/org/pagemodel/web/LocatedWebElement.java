@@ -17,9 +17,11 @@
 package org.pagemodel.web;
 
 import org.openqa.selenium.*;
+import org.pagemodel.core.utils.json.JsonBuilder;
+import org.pagemodel.core.utils.json.JsonObjectBuilder;
 
 import java.util.List;
-import java.util.function.Function;
+import java.util.Map;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
@@ -28,16 +30,18 @@ public class LocatedWebElement implements WebElement {
 	protected WebElement element;
 	protected WebElement parent;
 	protected String locator;
+	protected String friendlyName;
+	protected ModelBase model;
 
-	public LocatedWebElement(WebElement element, By by, WebElement parent) {
-		this.element = element;
-		this.locator = by.toString();
-		this.parent = parent;
+	public LocatedWebElement(WebElement element, String friendlyName, By by, ModelBase model, WebElement parent) {
+		this(element, friendlyName, by.toString(), model, parent);
 	}
 
-	public LocatedWebElement(WebElement element, String locator, WebElement parent) {
+	public LocatedWebElement(WebElement element, String friendlyName, String locator, ModelBase model, WebElement parent) {
 		this.element = element;
+		this.friendlyName = friendlyName;
 		this.locator = locator;
+		this.model = model;
 		this.parent = parent;
 	}
 
@@ -46,6 +50,10 @@ public class LocatedWebElement implements WebElement {
 			return ((LocatedWebElement)element).getElement();
 		}
 		return element;
+	}
+
+	public String getFriendlyName(){
+		return friendlyName;
 	}
 
 	@Override
@@ -153,72 +161,64 @@ public class LocatedWebElement implements WebElement {
 		return locator != null;
 	}
 
-	public String getElementDisplay() {
-		return getElementDisplay(this, "element");
+	public boolean hasFriendlyName() {
+		return friendlyName != null;
 	}
 
-	public static LocatedWebElement wrap(WebElement el) {
+	public Map<String,Object> getElementJson(ModelBase model) {
+		return getElementJson(this, "element", model);
+	}
+
+	public static LocatedWebElement wrap(WebElement el, ModelBase model) {
 		if (el == null) {
-			return new LocatedWebElement(null, (String)null, null);
+			return new LocatedWebElement(null, null, (String)null, model, null);
 		}
 		if (LocatedWebElement.class.isAssignableFrom(el.getClass())) {
 			return (LocatedWebElement) el;
 		} else {
-			return new LocatedWebElement(el, (String)null, null);
+			return new LocatedWebElement(el, null, (String)null, model, null);
 		}
 	}
 
-	private static String getElementDisplay(WebElement el, String label) {
-		LocatedWebElement lwe = wrap(el);
-		StringBuilder disp = new StringBuilder();
-		disp.append(label + "(");
-		if (lwe.hasLocator()) {
-			disp.append("by(" + lwe.getElementLocator().toString() + "), ");
-		} else {
-			disp.append("by(null), ");
-		}
-		if (lwe.hasElement()) {
-			if (label.equals("parent")) {
-				disp.append("foundParent(");
-			} else {
-				disp.append("found(");
-			}
-			boolean separator = false;
-			separator = addElementDisplay("tag", lwe.getElement().getTagName(), disp, separator, str -> str.toLowerCase());
-			separator = addElementDisplay("id", lwe.getElement().getAttribute("id"), disp, separator);
-			separator = addElementDisplay("name", lwe.getElement().getAttribute("name"), disp, separator);
-			if (!label.equals("parent")) {
-				separator = addElementDisplay("value", lwe.getElement().getAttribute("value"), disp, separator);
-				separator = addElementDisplay("class", lwe.getElement().getAttribute("class"), disp, separator);
-				separator = addElementDisplay("href", lwe.getElement().getAttribute("href"), disp, separator);
-				addElementDisplay("text", lwe.getElement().getText(), disp, separator, str -> str.trim().replaceAll("\\s+", " "));
-			}
-			disp.append(")");
-		} else {
-			disp.append("found(null)");
-		}
-		if (lwe.hasParent()) {
-			disp.append(", ")
-					.append(getElementDisplay(lwe.getLocatorParent(), "parent"));
-		}
-		return disp.append(")").toString();
+	private static Map<String,Object> getElementJson(WebElement el, String label, ModelBase model) {
+		LocatedWebElement lwe = wrap(el, model);
+		return JsonBuilder.object()
+				.addValue("name", lwe.friendlyName)
+				.addValue("model", lwe.model == null ? null : lwe.model.getClass().getSimpleName())
+				.addValue("by", lwe.getElementLocator())
+				.doAdd(ob -> {
+					if(!lwe.hasElement()){
+						ob.addValue("found", "null");
+					} else {
+						ob.addObject("found", o -> {
+							String tag = lwe.getTagName();
+							String tagLower = tag == null ? null : tag.toLowerCase();
+							String text = lwe.getText();
+							if(tag != null && !tag.equals(tagLower)){
+								tag = tagLower;
+								text = text == null ? null : text.trim().replaceAll("\\s+", " ");
+							}
+							addNonEmptyField(o, "tag", tag);
+							addNonEmptyField(o, "id", lwe.getAttribute("id"));
+							addNonEmptyField(o, "name", lwe.getAttribute("name"));
+							if(!label.equals("parent")) {
+								addNonEmptyField(o, "value", lwe.getAttribute("value"));
+								addNonEmptyField(o, "class", lwe.getAttribute("class"));
+								addNonEmptyField(o, "href", lwe.getAttribute("href"));
+								addNonEmptyField(o, "text", text);
+							}
+						});
+					}
+					if(lwe.hasParent()) {
+						ob.addValue("parent", getElementJson(lwe.getLocatorParent(), "parent", model));
+					}
+				}).toMap();
 	}
 
-	private static boolean addElementDisplay(String label, String value, StringBuilder disp, boolean seperator) {
-		return addElementDisplay(label, value, disp, seperator, null);
-	}
-
-	private static boolean addElementDisplay(String label, String value, StringBuilder disp, boolean seperator, Function<String,String> transform) {
-		if(value != null && transform != null){
-			value = transform.apply(value);
+	private static void addNonEmptyField(JsonObjectBuilder obj, String field, String value){
+		if(value == null || value.isEmpty()){
+			return;
 		}
-		if(value != null && !value.isEmpty()) {
-			if(seperator){
-				disp.append(", ");
-			}
-			disp.append(label + ":[" + value + "]");
-			return true;
-		}
-		return seperator;
+		obj.addValue(field, value);
 	}
 }

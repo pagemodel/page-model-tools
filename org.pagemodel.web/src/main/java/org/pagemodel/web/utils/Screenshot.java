@@ -19,33 +19,32 @@ package org.pagemodel.web.utils;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
+import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.web.WebTestContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
 import java.text.SimpleDateFormat;
+import java.util.Base64;
 import java.util.Date;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class Screenshot {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	private static int SCREENSHOT_NUMBER = 1;
 	public static String SCREENSHOT_DEST = "build/screenshots/";
 
 	public static <T> String takeScreenshot(WebTestContext testContext, String filenamePrefix) {
+		TestEvaluator.Now eval = new TestEvaluator.Now();
 		if (testContext == null) {
-			log.error("Error: Unable to take screenshot, null TestContext.");
+			eval.logMessage("Error: Unable to take screenshot, null TestContext.");
 			return null;
 		}
 		if (testContext.getDriver() == null) {
-			log.error("Error: Unable to take screenshot, null WebDriver in TestContext.");
+			eval.logMessage("Error: Unable to take screenshot, null WebDriver in TestContext.");
 			return null;
 		}
 		return takeScreenshot(testContext.getDriver(), filenamePrefix);
@@ -53,19 +52,30 @@ public class Screenshot {
 
 	public static String takeScreenshot(WebDriver driver, String filenamePrefix) {
 		File destFolder = new File(SCREENSHOT_DEST);
+		TestEvaluator.Now eval = new TestEvaluator.Now();
 		if (!destFolder.exists()) {
-			log.info("Creating directory: " + destFolder.getAbsolutePath());
-			destFolder.mkdirs();
+			eval.quiet().testRun(TestEvaluator.TEST_EXECUTE,
+					"create directory", op -> op
+							.addValue("value", destFolder.getAbsolutePath()),
+					() -> destFolder.mkdirs(),
+					null, null);
 		}
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
 		String date = simpleDateFormat.format(new Date());
 		String filename = String.format("%03d_%s_%s.png", SCREENSHOT_NUMBER++, filenamePrefix, date);
 		File screenshot = new File(destFolder, filename);
+
+		byte[] bytes = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
+		String base64Encoded = Base64.getEncoder().encodeToString(bytes);
+		eval.logEvent(TestEvaluator.TEST_EXECUTE, "save screenshot", obj -> obj
+				.addValue("value", "file://" + screenshot.getAbsolutePath())
+				.addValue("img-base64", base64Encoded));
 		try (FileOutputStream fos = new FileOutputStream(screenshot)) {
-			fos.write(((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES));
-			log.info("Screenshot saved to " + screenshot.getAbsolutePath());
+			fos.write(bytes);
 		} catch (IOException ex) {
-			log.info("Unable to save screenshot to " + screenshot.getAbsolutePath(), ex);
+			eval.logException(TestEvaluator.TEST_ERROR, "save screenshot", obj -> obj
+					.addValue("value", "file://" + screenshot.getAbsolutePath())
+					, null, ex);
 		}
 		return screenshot.getAbsolutePath();
 	}

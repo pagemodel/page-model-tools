@@ -17,16 +17,11 @@
 package org.pagemodel.ssh;
 
 import org.pagemodel.core.testers.TestEvaluator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class SSH {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	public static SSHInner testSSH(SSHTestContext testContext) {
 		return new SSHInner(testContext, testContext.getEvaluator());

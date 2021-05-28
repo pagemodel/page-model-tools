@@ -29,7 +29,7 @@ public class MyAppTestContext extends ExtendedTestContext {
 	private MyAppConfig myAppConfig;
 
 	public MyAppTestContext(MyAppConfig myAppConfig, WebDriverConfig webDriverConfig) {
-		super(null, null, webDriverConfig);
+		super(null, myAppConfig.getSshAuth(), webDriverConfig);
 		this.myAppConfig = myAppConfig;
 	}
 
@@ -43,7 +43,8 @@ public class MyAppTestContext extends ExtendedTestContext {
 	}
 
 	private String getApplicationUrl(String urlPath){
-		String port = myAppConfig.getPort().isEmpty() ? "" : ":" + myAppConfig.getPort();
+		String port = myAppConfig.getPort();
+		port = port == null || port.isEmpty() ? "" : ":" + port;
 		String hostPath = myAppConfig.getProtocol().equals("file") ? new File(myAppConfig.getHostname()).getAbsolutePath() : myAppConfig.getHostname();
 		return String.format("%s://%s%s%s", myAppConfig.getProtocol(), hostPath, port, urlPath);
 	}

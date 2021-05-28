@@ -92,6 +92,38 @@ public class StringTesterTest {
 	}
 
 	@Test
+	public void containedBy() {
+		testString = "test abcd 1234";
+		tester.containedBy(" test abcd 1234 ");
+		tester.containedBy("test abcd 12344");
+		assertException(() -> tester.containedBy("test fabcd 12345"));
+		assertException(() -> tester.containedBy(null));
+
+		testString = null;
+		assertException(() -> tester.containedBy(null));
+		assertException(() -> tester.containedBy(""));
+		assertException(() -> tester.containedBy(" test abcd 1234 "));
+		assertException(() -> tester.containedBy("5678"));
+	}
+
+	@Test
+	public void notContainedBy() {
+		testString = "test abcd 1234";
+		assertException(() -> tester.notContainedBy(" test abcd 1234 "));
+		assertException(() -> tester.notContainedBy("test abcd 1234"));
+		tester.notContainedBy("f");
+		tester.notContainedBy("ABCD");
+		tester.notContainedBy("abcd1234");
+		assertException(() -> tester.notContainedBy(null));
+
+		testString = null;
+		assertException(() -> tester.notContainedBy(null));
+		assertException(() -> tester.notContainedBy(""));
+		assertException(() -> tester.notContainedBy("test abcd 1234"));
+		assertException(() -> tester.notContainedBy("5678"));
+	}
+
+	@Test
 	public void testEquals() {
 		testString = "test abcd 1234";
 		tester.equals("test abcd 1234");

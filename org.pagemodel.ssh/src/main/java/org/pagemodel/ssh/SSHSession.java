@@ -26,11 +26,8 @@ import net.sf.expectit.Expect;
 import net.sf.expectit.ExpectBuilder;
 import net.sf.expectit.Result;
 import net.sf.expectit.matcher.Matcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
 import java.util.concurrent.TimeUnit;
 
 import static net.sf.expectit.filter.Filters.removeColors;
@@ -41,8 +38,6 @@ import static net.sf.expectit.matcher.Matchers.*;
  * @author Sean Hale <shale@tetrazoid.net>
  */
 public class SSHSession {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
 	private static final String sudoCommand = "sudo -i";
 	private static final String sudoPasswordPrompt = "[sudo] password for ";
 	private static final String defaultPromptRegex = "\r\n(-?bash-[^ ]*|\\[[^\\]]*\\])(\\$|\\#) $";

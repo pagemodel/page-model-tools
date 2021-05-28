@@ -28,6 +28,9 @@ public interface ThrowingConsumer<T, E extends Throwable> {
 			try {
 				consumer.accept(t);
 			} catch (Throwable e) {
+				if(RuntimeException.class.isAssignableFrom(e.getClass())){
+					throw (RuntimeException) e;
+				}
 				throw new RuntimeException(e);
 			}
 		};

@@ -1,4 +1,4 @@
 dependencies {
-    compile project(':org.pagemodel.core')
-    compile 'com.sun.mail:javax.mail:1.5.6'
+    api project(':org.pagemodel.core')
+    api 'com.sun.mail:javax.mail:1.5.6'
 }

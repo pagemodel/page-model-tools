@@ -20,12 +20,14 @@ import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.core.utils.ThrowingCallable;
+import org.pagemodel.core.utils.json.JsonObjectBuilder;
 import org.pagemodel.web.PageModel;
 import org.pagemodel.web.PageUtils;
 import org.pagemodel.web.WebTestContext;
 import org.pagemodel.web.utils.RefreshTracker;
 
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -37,7 +39,7 @@ public class WebTestEvaluator {
 		protected int waitSec;
 
 		public Wait(WebTestContext testContext, int waitSec) {
-			this.label = " wait for";
+			this.label = "wait";
 			this.testContext = testContext;
 			this.waitSec = waitSec;
 		}
@@ -45,6 +47,12 @@ public class WebTestEvaluator {
 		public Wait withTimeout(int waitSec) {
 			this.waitSec = waitSec;
 			return this;
+		}
+
+		@Override
+		public Consumer<JsonObjectBuilder> getEvalTypeJson(){
+			return super.getEvalTypeJson()
+					.andThen(eval -> eval.addValue("timeout", waitSec));
 		}
 
 		public WebTestContext getTestContext() {
@@ -71,7 +79,7 @@ public class WebTestEvaluator {
 
 		public WaitAndRefresh(WebTestContext testContext, int waitSec, R returnObj, PageModel page) {
 			super(testContext, waitSec);
-			this.label = " wait and refresh for";
+			this.label = "refresh";
 			this.returnObj = returnObj;
 			this.page = page;
 		}
@@ -84,6 +92,12 @@ public class WebTestEvaluator {
 		public WaitAndRefresh<R> withTimeout(int waitSec) {
 			this.waitSec = waitSec;
 			return this;
+		}
+
+		@Override
+		public Consumer<JsonObjectBuilder> getEvalTypeJson(){
+			return super.getEvalTypeJson()
+					.andThen(eval -> eval.addValue("pageSetup", (pageSetupFunction != null)));
 		}
 
 		public R getReturnObj() {
@@ -115,7 +129,7 @@ public class WebTestEvaluator {
 					if (pageSetupFunction != null) {
 						returnObj = pageSetupFunction.apply(returnObj);
 					}
-					log(getTestMessage(getTestMessageRef(), getSourceDisplayRef()));
+					logEvent(TEST_ASSERT, getActionDisplay(), getEventParams(), getSourceEvents());
 					FluentWait wait = new WebDriverWait(testContext.getDriver(), waitStep)
 							.ignoring(Throwable.class).ignoring(Exception.class);
 					wait.until(driver -> ThrowingCallable.unchecked(test).call());

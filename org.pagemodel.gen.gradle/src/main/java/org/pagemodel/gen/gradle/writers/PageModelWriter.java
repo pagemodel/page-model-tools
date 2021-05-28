@@ -74,7 +74,7 @@ public class PageModelWriter {
 	}
 
 	protected String getClickActionWrap(PageModelConfig pageModel, String clickAction){
-		return clickAction;
+		return clickAction + ", getEvaluator()";
 	}
 
 	protected String getTesterPageReturnObj(PageModelConfig pageModel){
@@ -138,7 +138,7 @@ public class PageModelWriter {
 		String methodArgs = String.join(", ", args.stream().map(arg -> arg.argString).toArray(String[]::new));
 		sb.append(System.lineSeparator()).append(classIndent).append("protected LocatedWebElement get")
 				.append(elem.name).append("(").append(methodArgs).append(") {").append(System.lineSeparator())
-				.append(methodIndent).append("return ").append(elem.findMethod).append("(By.").append(elem.byType)
+				.append(methodIndent).append("return ").append(elem.findMethod).append("(\"").append(elem.name).append("\", By.").append(elem.byType)
 					.append("(\"").append(locator).append("\"));").append(System.lineSeparator())
 				.append(classIndent).append("}").append(System.lineSeparator());
 		return sb;
@@ -225,9 +225,9 @@ public class PageModelWriter {
 				"this::get" + elem.name :
 				"() -> get" + elem.name + "(" + callArgs + ")";
 		if(elem.returnType == null){
-			clickAction = "ClickAction.make(" + elemGetter + ", " + getTesterPageReturnObj(pageModel) + ")";
+			clickAction = "ClickAction.make(" + elemGetter + ", " + getTesterPageReturnObj(pageModel) + ", getEvaluator())";
 		}else{
-			clickAction = "ClickAction.makeNav(" + elemGetter + ", " + getTesterPageReturnObj(pageModel) + ", " + getReturnValue(pageModel, elem) + ")";
+			clickAction = "ClickAction.makeNav(" + elemGetter + ", " + getTesterPageReturnObj(pageModel) + ", " + getReturnValue(pageModel, elem) + ", getEvaluator())";
 		}
 		if(elem.clickModifier != null && !elem.clickModifier.isEmpty()){
 			clickAction += System.lineSeparator() + continueIndent + elem.clickModifier;

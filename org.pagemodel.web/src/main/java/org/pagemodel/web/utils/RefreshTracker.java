@@ -33,7 +33,8 @@ public class RefreshTracker extends PageModel.DefaultPageModel<RefreshTracker> {
 	private String id;
 
 	public static <T extends PageModel<? super T>> T refreshPage(T page) {
-		page.getEvaluator().log(TestEvaluator.TEST_EXECUTE + " page refresh: [" + page.getClass().getSimpleName() + "]");
+		page.getEvaluator().logEvent(TestEvaluator.TEST_EXECUTE, "refresh page", op -> op
+				.addValue("model", page.getClass().getSimpleName()));
 		TestEvaluator contextEval = page.getContext().getEvaluator();
 		page.getContext().setEvaluator(contextEval.quiet());
 		TestEvaluator origEval = page.getEvaluator();
@@ -63,11 +64,11 @@ public class RefreshTracker extends PageModel.DefaultPageModel<RefreshTracker> {
 	}
 
 	protected WebElement getRefreshTrackingElement() {
-		return findPageElement(By.id(id));
+		return findPageElement("RefreshElement", By.id(id));
 	}
 
 	private WebElementTester<RefreshTracker, RefreshTracker> testRefreshTrackingElement() {
-		return new WebElementTester<>(this, ClickAction.make(this::getRefreshTrackingElement, this), getEvaluator());
+		return new WebElementTester<>(this, ClickAction.make(this::getRefreshTrackingElement, this, getEvaluator()), getEvaluator());
 	}
 
 	protected RefreshTracker addRefreshTrackingElement() {

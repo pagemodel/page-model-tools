@@ -64,10 +64,10 @@ public class PageModelJavaWriter {
 
 	private StringBuilder generateCustomJava(PageModelConfig pageModel, StringBuilder sb, String indent){
 		for(List<String> block : pageModel.customJava){
-			sb.append(System.lineSeparator());
 			for(String line : block){
 				sb.append(System.lineSeparator()).append(indent).append(line);
 			}
+			sb.append(System.lineSeparator());
 		}
 		return sb;
 	}

@@ -38,9 +38,10 @@ custom_java
 ```
 
 ```
-page_type = PageModel | ComponentModel | SectionModel | AbstractPageModel | user_defined_page_model
-user_defined_type = custom AbstractPageModel type
+page_type = PageModel | ComponentModel | SectionModel | AbstractPageModel | user_defined_abstract_page_model | @user_defined_abstract_page_model
+user_defined_abstract_page_model = custom AbstractPageModel type
 ```
+Using `@user_defined_abstract_page_model` will create an abstract page model inheriting from another abstract page model.
 
 ### package:
 The full package for the class being generated, and defines the java src path for where the class is generated
@@ -90,6 +91,7 @@ Row - a table row or row of elements
 Dialog - a dialog box with child elements
 Modal - a modal dialog box that takes focus from the rest of the page
 Nav - a navigation component with navigation buttons or links
+Menu - a menu component
 Section - generic section
 Component - generic component
 
@@ -218,7 +220,4 @@ Custom java code is added to the java class without modification
 
 ```
 Copyright 2021 Matthew Stevenson <pagemodel.org>
-This work is licensed under a Creative Commons Attribution 4.0 International License
-http://creativecommons.org/licenses/by/4.0/
-@author: Matt Stevenson <matt@pagemodel.org>
 ```

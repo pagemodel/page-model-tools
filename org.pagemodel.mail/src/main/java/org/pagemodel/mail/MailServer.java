@@ -17,19 +17,14 @@
 package org.pagemodel.mail;
 
 import org.pagemodel.core.utils.Unique;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-import java.lang.invoke.MethodHandles;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class MailServer {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
 	private String domain;
 	private String host;
 	private String username;
@@ -44,7 +39,6 @@ public class MailServer {
 	public MailServer(String domain, String host, String username, String password, boolean useTls, boolean allowInsecure){
 		this(domain, host, username, password, useTls);
 		this.allowInsecure = allowInsecure;
-
 	}
 	public MailServer(String domain, String host, String username, String password, boolean useTls) {
 		this.domain = domain;

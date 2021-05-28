@@ -69,6 +69,8 @@ WebElementRefresh provides all the tests for [WebElementTester](#webelementteste
 | **notEquals** | String value | [PageModel](#pagemodel) | assert string not equals `value` |
 | **contains** | String value | [PageModel](#pagemodel) | assert string contains `value` |
 | **notContains** | String value | [PageModel](#pagemodel) | assert string not contains `value` |
+| **containedBy** | String value | [PageModel](#pagemodel) | assert `value` contains string |
+| **notContainedBy** | String value | [PageModel](#pagemodel) | assert `value` not contains  |
 | **endsWith** | String value | [PageModel](#pagemodel) | assert string ends with given `value` |
 | **notEndsWith** | String value | [PageModel](#pagemodel) | assert string not ends with `value` |
 | **startsWith** | String value | [PageModel](#pagemodel) | assert string starts with `value` |

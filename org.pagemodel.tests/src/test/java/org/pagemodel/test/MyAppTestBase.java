@@ -19,6 +19,8 @@ package org.pagemodel.test;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.pagemodel.junit4.LoggingTestRule;
 import org.pagemodel.mail.MailAuthenticator;
 import org.pagemodel.mail.PopServer;
 import org.pagemodel.mail.SmtpServer;
@@ -46,6 +48,9 @@ public class MyAppTestBase {
 	protected static SmtpServer externalSmtp;
 
 	protected MyAppTestContext context;
+
+	@Rule
+	public LoggingTestRule logTestRule = new LoggingTestRule();
 
 	@BeforeClass
 	public static synchronized void loadConfig() {

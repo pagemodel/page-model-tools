@@ -7,15 +7,10 @@ import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.core.utils.ThrowingFunction;
 import org.pagemodel.web.LocatedWebElement;
 import org.pagemodel.web.PageModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.lang.invoke.MethodHandles;
 import java.util.concurrent.Callable;
 
 public class JavaScriptReturnTester<P extends PageModel<? super P>, R> {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
 	protected final R returnObj;
 	protected final Callable<Object> ref;
 	protected final String javascriptCommand;
@@ -42,8 +37,14 @@ public class JavaScriptReturnTester<P extends PageModel<? super P>, R> {
 		return testEvaluator;
 	}
 
+	protected String getRefString(){
+		Object ref = callRef();
+		return ref == null ? null : ref.toString();
+	}
+
 	public R testReturn(ThrowingFunction<Object,Boolean,?> test){
-		return getEvaluator().testCondition(() -> "JavaScript return value:[" + callRef() + "] from script:[" + javascriptCommand + "] on page:[" + page.getClass().getSimpleName() + "]",
+		return getEvaluator().testCondition(
+				"javascript return", op -> op.addValue("value", javascriptCommand).addValue("actual",getRefString()).addValue("model",page == null ? null : page.getClass().getSimpleName()),
 				() -> ThrowingFunction.unchecked(test).apply(callRef()), returnObj, page.getContext());
 	}
 
@@ -63,7 +64,11 @@ public class JavaScriptReturnTester<P extends PageModel<? super P>, R> {
 		return new ComparableTester<>(() -> (Double)callRef(), returnObj, page.getContext(), getEvaluator());
 	}
 
+	public ComparableTester<Boolean, R> testReturnBool(){
+		return new ComparableTester<>(() -> (Boolean)callRef(), returnObj, page.getContext(), getEvaluator());
+	}
+
 	public WebElementTester<R,P> testReturnElement(){
-		return new WebElementTester<>(ClickAction.make(() -> new LocatedWebElement((WebElement)callRef(), "javascript", null), page));
+		return new WebElementTester<>(ClickAction.make(() -> new LocatedWebElement((WebElement)callRef(), "JsElement", "javascript", page, null), page, getEvaluator()), getEvaluator());
 	}
 }

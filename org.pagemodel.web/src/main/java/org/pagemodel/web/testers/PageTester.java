@@ -18,6 +18,7 @@ package org.pagemodel.web.testers;
 
 import org.openqa.selenium.*;
 import org.pagemodel.core.testers.TestEvaluator;
+import org.pagemodel.core.utils.json.JsonBuilder;
 import org.pagemodel.web.PageModel;
 import org.pagemodel.web.PageUtils;
 import org.pagemodel.web.WebTestContext;
@@ -39,15 +40,24 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 	}
 
 	public WebElementTester<P, P> testFocusedElement() {
-		return new WebElementTester<>(ClickAction.make(() -> testContext.getDriver().switchTo().activeElement(), page));
+		getEvaluator().addSourceEvent(TestEvaluator.TEST_FIND,
+				"focused element", op -> op
+						.addValue("model", page.getClass().getName()));
+		return new WebElementTester<>(ClickAction.make(() -> testContext.getDriver().switchTo().activeElement(), page, getEvaluator()), getEvaluator());
 	}
 
 	public WebElementTester<P, P> testHTMLElement() {
-		return new WebElementTester<>(ClickAction.make(() -> testContext.getDriver().findElement(By.tagName("html")), page));
+		getEvaluator().addSourceEvent(TestEvaluator.TEST_FIND,
+				"page html", op -> op
+						.addValue("model", page.getClass().getName()));
+		return new WebElementTester<>(ClickAction.make(() -> testContext.getDriver().findElement(By.tagName("html")), page, getEvaluator()), getEvaluator());
 	}
 
 	public WebElementTester<P, P> testBodyElement() {
-		return new WebElementTester<>(ClickAction.make(() -> testContext.getDriver().findElement(By.tagName("body")), page));
+		getEvaluator().addSourceEvent(TestEvaluator.TEST_FIND,
+				"page body", op -> op
+						.addValue("model", page.getClass().getName()));
+		return new WebElementTester<>(ClickAction.make(() -> testContext.getDriver().findElement(By.tagName("body")), page, getEvaluator()), getEvaluator());
 	}
 
 	public P testJavaScript(String javascript, int timeoutSeconds, Object...args) {
@@ -68,10 +78,16 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 		return executeJavaScript(javascript, timeoutSeconds, true, args);
 	}
 
+	private String getModelName(){
+		return page == null ? null : page.getClass().getSimpleName();
+	}
+
 	private JavaScriptReturnTester<P,P> executeJavaScript(String javascript, int timeoutSeconds, boolean async, Object...args) {
 		Object[] objRef = new Object[1];
 		return getEvaluator().testExecute(
-				() -> "javaScript [" + javascript + "] on page:[" + page.getClass().getSimpleName() + "]",
+				"javaScript", op -> op
+						.addValue("value", javascript)
+						.addValue("model", getModelName()),
 				() -> {
 					testContext.getDriver().manage().timeouts().setScriptTimeout(timeoutSeconds, TimeUnit.SECONDS);
 					JavascriptExecutor jse = (JavascriptExecutor) testContext.getDriver();
@@ -91,35 +107,43 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 
 	public P setWindowSize(int width, int height) {
 		return getEvaluator().testExecute(
-				() -> "set window size to dimension (" + width + " X " + height + ") on page [" + page.getClass().getSimpleName() + "]",
+				"set window size", op -> op
+						.addValue("value", width + " X " + height)
+						.addValue("model",getModelName()),
 				() -> testContext.getDriver().manage().window().setSize(new Dimension(width, height)),
 				page, page.getContext());
 	}
 
 	public P maximizeWindow() {
 		return getEvaluator().testExecute(
-				() -> "maximize window on page [" + page.getClass().getSimpleName() + "]",
+				"maximize window", op -> op
+						.addValue("model", getModelName()),
 				() -> testContext.getDriver().manage().window().maximize(),
 				page, testContext);
 	}
 
 	public P fullscreenWindow() {
 		return getEvaluator().testExecute(
-				() -> "fullscreen window on page [" + page.getClass().getSimpleName() + "]",
+				"fullscreen window", op -> op
+						.addValue("model", getModelName()),
 				() -> testContext.getDriver().manage().window().fullscreen(),
 				page, testContext);
 	}
 
 	public P setWindowPosition(int x, int y) {
 		return getEvaluator().testExecute(
-				() -> "set window position to point (x:" + x + " ,y:" + y + ") on page [" + page.getClass().getSimpleName() + "]",
+				"set window position", op -> op
+						.addValue("value", x + ", " + y)
+						.addValue("model",getModelName()),
 				() -> testContext.getDriver().manage().window().setPosition(new Point(x, y)),
 				page, testContext);
 	}
 
 	public P moveWindowPositionByOffset(int offsetX, int offsetY) {
 		return getEvaluator().testExecute(
-				() -> "move window position by offset (x:" + offsetX + " ,y:" + offsetY + ") on page [" + page.getClass().getSimpleName() + "]",
+				"move window", op -> op
+						.addValue("value", offsetX + ", " + offsetY)
+						.addValue("model",getModelName()),
 				() -> {
 					Point pos = testContext.getDriver().manage().window().getPosition();
 					testContext.getDriver().manage().window().setPosition(new Point(pos.x + offsetX, pos.y + offsetY));
@@ -128,10 +152,13 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 	}
 
 	public P takeScreenshot(String filePrefix) {
-		return getEvaluator().testExecute(
-				() ->  "take screenshot of page [" + page.getClass().getSimpleName() + "], title: [" + testContext.getDriver().getTitle() + "], url: [" + testContext.getDriver().getCurrentUrl() + "]",
-				() -> Screenshot.takeScreenshot(testContext, filePrefix + "_" + page.getClass().getSimpleName()),
-				page, page.getContext());
+		Screenshot.takeScreenshot(testContext, filePrefix + "_" + page.getClass().getSimpleName());
+		return page;
+	}
+
+	public P logPageSource(String...messages){
+		PageUtils.logPageSource(page.getContext(), TestEvaluator.TEST_LOG, messages);
+		return page;
 	}
 
 	public P refreshPage() {
@@ -139,39 +166,56 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 	}
 
 	public <T extends PageModel<? super T>> T switchToDefaultContent(Class<T> clazz) {
+		String className = clazz == null ? null : clazz.getSimpleName();
 		return getEvaluator().testExecute(
-				() ->  "switch to default content on page [" + page.getClass().getSimpleName() + "]",
+				"switch to default content", op -> op
+						.addValue("expected", className)
+						.addValue("model", getModelName()),
 				() -> page.getContext().getDriver().switchTo().defaultContent(),
-				page.testPage().testPageModel(clazz),
-				page.getContext());
+				page.testPage().testPageModel(clazz), page.getContext());
 	}
 
 	public <T extends PageModel<? super T>> T switchToParentFrame(Class<T> clazz) {
+		String className = clazz == null ? null : clazz.getSimpleName();
 		return getEvaluator().testExecute(
-				() ->  "switch to parent frame on page [" + page.getClass().getSimpleName() + "]",
+				"switch to parent frame", op -> op
+						.addValue("expected", className)
+						.addValue("model", getModelName()),
 				() -> page.getContext().getDriver().switchTo().parentFrame(),
-				page.testPage().testPageModel(clazz),
-				page.getContext());
+				page.testPage().testPageModel(clazz), page.getContext());
 	}
 
 	public <T extends PageModel<? super T>> T testPageModel(Class<T> clazz) {
 		try {
-			getEvaluator().log("test page model [" + clazz.getSimpleName() + "] from page [" + page.getClass().getSimpleName() + "]");
+			getEvaluator().logEvent(TestEvaluator.TEST_EXECUTE,
+					"test model", op -> op
+					.addValue("expected", clazz.getSimpleName())
+					.addValue("model", page.getClass().getSimpleName()));
 			for(Constructor<?> c : clazz.getConstructors()){
 				if(c.getParameterTypes().length == 1 && c.getParameterTypes()[0].isAssignableFrom(testContext.getClass())){
 					return (T)c.newInstance(testContext);
 				}
 			}
 		} catch (IllegalAccessException | InstantiationException | InvocationTargetException ex) {
-			throw testContext.createException("Error: Unable to create instance of [" + clazz.getName() + "]", ex);
+			throw testContext.createException(JsonBuilder.toMap(getEvaluator().getExecuteEvent(
+					"test model", op -> op
+					.addValue("expected", clazz.getSimpleName())
+					.addValue("model", page.getClass().getSimpleName()))), ex);
 		}
-		throw testContext.createException("Error: Unable to create instance of [" + clazz.getName() + "]");
+		throw testContext.createException(JsonBuilder.toMap(getEvaluator().getExecuteEvent(
+				"test model", op -> op
+				.addValue("expected", clazz.getSimpleName())
+				.addValue("model", page.getClass().getSimpleName()))));
 	}
 
 	public <T extends PageModel<? super T>> T navigateTo(String url, Class<T> clazz) {
 		T retPage = PageUtils.makeInstance(clazz, testContext);
+		String className = clazz == null ? null : clazz.getSimpleName();
 		return getEvaluator().testExecute(
-				() ->  "navigate to: [" + clazz.getName() + "], url [" + url + "]",
+				"navigate", op -> op
+						.addValue("value", url)
+						.addValue("expected",className)
+						.addValue("model",getModelName()),
 				() -> {
 					testContext.getDriver().navigate().to(url);
 					PageUtils.waitForModelDisplayed(retPage);

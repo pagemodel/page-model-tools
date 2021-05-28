@@ -20,6 +20,8 @@ import org.junit.Test;
 import org.pagemodel.core.utils.Unique;
 import org.pagemodel.tests.myapp.tools.MyAppUser;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -31,17 +33,27 @@ public class PageTests extends MyAppTestBase {
 	public void testMyAppPages() {
 		MyAppUser admin = MyAppUser.admin(context);
 		MyAppUser.admin(context).loginToMainPage()
-//				.testSiteStatusDisplay().text().equals("Online")
-//				.testSiteVersionDisplay().text().startsWith("0.8.0")
-//				.testStatusDateDisplay().text().storeValue("status_date")
+				.log("Starting test")
+				.doAction(page -> {
+					Throwable t = context.catchException(() -> {
+						page.testTopNav().testManageUsersLink().text().contains("Sds");
+					});
+					if(t != null){
+						context.log("Comparison failed", t);
+					}
+				})
+				.testSiteStatusDisplay().text().equals("Online")
+				.log("my action", op -> op.addValue("field", "value"))
+				.testSiteVersionDisplay().text().startsWith("0.8.1")
+				.testStatusDateDisplay().text().storeValue("status_date")
 				.testStatusDateDisplay().text().asDate().storeValue("status_date3")
 //				.testPage().waitFor().numberOfSeconds(1)
 //				.testUpdateStatusButton().click()
 //				.testStatusDateDisplay().text().notEquals(context.load("status_date"))
 //
 				.testStatusDateDisplay().waitAndRefreshFor().text().asDate()
-						.transform(date -> (int) TimeUnit.SECONDS.convert(date.getTime() - context.loadDate("status_date3").getTime(), TimeUnit.MILLISECONDS))
-						.greaterThan(5)
+				.transform(date -> (int) TimeUnit.SECONDS.convert(date.getTime() - context.loadDate("status_date3").getTime(), TimeUnit.MILLISECONDS))
+				.greaterThan(5)
 				.testStatusDateDisplay().text().asDate().storeValue("status_date2")
 				.testStatusDateDisplay().waitAndRefreshFor().text().asDate().greaterThan(context.load("status_date2"))
 
@@ -55,10 +67,10 @@ public class PageTests extends MyAppTestBase {
 				.testNotificationDisplay(1).testTitleDisplay().waitFor().text().equals("Notification 2")
 
 				.testPage().testAccessibility(
-						"<html> element must have a lang attribute",
-						"Form elements must have labels",
-						"Page must have one main landmark",
-						"All page content must be contained by landmarks")
+				"<html> element must have a lang attribute",
+				"Form elements must have labels",
+				"Page must have one main landmark",
+				"All page content must be contained by landmarks")
 
 				.testTopNav().testManageUsersLink().click()
 				.testAddUserButton().click()
@@ -87,12 +99,39 @@ public class PageTests extends MyAppTestBase {
 				.testStatusDropDown().attribute("value").equals("Pending")
 				.testUserDisplay().text().contains("sam")
 				.testRoutingDisplay().text().endsWith("-a")
-				.testStatusDropDown().selectValue("Approved")
 				.testSectionParent()
 
 				.testTopNav().testSignOutLink().click()
 				.closeBrowser();
+	}
 
+	@Test
+	public void testSelect() {
+		MyAppUser.admin(context).loginToMainPage()
+				.testItemReviewRow("Item 2").asSection()
+				.testStatusDropDown().selectText("Approved")
+				.testStatusDropDown().optionsTextList().equalsOrdered(Arrays.asList("Pending", "Approved", "Denied"))
+				.testStatusDropDown().optionsTextList().equalsOrdered("Pending", "Approved", "Denied")
+				.testStatusDropDown().optionsValueList().equalsOrdered(Arrays.asList("Pending", "Approved", "Denied"))
+				.testStatusDropDown().optionsValueList().equalsOrdered("Pending", "Approved", "Denied")
+				.testStatusDropDown().optionsValueList().equalsUnordered("Approved", "Pending", "Denied")
+				.testStatusDropDown().optionsValueList().notEqualsUnordered("Extra", "Approved", "Pending", "Denied")
+				.testStatusDropDown().optionsTextList().storeValue("text")
+				.testStatusDropDown().optionsValueList().equalsOrdered(context.<List<String>>load("text"))
+
+				.testStatusDropDown().testOption(1).text().equals("Pending")
+				.testStatusDropDown().testOptionByText("Approved").isSelected()
+				.testStatusDropDown().testOption(1).setSelected()
+				.testStatusDropDown().testOptionByText("Pending").isSelected()
+				.testStatusDropDown().testOption(3).notSelected()
+				.testStatusDropDown().testOptionByText("Denied").setSelected()
+				.testStatusDropDown().testOptionByText("Pending").notSelected()
+				.testStatusDropDown().testOptionByText("Denied").isSelected()
+				.testStatusDropDown().testOption(3).isSelected()
+				.testSectionParent()
+
+				.testTopNav().testSignOutLink().click()
+				.closeBrowser();
 	}
 
 	@Test
@@ -101,11 +140,11 @@ public class PageTests extends MyAppTestBase {
 
 				.testItemReviewRow("Item 1").testDeleteLink().click()
 				.testItemReviewRow("Item 1").waitFor().notExists()
-				.testPage().refreshPage()
-				.testItemReviewRow("Item 1").testDeleteLink().waitFor().click()
-				.testItemReviewRow("Item 1").waitFor().notExists()
-				.testItemReviewRow("Item 1").testDeleteLink().waitAndRefreshFor().click()
-				.testItemReviewRow("Item 1").waitFor().notExists()
+//				.testPage().refreshPage()
+//				.testItemReviewRow("Item 1").testDeleteLink().waitFor().click()
+//				.testItemReviewRow("Item 1").waitFor().notExists()
+//				.testItemReviewRow("Item 1").testDeleteLink().waitAndRefreshFor().click()
+//				.testItemReviewRow("Item 1").waitFor().notExists()
 				.testTopNav().testSignOutLink().click()
 				.closeBrowser();
 	}

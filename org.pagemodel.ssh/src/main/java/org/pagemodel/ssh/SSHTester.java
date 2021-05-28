@@ -17,18 +17,13 @@
 package org.pagemodel.ssh;
 
 import org.pagemodel.core.testers.TestEvaluator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class SSHTester<R> {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
 	public final static int DEFAULT_SSH_CMD_TIMEOUT = 20;
 
 	private final R returnObj;
@@ -75,11 +70,15 @@ public class SSHTester<R> {
 	}
 
 	protected SSHTester<R> connect(SSHAuthenticator authenticator) {
-		log.info("Connecting to SSH: Host [" + authenticator.getHost() + "], Username [" + authenticator.getUsername() + "], Password [" + authenticator.getPassword() + "]");
-		this.authenticator = authenticator;
-		startSession();
-		assert (connected);
-		return this;
+		return getEvaluator().testExecute("ssh connect", op -> op
+				.addValue("server", authenticator.getHost())
+				.addValue("user", authenticator.getUsername()),
+				() -> {
+					this.authenticator = authenticator;
+					startSession();
+					assert (connected);
+				},
+				this, testContext);
 	}
 
 	protected R testConnectionFails() {
@@ -87,28 +86,37 @@ public class SSHTester<R> {
 	}
 
 	protected R testConnectionFails(SSHAuthenticator authenticator) {
-		log.info("Testing SSH connection fails: IP Address [" + authenticator.getHost() + "], Username [" + authenticator.getUsername() + "], Password [" + authenticator.getPassword() + "].");
-		this.authenticator = authenticator;
-		try {
-			startSession();
-		} catch (RuntimeException ex) {
-			return returnObj;
-		}
-		throw new RuntimeException("Error: Connection expected to fail, but succeeded. IP Address [" + authenticator.getHost() + "], Username [" + authenticator.getUsername() + "], Password [" + authenticator.getPassword() + "].");
+		return getEvaluator().testCondition("ssh fails", op -> op
+				.addValue("server", authenticator.getHost())
+				.addValue("user", authenticator.getUsername()),
+				() -> {
+					this.authenticator = authenticator;
+					try {
+						startSession();
+					} catch (RuntimeException ex) {
+						return true;
+					}
+					return false;
+				},
+				returnObj, testContext);
 	}
 
 	public R disconnect() {
-		log.info("Disconnecting from SSH: IP Address [" + authenticator.getHost() + "]");
-		if (!connected) {
-			return returnObj;
-		}
-		try {
-			sshSession.close();
-		} catch (IOException ex) {
-		}
-		connected = false;
-		sshSession = null;
-		return returnObj;
+		return getEvaluator().testExecute("ssh disconnect", op -> op
+				.addValue("server", authenticator.getHost())
+				.addValue("user", authenticator.getUsername()),
+				() -> {
+					if (!connected) {
+						return;
+					}
+					try {
+						sshSession.close();
+					} catch (IOException ex) {
+					}
+					connected = false;
+					sshSession = null;
+				},
+				returnObj, testContext);
 	}
 
 	private void startSession() {

@@ -21,10 +21,12 @@ import org.pagemodel.core.testers.ComparableTester;
 import org.pagemodel.core.testers.StringListTester;
 import org.pagemodel.core.testers.StringTester;
 import org.pagemodel.core.testers.TestEvaluator;
+import org.pagemodel.core.utils.ThrowingConsumer;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 /**
@@ -60,27 +62,27 @@ public class MailMessageTester<R> {
 	}
 
 	public StringTester<MailMessageTester<R>> testSender() {
-		getEvaluator().setSourceDisplayRef(() -> "sender");
+		getEvaluator().setSourceFindEvent("sender", op -> op.addValue("mail", getMessageJson()));
 		return new StringTester<>(() -> callRef().getSender(), this, testContext, getEvaluator());
 	}
 
 	public StringListTester<MailMessageTester<R>> testRecipientsTo() {
-		getEvaluator().setSourceDisplayRef(() -> "recipients To");
+		getEvaluator().setSourceFindEvent("recipients To", op -> op.addValue("mail", getMessageJson()));
 		return new StringListTester<>(() -> callRef().getRecipientsTo(), this, testContext, getEvaluator());
 	}
 
 	public StringListTester<MailMessageTester<R>> testRecipientsCc() {
-		getEvaluator().setSourceDisplayRef(() -> "recipients CC");
+		getEvaluator().setSourceFindEvent("recipients CC", op -> op.addValue("mail", getMessageJson()));
 		return new StringListTester<>(() -> callRef().getRecipientsCc(), this, testContext, getEvaluator());
 	}
 
 	public StringListTester<MailMessageTester<R>> testRecipientsBcc() {
-		getEvaluator().setSourceDisplayRef(() -> "recipients BCC");
+		getEvaluator().setSourceFindEvent("recipients BCC", op -> op.addValue("mail", getMessageJson()));
 		return new StringListTester<>(() -> callRef().getRecipientsBcc(), this, testContext, getEvaluator());
 	}
 
 	public StringListTester<MailMessageTester<R>> testRecipientsAll() {
-		getEvaluator().setSourceDisplayRef(() -> "all recipients");
+		getEvaluator().setSourceFindEvent("all recipients", op -> op.addValue("mail", getMessageJson()));
 		return new StringListTester<>(() -> {
 			List<String> recipients = new ArrayList<>(callRef().getRecipientsTo());
 			recipients.addAll(callRef().getRecipientsCc());
@@ -90,42 +92,55 @@ public class MailMessageTester<R> {
 	}
 
 	public StringTester<MailMessageTester<R>> testSubject() {
-		getEvaluator().setSourceDisplayRef(() -> "subject");
+		getEvaluator().setSourceFindEvent("subject", op -> op.addValue("mail", getMessageJson()));
 		return new StringTester<>(() -> callRef().getSubject(), this, testContext, getEvaluator());
 	}
 
 	public StringTester<MailMessageTester<R>> testTextBody() {
-		getEvaluator().setSourceDisplayRef(() -> "text body");
+		getEvaluator().setSourceFindEvent("text body", op -> op.addValue("mail", getMessageJson()));
 		return new StringTester<>(() -> callRef().getTextBody(), this, testContext, getEvaluator());
 	}
 
 	public StringTester<MailMessageTester<R>> testHtmlBody() {
-		getEvaluator().setSourceDisplayRef(() -> "html body");
+		getEvaluator().setSourceFindEvent("html body", op -> op.addValue("mail", getMessageJson()));
 		return new StringTester<>(() -> callRef().getHtmlBody(), this, testContext, getEvaluator());
 	}
 
 	public StringTester<MailMessageTester<R>> testHeader(String header) {
-		getEvaluator().setSourceDisplayRef(() -> "header [" + header + "]");
+		getEvaluator().setSourceFindEvent("header", op -> op
+				.addValue("value", header)
+				.addValue("mail", getMessageJson()));
 		return new StringTester<>(() -> callRef().getHeader(header), this, testContext, getEvaluator());
 	}
 
+	public StringListTester<MailMessageTester<R>> testHeaderList(String header) {
+		getEvaluator().setSourceFindEvent("header", op -> op
+				.addValue("value", header)
+				.addValue("mail", getMessageJson()));
+		return new StringListTester<>(() -> callRef().getHeaderList(header), this, testContext, getEvaluator());
+	}
+
 	public ComparableTester<Date, MailMessageTester<R>> testSentDate() {
-		getEvaluator().setSourceDisplayRef(() -> "sent date");
+		getEvaluator().setSourceFindEvent("sent date", op -> op.addValue("mail", getMessageJson()));
 		return new ComparableTester<>(() -> callRef().getSentDate(), this, testContext, getEvaluator());
 	}
 
 	public AttachmentTester<MailMessageTester<R>> testAttachment(String filename) {
-		getEvaluator().setSourceDisplayRef(() -> "attachment with filename: [" + filename + "]");
+		getEvaluator().setSourceFindEvent("attachment", op -> op
+				.addValue("value", filename)
+				.addValue("mail", getMessageJson()));
 		return new AttachmentTester<>(() -> getAttachmentByFilename(filename), this, testContext, getEvaluator());
 	}
 
 	public AttachmentTester<MailMessageTester<R>> testAttachment(int i) {
-		getEvaluator().setSourceDisplayRef(() -> "attachment at index: [" + i + "]");
+		getEvaluator().setSourceFindEvent("attachment", op -> op
+				.addValue("value", i)
+				.addValue("mail", getMessageJson()));
 		return new AttachmentTester<>(() -> getAttachmentByIndex(i), this, testContext, getEvaluator());
 	}
 
 	public ComparableTester<Integer, MailMessageTester<R>> testAttachmentCount() {
-		getEvaluator().setSourceDisplayRef(() -> "attachment count");
+		getEvaluator().setSourceFindEvent("attachment count", op -> op.addValue("mail", getMessageJson()));
 		return new ComparableTester<>(() -> callRef().getAttachments().size(), this, testContext, getEvaluator());
 	}
 
@@ -142,6 +157,15 @@ public class MailMessageTester<R> {
 		return null;
 	}
 
+	public MailMessageTester<R> doAction(ThrowingConsumer<MailMessageTester<R>, ?> action){
+		ThrowingConsumer.unchecked(action).accept(this);
+		return this;
+	}
+
+	public MailMessage getMailMessage(){
+		return callRef();
+	}
+
 	protected Attachment getAttachmentByIndex(int i){
 		MailMessage mailMessage = callRef();
 		if(mailMessage == null){
@@ -151,5 +175,15 @@ public class MailMessageTester<R> {
 			return null;
 		}
 		return mailMessage.getAttachments().get(i);
+	}
+
+	protected String getMessageDisplay(){
+		MailMessage message = callRef();
+		return message == null ? null : message.toString();
+	}
+
+	protected Map<String,Object> getMessageJson(){
+		MailMessage message = callRef();
+		return message == null ? null : message.toJson();
 	}
 }

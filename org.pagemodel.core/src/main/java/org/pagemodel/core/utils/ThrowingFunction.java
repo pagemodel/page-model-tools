@@ -28,6 +28,9 @@ public interface ThrowingFunction<T, R, E extends Throwable> {
 			try {
 				return f.apply(t);
 			} catch (Throwable e) {
+				if(RuntimeException.class.isAssignableFrom(e.getClass())){
+					throw (RuntimeException) e;
+				}
 				throw new RuntimeException(e);
 			}
 		};

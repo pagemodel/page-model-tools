@@ -1,12 +1,11 @@
 subprojects {
-    apply plugin: 'java'
-    apply plugin: 'maven'
+    apply plugin: 'java-library'
     apply plugin: 'maven-publish'
     apply plugin: 'idea'
 
     sourceCompatibility = 1.8
 
-    version = '0.8.0-SNAPSHOT'
+    version = '0.8.1'
     group = 'org.pagemodel'
 
     buildscript {
@@ -51,4 +50,14 @@ subprojects {
         systemProperty 'myapp', System.getProperty("myapp")
         systemProperty 'mail.external', System.getProperty("mail.external")
     }
+}
+
+tasks.register('run') {
+    dependsOn gradle.includedBuild('org.pagemodel.gen.gradle').task(':run')
+}
+tasks.register('publish') {
+    dependsOn gradle.includedBuild('org.pagemodel.gen.gradle').task(':publish')
+}
+tasks.register('publishToMavenLocal') {
+    dependsOn gradle.includedBuild('org.pagemodel.gen.gradle').task(':publishToMavenLocal')
 }

@@ -23,10 +23,7 @@ import org.pagemodel.core.utils.ThrowingRunnable;
 import org.pagemodel.web.testers.AlertTester;
 import org.pagemodel.web.testers.ClickAction;
 import org.pagemodel.web.testers.PageTester;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
@@ -35,13 +32,12 @@ import java.util.function.Consumer;
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public abstract class SectionModel<S extends SectionModel<? super S, P, R>, P extends PageModel<? super P>, R extends PageModel<? super R>> extends ComponentModel<S, R, S> implements PageModel<S> {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	protected WebTestContext testContext;
 
 	public static <S extends SectionModel<? super S, P, R>, P extends PageModel<? super P>, R extends PageModel<? super R>> S make(final Class<S> sectionClass, ClickAction<P, R> clickAction, TestEvaluator testEvaluator) {
 		try {
-			return sectionClass.getConstructor(ClickAction.class).newInstance(clickAction);
+			return sectionClass.getConstructor(ClickAction.class, TestEvaluator.class).newInstance(clickAction, testEvaluator);
 		} catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
 			throw new RuntimeException(ex);
 		}
@@ -50,8 +46,8 @@ public abstract class SectionModel<S extends SectionModel<? super S, P, R>, P ex
 	protected P parentPage;
 	private TestEvaluator testEvaluator;
 
-	public SectionModel(ClickAction<P, ?> clickAction) {
-		super(null, ClickAction.makeNav(clickAction.getElementRef(), null, (R)null), clickAction.getPage().getEvaluator());
+	public SectionModel(ClickAction<P, ?> clickAction, TestEvaluator testEvaluator) {
+		super(null, ClickAction.makeNav(clickAction.getElementRef(), null, (R)null, testEvaluator), testEvaluator);
 		setReturnObj((S)this);
 		this.page = (S) this;
 		this.parentPage = clickAction.getPage();

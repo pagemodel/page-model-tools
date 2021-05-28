@@ -18,16 +18,11 @@ package org.pagemodel.mail;
 
 import org.pagemodel.core.TestContext;
 import org.pagemodel.core.testers.TestEvaluator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class Mail {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	public static <T extends MailTester<T>> T testMail(TestContext testContext){
 		T mailTester = (T)new MailTester(testContext, null, new TestEvaluator.Now());

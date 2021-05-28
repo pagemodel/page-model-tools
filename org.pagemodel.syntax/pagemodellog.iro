@@ -26,7 +26,7 @@ textmate_uuid =  41ff3e9e-d77c-44bc-8c6b-92f358244f94
 ## Constants
 ################################################################
 __LOCATOR_TYPE \= (\^?(className|cssSelector|id|linkText|name|partialLinkText|tagName|xpath))
-__ELEMENT_TYPES \= (\S*(Field|Button|Link|Display|FileUpload|Checkbox|DropDown|Select|Radio|Image|Tab|Control|Row|Dialog|Modal|Nav|Section|Component))
+__ELEMENT_TYPES \= (\S*(Field|Button|Link|Display|FileUpload|Checkbox|DropDown|Select|Radio|Image|Tab|Control|Row|Dialog|Modal|Nav|Menu|Section|Component))
 __ELEMENT_DISP \=(element\(by\(.*\), found\(.*\)\))( on page \[)(.*)(\])
 ################################################################
 ## Styles

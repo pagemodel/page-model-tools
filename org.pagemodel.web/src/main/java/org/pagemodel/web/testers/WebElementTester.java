@@ -21,10 +21,12 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.pagemodel.core.testers.StringTester;
 import org.pagemodel.core.testers.TestEvaluator;
+import org.pagemodel.core.utils.json.JsonBuilder;
 import org.pagemodel.web.LocatedWebElement;
 import org.pagemodel.web.PageModel;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 
@@ -40,7 +42,7 @@ public class WebElementTester<R, N extends PageModel<? super N>> {
 	protected PageModel<?> page;
 	protected ClickAction<?, N> clickAction;
 	protected boolean screenshotOnError = true;
-	private TestEvaluator testEvaluator;
+	protected TestEvaluator testEvaluator;
 
 	public WebElementTester(R returnObj, ClickAction<?, N> clickAction, TestEvaluator testEvaluator) {
 		this.returnObj = returnObj;
@@ -50,8 +52,8 @@ public class WebElementTester<R, N extends PageModel<? super N>> {
 		this.testEvaluator = testEvaluator;
 	}
 
-	public WebElementTester(ClickAction<?, N> clickAction) {
-		this((R)clickAction.page, clickAction, clickAction.page.getEvaluator());
+	public WebElementTester(ClickAction<?, N> clickAction, TestEvaluator testEvaluator) {
+		this((R)clickAction.page, clickAction, testEvaluator);
 	}
 
 	protected TestEvaluator getEvaluator(){
@@ -60,21 +62,22 @@ public class WebElementTester<R, N extends PageModel<? super N>> {
 
 	protected void setEvaluator(TestEvaluator testEvaluator){
 		this.testEvaluator = testEvaluator;
+		this.clickAction.setTestEvaluator(testEvaluator);
 	}
 
 	protected LocatedWebElement callRef() {
 		try {
 			WebElement el = elementRef.call();
 			if (el == null) {
-				return new LocatedWebElement(null, (String)null, null);
+				return new LocatedWebElement(null, null, (String)null, page, null);
 			}
 			if (LocatedWebElement.class.isAssignableFrom(el.getClass())) {
 				return (LocatedWebElement) el;
 			} else {
-				return new LocatedWebElement(el, (String)null, null);
+				return new LocatedWebElement(el, null, (String)null, page, null);
 			}
 		} catch (Throwable ex) {
-			return new LocatedWebElement(null, (String)null, null);
+			return new LocatedWebElement(null, null, (String)null, page, null);
 		}
 	}
 
@@ -87,108 +90,134 @@ public class WebElementTester<R, N extends PageModel<? super N>> {
 	}
 
 	public R exists() {
-		return getEvaluator().testCondition(() -> "exists: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
-				() -> callRef().hasElement(), getReturnObj(), page.getContext());
+		return getEvaluator().testCondition("exists", op -> op
+						.addValue("element", getElementJson()),
+				() -> callRef().hasElement(),
+				getReturnObj(), page.getContext());
 	}
 
 	public R notExists() {
-		return getEvaluator().testCondition(() -> "not exists: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
-				() -> !callRef().hasElement(), getReturnObj(), page.getContext());
+		return getEvaluator().testCondition("not exists", op -> op
+						.addValue("element", getElementJson()),
+				() -> !callRef().hasElement(),
+				getReturnObj(), page.getContext());
 	}
 
 	public R isSelected() {
-		return getEvaluator().testCondition(() -> "selected: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
-				() -> callRef().hasElement() && callRef().isSelected(), getReturnObj(), page.getContext());
+		return getEvaluator().testCondition("selected", op -> op
+						.addValue("element", getElementJson()),
+				() -> callRef().hasElement() && callRef().isSelected(),
+				getReturnObj(), page.getContext());
 	}
 
 	public R notSelected() {
-		return getEvaluator().testCondition(() -> "not selected: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
-				() -> callRef().hasElement() && !callRef().isSelected(), getReturnObj(), page.getContext());
+		return getEvaluator().testCondition("not selected", op -> op
+						.addValue("element", getElementJson()),
+				() -> callRef().hasElement() && !callRef().isSelected(),
+				getReturnObj(), page.getContext());
 	}
 
 	public R isFocused() {
-		return getEvaluator().testCondition(() -> "focused: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
-				() -> callRef().hasElement() && page.getContext().getDriver().switchTo().activeElement().equals(callRef().getElement()), getReturnObj(), page.getContext());
+		return getEvaluator().testCondition("focused", op -> op
+						.addValue("element", getElementJson()),
+				() -> callRef().hasElement() && page.getContext().getDriver().switchTo().activeElement().equals(callRef().getElement()),
+				getReturnObj(), page.getContext());
 	}
 
 	public R notFocused() {
-		return getEvaluator().testCondition(() -> "not focused: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
-				() -> callRef().hasElement() && !page.getContext().getDriver().switchTo().activeElement().equals(callRef().getElement()), getReturnObj(), page.getContext());
+		return getEvaluator().testCondition("not focused", op -> op
+						.addValue("element", getElementJson()),
+				() -> callRef().hasElement() && !page.getContext().getDriver().switchTo().activeElement().equals(callRef().getElement()),
+				getReturnObj(), page.getContext());
 	}
 
 	public R isEnabled() {
-		return getEvaluator().testCondition(() -> "enabled: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
-				() -> callRef().hasElement() && callRef().isEnabled(), getReturnObj(), page.getContext());
+		return getEvaluator().testCondition("enabled", op -> op
+						.addValue("element", getElementJson()),
+				() -> callRef().hasElement() && callRef().isEnabled(),
+				getReturnObj(), page.getContext());
 	}
 
 	public R notEnabled() {
-		return getEvaluator().testCondition(() -> "not enabled: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
-				() -> callRef().hasElement() && !callRef().isEnabled(), getReturnObj(), page.getContext());
+		return getEvaluator().testCondition("not enabled", op -> op
+						.addValue("element", getElementJson()),
+				() -> callRef().hasElement() && !callRef().isEnabled(),
+				getReturnObj(), page.getContext());
 	}
 
 	public R isDisplayed() {
-		return getEvaluator().testCondition(() -> "displayed: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
-				() -> callRef().hasElement() && callRef().isDisplayed(), getReturnObj(), page.getContext());
+		return getEvaluator().testCondition("displayed", op -> op
+						.addValue("element", getElementJson()),
+				() -> callRef().hasElement() && callRef().isDisplayed(),
+				getReturnObj(), page.getContext());
 	}
 
 	public R notDisplayed() {
-		return getEvaluator().testCondition(() -> "not displayed: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
-				() -> !(callRef().hasElement() && callRef().isDisplayed()), getReturnObj(), page.getContext());
+		return getEvaluator().testCondition("not displayed", op -> op
+						.addValue("element", getElementJson()),
+				() -> !(callRef().hasElement() && callRef().isDisplayed()),
+				getReturnObj(), page.getContext());
 	}
 
 	public R isClickable() {
-		return getEvaluator().testCondition(() -> "clickable: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
+		return getEvaluator().testCondition("clickable", op -> op
+						.addValue("element", getElementJson()),
 				() -> ExpectedConditions.and((ExpectedCondition<Boolean>) driver -> callRef().hasElement(),
 						ExpectedConditions.elementToBeClickable(callRef()))
-						.apply(page.getContext().getDriver()), getReturnObj(), page.getContext());
+						.apply(page.getContext().getDriver()),
+				getReturnObj(), page.getContext());
 	}
 
 	public R notClickable() {
-		return getEvaluator().testCondition(() -> "not clickable: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
+		return getEvaluator().testCondition("not clickable", op -> op
+						.addValue("element", getElementJson()),
 				() -> ExpectedConditions.and((ExpectedCondition<Boolean>) driver -> callRef().hasElement(),
 						ExpectedConditions.not(ExpectedConditions.elementToBeClickable(callRef())))
-						.apply(page.getContext().getDriver()), getReturnObj(), page.getContext());
+						.apply(page.getContext().getDriver()),
+				getReturnObj(), page.getContext());
 	}
 
 	public StringTester<R> text() {
-		getEvaluator().setSourceDisplayRef(() -> "text: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]");
+		getEvaluator().setSourceFindEvent("text", op -> op.addValue("element", getElementJson()));
 		return new StringTester<>(() -> callRef().getText() == null ? null : callRef().getText().trim().replaceAll("\\s+", " "), getReturnObj(), page.getContext(), getEvaluator());
 	}
 
 	public StringTester<R> tagName() {
-		getEvaluator().setSourceDisplayRef(() -> "tag name: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]");
+		getEvaluator().setSourceFindEvent("tag name", op -> op.addValue("element", getElementJson()));
 		return new StringTester<>(() -> callRef().getTagName() == null ? null : callRef().getTagName().toLowerCase(), getReturnObj(), page.getContext(), getEvaluator());
 	}
 
 	public StringTester<R> attribute(String attribute) {
-		getEvaluator().setSourceDisplayRef(() -> "attribute: name:[" + attribute + "], " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]");
+		getEvaluator().setSourceFindEvent("text", op -> op
+				.addValue("value", attribute)
+				.addValue("element", getElementJson()));
 		return new StringTester<>(() -> callRef().getAttribute(attribute), getReturnObj(), page.getContext(), getEvaluator());
 	}
 
 	public StringTester<R> cssValue(String string) {
-		getEvaluator().setSourceDisplayRef(() -> "css value: name:[" + string + "], " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]");
+		getEvaluator().setSourceFindEvent("css value", op -> op
+				.addValue("value", string)
+				.addValue("element", getElementJson()));
 		return new StringTester<>(() -> callRef().getCssValue(string), getReturnObj(), page.getContext(), getEvaluator());
 	}
 
 	public DimensionTester<R> size() {
-		getEvaluator().setSourceDisplayRef(() -> "size: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]");
+		getEvaluator().setSourceFindEvent("size", op -> op
+				.addValue("element", getElementJson()));
 		return new DimensionTester<>(() -> callRef().getSize(), getReturnObj(), page.getContext(), getEvaluator());
 	}
 
 	public RectangleTester<R> location() {
-		getEvaluator().setSourceDisplayRef(() -> "location: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]");
+		getEvaluator().setSourceFindEvent("location", op -> op
+				.addValue("element", getElementJson()));
 		return new RectangleTester<>(() -> callRef().getRect(), getReturnObj(), page.getContext(), getEvaluator());
 	}
 
 	public R clearText() {
-		return getEvaluator().testCondition(() -> "clear text: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
-				() -> {
-					if(!callRef().hasElement()){
-						return false;
-					}
-					callRef().clear();
-					return true;
-				}, getReturnObj(), page.getContext());
+		return getEvaluator().testExecute("clear text", op -> op
+						.addValue("element", getElementJson()),
+				() -> callRef().clear(),
+				getReturnObj(), page.getContext());
 	}
 
 	public R sendKeys(CharSequence... keys) {
@@ -201,30 +230,27 @@ public class WebElementTester<R, N extends PageModel<? super N>> {
 	}
 
 	protected R doSendKeys(CharSequence... keys) {
-		return getEvaluator().testCondition(() -> "send keys: " + Arrays.toString(keys) + " to " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
-				() -> {
-					if(!callRef().hasElement()){
-						return false;
-					}
-					callRef().sendKeys(keys);
-					return true;
-				}, getReturnObj(), page.getContext());
+		String keyStr = Arrays.toString(keys);
+		final String finalKeyStr = keyStr.substring(1,keyStr.length()-1);
+		return getEvaluator().testExecute("send keys", op -> op
+						.addValue("value", finalKeyStr)
+						.addValue("element",getElementJson()),
+				() -> callRef().sendKeys(keys),
+				getReturnObj(), page.getContext());
 	}
 
 	public N click() {
-		getEvaluator().log(getEvaluator().getActionMessage(() -> "click: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]"));
-		return clickAction.click(() -> getEvaluator().quiet().testCondition(() -> "clickable: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
-				() -> ExpectedConditions.and((ExpectedCondition<Boolean>) driver -> callRef().hasElement(),
-						ExpectedConditions.elementToBeClickable(callRef()))
-						.apply(page.getContext().getDriver()), getReturnObj(), page.getContext()));
+		getEvaluator().logEvent(TestEvaluator.TEST_EXECUTE,
+				"click", op -> op
+						.addValue("element", getElementJson()));
+		return clickAction.click(null);
 	}
 
 	public WebActionTester<R> clickAnd() {
-		getEvaluator().log(getEvaluator().getActionMessage(() -> "clickAnd: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]"));
-		clickAction.doClick(() -> getEvaluator().quiet().testCondition(() -> "clickable: " + getElementDisplay() + " on page [" + page.getClass().getSimpleName() + "]",
-				() -> ExpectedConditions.and((ExpectedCondition<Boolean>) driver -> callRef().hasElement(),
-						ExpectedConditions.elementToBeClickable(callRef()))
-						.apply(page.getContext().getDriver()), getReturnObj(), page.getContext()));
+		getEvaluator().logEvent(TestEvaluator.TEST_EXECUTE,
+				"click and", op -> op
+						.addValue("element", getElementJson()));
+		clickAction.doClick(null);
 		return new WebActionTester<>(page.getContext(), page, this, getEvaluator());
 	}
 
@@ -236,52 +262,12 @@ public class WebElementTester<R, N extends PageModel<? super N>> {
 		return new WebElementRefresh<>(getReturnObj(), clickAction, new WebTestEvaluator.WaitAndRefresh<>(page.getContext(), WebElementRefresh.DEFAULT_WAIT_SEC, getReturnObj(), page));
 	}
 
-	protected String getElementDisplay() {
+	protected Map<String,Object> getElementJson() {
 		try {
-			return callRef().getElementDisplay();
+			return callRef().getElementJson(page);
 		} catch (Throwable t) {
-			return "element(null)";
+			return JsonBuilder.object().toMap();
 		}
-	}
-
-	protected String getAttributeDisplay(String attribute) {
-		try {
-			LocatedWebElement el = callRef();
-			if (!el.hasElement()) {
-				return "attribute(" + attribute + ":[null])";
-			}
-			return "attribute(" + attribute + ":[" + el.getAttribute(attribute) + "])";
-		} catch (Throwable t) {
-			return "attribute(" + attribute + ":[null])";
-		}
-	}
-
-	protected String getCSSValueDisplay(String cssValue) {
-		try {
-			LocatedWebElement el = callRef();
-			if (!el.hasElement()) {
-				return "cssValue(" + cssValue + ":[null])";
-			}
-			return "cssValue(" + cssValue + ":[" + el.getCssValue(cssValue) + "])";
-		} catch (Throwable t) {
-			return "cssValue(" + cssValue + ":[null])";
-		}
-	}
-
-	protected String getLocationDisplay() {
-		LocatedWebElement el = callRef();
-		if (!el.hasElement()) {
-			return "location(null)";
-		}
-		return "location(x1:[" + el.getRect().getX() + "], y1:[" + el.getRect().getX() + "], x2:[" + el.getRect().getX() + el.getRect().getWidth() + "], y2:[" + el.getRect().getY() + el.getRect().getHeight() + "])";
-	}
-
-	protected String getSizeDisplay() {
-		LocatedWebElement el = callRef();
-		if (!el.hasElement()) {
-			return "size(null)";
-		}
-		return "size(width:[" + el.getSize().getWidth() + "], height:[" + el.getSize().getHeight() + "])";
 	}
 
 	/**
@@ -291,16 +277,21 @@ public class WebElementTester<R, N extends PageModel<? super N>> {
 	public static class WebElementWait<R, N extends PageModel<? super N>> extends WebElementTester<R, N> {
 		public static int DEFAULT_WAIT_SEC = 10;
 
-		private WebTestEvaluator.Wait testEvaluator;
-
 		public WebElementWait(ClickAction<?, N> clickAction, WebTestEvaluator.Wait testEvaluator) {
-			super(clickAction);
-			this.testEvaluator = testEvaluator;
+			super(clickAction, testEvaluator);
+			clickAction.setTestEvaluator(testEvaluator);
 		}
 
 		@Override
 		protected WebTestEvaluator.Wait getEvaluator() {
-			return testEvaluator;
+			return (WebTestEvaluator.Wait)testEvaluator;
+		}
+
+		public void setEvaluator(TestEvaluator testEvaluator) {
+			if(!(testEvaluator instanceof WebTestEvaluator.Wait)){
+				throw new IllegalArgumentException("TestEvaluator must be Wait, got: " + testEvaluator);
+			}
+			super.setEvaluator(testEvaluator);
 		}
 
 		public WebElementWait<R, N> withTimeout(int waitSec) {
@@ -316,24 +307,29 @@ public class WebElementTester<R, N extends PageModel<? super N>> {
 	public static class WebElementRefresh<R, N extends PageModel<? super N>> extends WebElementTester<R,N> {
 		public static int DEFAULT_WAIT_SEC = 10;
 
-		private WebTestEvaluator.WaitAndRefresh<R> testEvaluator;
-
 		public WebElementRefresh(R returnObj, ClickAction<?, N> clickAction, WebTestEvaluator.WaitAndRefresh<R> testEvaluator) {
 			super(returnObj, clickAction, testEvaluator);
-			this.testEvaluator = testEvaluator;
+			clickAction.setTestEvaluator(testEvaluator);
 		}
 
 		protected WebTestEvaluator.WaitAndRefresh<R> getEvaluator(){
-			return testEvaluator;
+			return (WebTestEvaluator.WaitAndRefresh<R>)testEvaluator;
+		}
+
+		public void setEvaluator(TestEvaluator testEvaluator) {
+			if(!(testEvaluator instanceof WebTestEvaluator.WaitAndRefresh)){
+				throw new IllegalArgumentException("TestEvaluator must be WaitAndRefresh, got: " + testEvaluator);
+			}
+			super.setEvaluator(testEvaluator);
 		}
 
 		public WebElementRefresh<R, N> withPageSetup(Function<R, R> pageSetupFunction) {
-			testEvaluator.withPageSetup(pageSetupFunction);
+			getEvaluator().withPageSetup(pageSetupFunction);
 			return this;
 		}
 
 		public WebElementRefresh<R, N> withTimeout(int waitSec) {
-			testEvaluator.withTimeout(waitSec);
+			getEvaluator().withTimeout(waitSec);
 			return this;
 		}
 	}

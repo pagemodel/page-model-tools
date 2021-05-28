@@ -29,8 +29,8 @@ public class SectionModelWriter extends PageModelWriter {
 		sb.append(System.lineSeparator())
 				.append(indent).append(getComponentClassDef(pageModel)).append(System.lineSeparator())
 				.append(classIndent).append("public ").append(pageModel.modelName).append("(ClickAction<")
-				.append(getSectionPageParam(pageModel)).append(", ").append(getSectionPageParam(pageModel)).append("> clickAction) {").append(System.lineSeparator())
-				.append(methodIndent).append("super(clickAction);").append(System.lineSeparator())
+				.append(getSectionPageParam(pageModel)).append(", ").append(getSectionPageParam(pageModel)).append("> clickAction, TestEvaluator testEvaluator) {").append(System.lineSeparator())
+				.append(methodIndent).append("super(clickAction, testEvaluator);").append(System.lineSeparator())
 				.append(classIndent).append("}").append(System.lineSeparator());
 
 		return sb;

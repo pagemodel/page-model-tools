@@ -17,10 +17,7 @@
 package org.pagemodel.core.testers;
 
 import org.pagemodel.core.TestContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,8 +28,6 @@ import java.util.concurrent.Callable;
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class StringListTester<R> {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
 	protected R returnObj;
 	protected final Callable<List<String>> ref;
 	protected final TestContext testContext;
@@ -62,34 +57,130 @@ public class StringListTester<R> {
 	}
 
 	public R contains(String string) {
-		return getEvaluator().testCondition(() -> Arrays.toString(callRef().toArray()) + " contains [" + string + "]",
+		return getEvaluator().testCondition(
+				"contains", op -> op
+						.addValue("value", string)
+						.addValue("actual", callRef()),
 				() -> callRef().contains(string), returnObj, testContext);
 	}
 
 	public R notContains(String string) {
-		return getEvaluator().testCondition(() -> Arrays.toString(callRef().toArray()) + " not contains [" + string + "]",
+		return getEvaluator().testCondition(
+				"not contains", op -> op
+						.addValue("value", string)
+						.addValue("actual", callRef()),
 				() -> !callRef().contains(string), returnObj, testContext);
 	}
 
+	public R containsAll(String...items) {
+		return containsAll(Arrays.asList(items));
+	}
+
 	public R containsAll(Collection<? extends  String> items) {
-		return getEvaluator().testCondition(() -> Arrays.toString(callRef().toArray()) + " contains all " + Arrays.toString(items.toArray()),
+		return getEvaluator().testCondition(
+				"contains all", op -> op
+						.addValue("value", items)
+						.addValue("actual", callRef()),
 				() -> callRef().containsAll(items), returnObj, testContext);
 	}
 
+	public R notContainsAll(String...items) {
+		return notContainsAll(Arrays.asList(items));
+	}
+
 	public R notContainsAll(Collection<? extends  String> items) {
-		return getEvaluator().testCondition(() -> Arrays.toString(callRef().toArray()) + " not contains all " + Arrays.toString(items.toArray()),
+		return getEvaluator().testCondition(
+				"not contains all", op -> op
+						.addValue("value", items)
+						.addValue("actual", callRef()),
 				() -> !callRef().containsAll(items), returnObj, testContext);
 	}
 
+	public R disjoint(String...items) {
+		return disjoint(Arrays.asList(items));
+	}
+
+	public R disjoint(Collection<? extends  String> items) {
+		return getEvaluator().testCondition(
+				"disjoint", op -> op
+						.addValue("value", items)
+						.addValue("actual", callRef()),
+				() -> Collections.disjoint(callRef(), items), returnObj, testContext);
+	}
+
+	public R notDisjoint(String...items) {
+		return notDisjoint(Arrays.asList(items));
+	}
+
+	public R notDisjoint(Collection<? extends  String> items) {
+		return getEvaluator().testCondition(
+				"not disjoint", op -> op
+						.addValue("value", items)
+						.addValue("actual", callRef()),
+				() -> !Collections.disjoint(callRef(), items), returnObj, testContext);
+	}
+
 	public R isEmpty() {
-		return getEvaluator().testCondition(() -> Arrays.toString(callRef().toArray()) + " is empty",
+		return getEvaluator().testCondition(
+				"is empty", op -> op
+						.addValue("actual", callRef()),
 				() -> callRef().isEmpty(), returnObj, testContext);
 	}
 
 	public R notEmpty() {
-		return getEvaluator().testCondition(() -> Arrays.toString(callRef().toArray()) + " not empty",
+		return getEvaluator().testCondition(
+				"not empty", op -> op
+						.addValue("actual", callRef()),
 				() -> !callRef().isEmpty(), returnObj, testContext);
 	}
+
+	public R equalsOrdered(String...items) {
+		return equalsOrdered(Arrays.asList(items));
+	}
+
+	public R equalsOrdered(Collection<? extends String> items){
+		return getEvaluator().testCondition(
+				"equals ordered", op -> op
+						.addValue("value", items)
+						.addValue("actual", callRef()),
+				() -> callRef().equals(items), returnObj, testContext);
+	}
+
+	public R equalsUnordered(String...items) {
+		return equalsUnordered(Arrays.asList(items));
+	}
+
+	public R equalsUnordered(Collection<? extends  String> items) {
+		return getEvaluator().testCondition(
+				"equals unordered", op -> op
+						.addValue("value", items)
+						.addValue("actual", callRef()),
+				() -> isEqualUnordered(items),
+				returnObj, testContext);
+	}
+
+	public R notEqualsUnordered(String...items) {
+		return notEqualsUnordered(Arrays.asList(items));
+	}
+
+	public R notEqualsUnordered(Collection<? extends  String> items) {
+		return getEvaluator().testCondition(
+				"not equals unordered", op -> op
+						.addValue("value", items)
+						.addValue("actual", callRef()),
+				() -> !isEqualUnordered(items),
+				returnObj, testContext);
+	}
+
+	private boolean isEqualUnordered(Collection<? extends  String> items){
+		List<String> vals = callRef();
+		if(vals == null || items == null){
+			return vals == null && items == null;
+		}
+		return items.size() == vals.size() && items.containsAll(vals);
+	}
+
+
 
 	public ComparableTester<Integer, R> size() {
 		return new ComparableTester<>(callRef()::size, returnObj, testContext, getEvaluator());
@@ -119,5 +210,10 @@ public class StringListTester<R> {
 				}
 				return list.get(list.size() - 1);
 			}, returnObj, testContext, getEvaluator());
+	}
+
+	public R storeValue(String key) {
+		testContext.store(key, callRef());
+		return returnObj;
 	}
 }

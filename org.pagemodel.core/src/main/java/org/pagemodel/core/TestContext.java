@@ -17,8 +17,10 @@
 package org.pagemodel.core;
 
 import org.pagemodel.core.testers.TestEvaluator;
+import org.pagemodel.core.utils.json.JsonLogConsoleOut;
 
 import java.util.Date;
+import java.util.Map;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
@@ -52,5 +54,12 @@ public interface TestContext {
 
 	default <E extends RuntimeException> E createException(String message) {
 		return createException(message, null);
+	}
+
+	default <E extends RuntimeException> E createException(Map<String,Object> event, Throwable cause) {
+		return createException(JsonLogConsoleOut.formatEvent(event), cause);
+	}
+	default <E extends RuntimeException> E createException(Map<String,Object> event) {
+		return createException(JsonLogConsoleOut.formatEvent(event));
 	}
 }

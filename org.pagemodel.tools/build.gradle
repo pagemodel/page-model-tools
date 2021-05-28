@@ -1,12 +1,14 @@
 dependencies {
-    compile project(':org.pagemodel.core')
-    compile project(':org.pagemodel.web')
-    compile project(':org.pagemodel.mail')
-    compile project(':org.pagemodel.ssh')
+    api project(':org.pagemodel.core')
+    api project(':org.pagemodel.web')
+    api project(':org.pagemodel.mail')
+    api project(':org.pagemodel.ssh')
 
-    compile 'org.seleniumhq.selenium:htmlunit-driver:2.33.3'
-    compile group: 'io.github.bonigarcia', name: 'webdrivermanager', version: '3.3.0'
+    api 'org.seleniumhq.selenium:htmlunit-driver:2.33.3'
+    api 'io.github.bonigarcia:webdrivermanager:3.3.0'
 
-    compile 'com.deque:axe-selenium:3.0'
-    runtime 'com.deque:axe-selenium:3.0'
+    api 'com.deque:axe-selenium:3.0'
+    
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'ch.qos.logback:logback-classic:1.2.3'
 }

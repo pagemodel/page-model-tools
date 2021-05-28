@@ -17,10 +17,13 @@
 package org.pagemodel.tools;
 
 import org.pagemodel.core.testers.TestEvaluator;
-import org.pagemodel.mail.MailTester;
-import org.pagemodel.web.PageModel;
-import org.pagemodel.ssh.SSHConnectionTester;
 import org.pagemodel.core.utils.ThrowingFunction;
+import org.pagemodel.core.utils.json.JsonObjectBuilder;
+import org.pagemodel.mail.MailTester;
+import org.pagemodel.ssh.SSHConnectionTester;
+import org.pagemodel.web.PageModel;
+
+import java.util.function.Consumer;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
@@ -43,4 +46,16 @@ public interface ExtendedModelBase<P extends ExtendedModelBase<? super P>> exten
 
 	@Override
 	ExtendedPageTester<P> testPage();
+
+	@Experimental
+	default public P log(String message){
+		this.getEvaluator().logMessage(message);
+		return (P)this;
+	}
+
+	@Experimental
+	default public P log(String action, Consumer<JsonObjectBuilder> eventParams){
+		this.getEvaluator().logEvent(TestEvaluator.TEST_LOG, action, eventParams);
+		return (P)this;
+	}
 }

@@ -10,17 +10,24 @@ if [[ "$#" -gt 0 ]]; then
   fi
 fi
 
+DOCKER_FILE="pagemodel-headless-chrome.dockerfile"
 if [[ "$#" -gt 0 ]]; then
-  DOCKER_FILE="$1"
-  shift
+  if [ "$1" == "-f" ] || [ "$1" == "--dockerfile" ]; then
+    DOCKER_FILE="$"
+    shift 2
+  fi
+fi
+
+if [ -f ../../build.gradle ]; then
+  VERSION="$(grep -o "version\s*=\s*'[^']*'" ../../build.gradle | cut -d"'" -f2)"
 else
-  DOCKER_FILE="pagemodel-headless-chrome.dockerfile"
+  VERSION="0.8.1"
 fi
 if [[ "$#" -gt 0 ]]; then
-  VERSION="$1"
-  shift
-else
-  VERSION="0.8.0"
+  if [ "$1" == "-v" ] || [ "$1" == "--version" ]; then
+    VERSION="$1"
+    shift 2
+  fi
 fi
 
 cd "$(dirname "$0")"

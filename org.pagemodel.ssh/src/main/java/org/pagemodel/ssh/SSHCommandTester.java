@@ -19,18 +19,12 @@ package org.pagemodel.ssh;
 import org.pagemodel.core.testers.ComparableTester;
 import org.pagemodel.core.testers.StringTester;
 import org.pagemodel.core.testers.TestEvaluator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.lang.invoke.MethodHandles;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
  * @author Sean Hale <shale@tetrazoid.net>
  */
 public class SSHCommandTester<R> {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	private final String command;
 	private Integer timeoutSec;
@@ -41,7 +35,7 @@ public class SSHCommandTester<R> {
 	protected final SSHTestContext testContext;
 	private TestEvaluator testEvaluator;
 
-	private boolean exectued = false;
+	private boolean executed = false;
 
 	public SSHCommandTester(String command, Integer timeoutSec, SSHTester<?> parent, R returnObj, SSHTestContext testContext, TestEvaluator testEvaluator) {
 		this.command = command;
@@ -57,7 +51,7 @@ public class SSHCommandTester<R> {
 	}
 
 	public ComparableTester<Integer, SSHCommandTester<R>> testReturnCode() {
-		if (!exectued) {
+		if (!executed) {
 			executeCommand();
 		}
 		if (returnCode == null) {
@@ -70,21 +64,21 @@ public class SSHCommandTester<R> {
 	}
 
 	public StringTester<SSHCommandTester<R>> testOutput() {
-		if (!exectued) {
+		if (!executed) {
 			executeCommand();
 		}
 		return new StringTester<>(() -> output, this, testContext, getEvaluator());
 	}
 
 	public SSHCommandTester<R> runCommand(String command, int timeoutSec) {
-		if (!exectued) {
+		if (!executed) {
 			executeCommand();
 		}
 		return new SSHCommandTester<>(command, timeoutSec, parent, returnObj, testContext, getEvaluator());
 	}
 
 	public SSHCommandTester<R> runCommand(String command) {
-		if (!exectued) {
+		if (!executed) {
 			executeCommand();
 		}
 		return new SSHCommandTester<>(command, SSHTester.DEFAULT_SSH_CMD_TIMEOUT, parent, returnObj, testContext, getEvaluator());
@@ -95,21 +89,21 @@ public class SSHCommandTester<R> {
 	}
 
 	public SSHCommandTester<R> sudoToRoot(String sudoOpts) {
-		if (!exectued) {
+		if (!executed) {
 			executeCommand();
 		}
 		return new SSHCommandTester<>("sudo-root:" + sudoOpts + ":" + parent.getAuthenticator().getSudoPassword(), SSHTester.DEFAULT_SSH_CMD_TIMEOUT, parent, returnObj, testContext, getEvaluator());
 	}
 
 	public SSHCommandTester<R> exitSudo() {
-		if (!exectued) {
+		if (!executed) {
 			executeCommand();
 		}
 		return new SSHCommandTester<>("exit-sudo", SSHTester.DEFAULT_SSH_CMD_TIMEOUT, parent, returnObj, testContext, getEvaluator());
 	}
 
 	public R disconnect() {
-		if (!exectued) {
+		if (!executed) {
 			executeCommand();
 		}
 		parent.disconnect();
@@ -117,26 +111,35 @@ public class SSHCommandTester<R> {
 	}
 
 	private void executeCommand() {
-		try {
-			if (command.startsWith("sudo-root")) {
-				log.info("SSH sudo to root");
-				String cmdLine = command.substring(10);
-				int split = cmdLine.indexOf(':');
-				String opts = cmdLine.substring(0, split);
-				String password = cmdLine.substring(split + 1);
-				parent.getSshSession().sudoToRoot(password, opts);
-				output = "";
-			} else if (command.startsWith("exit-sudo")) {
-				log.info("SSH exit sudo");
-				parent.getSshSession().exitRoot();
-				output = "";
-			} else {
-				log.info("Executing SSH command [" + command + "]");
-				output = parent.getSshSession().runCommandAndGetOutput(command, timeoutSec);
-			}
-		} catch (IOException ex) {
-			throw new RuntimeException(ex);
+		if (command.startsWith("sudo-root")) {
+			getEvaluator().testExecute("ssh sudo", op -> op
+							.addValue("server", parent.getAuthenticator().getHost()),
+					() -> {
+						String cmdLine = command.substring(10);
+						int split = cmdLine.indexOf(':');
+						String opts = cmdLine.substring(0, split);
+						String password = cmdLine.substring(split + 1);
+						parent.getSshSession().sudoToRoot(password, opts);
+						output = "";
+					},
+					null, testContext);
+		} else if (command.startsWith("exit-sudo")) {
+			getEvaluator().testExecute("ssh exit sudo", op -> op
+							.addValue("server", parent.getAuthenticator().getHost()),
+					() -> {
+						parent.getSshSession().exitRoot();
+						output = "";
+					},
+					null, testContext);
+		} else {
+			getEvaluator().testExecute("ssh command", op -> op
+					.addValue("command",command)
+					.addValue("server", parent.getAuthenticator().getHost()),
+					() -> {
+						output = parent.getSshSession().runCommandAndGetOutput(command, timeoutSec);
+					},
+					null, testContext);
 		}
-		exectued = true;
+		executed = true;
 	}
 }

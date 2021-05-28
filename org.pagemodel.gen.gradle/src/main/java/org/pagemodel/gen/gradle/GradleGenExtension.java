@@ -19,6 +19,7 @@ package org.pagemodel.gen.gradle;
 public class GradleGenExtension {
 	private String srcDir = "src/main/resources/pagemodels";
 	private String genRootDir = "src/gen/java";
+	private Boolean cleanGenDir = true;
 
 	public String getSrcDir() {
 		return srcDir;
@@ -37,5 +38,13 @@ public class GradleGenExtension {
 //			throw new IllegalArgumentException("Error: genRootDir cannot be in 'src/main/java'");
 //		}
 		this.genRootDir = genRootDir;
+	}
+
+	public Boolean getCleanGenDir() {
+		return cleanGenDir;
+	}
+
+	public void setCleanGenDir(Boolean cleanGenDir) {
+		this.cleanGenDir = cleanGenDir;
 	}
 }

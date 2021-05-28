@@ -18,10 +18,7 @@ package org.pagemodel.core.testers;
 
 import org.pagemodel.core.TestContext;
 import org.pagemodel.core.utils.ThrowingFunction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Date;
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
@@ -31,7 +28,6 @@ import java.util.regex.Pattern;
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class StringTester<R> {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	protected R returnObj;
 	protected final Callable<String> ref;
@@ -57,63 +53,99 @@ public class StringTester<R> {
 		return testEvaluator;
 	}
 
+	protected void setEvaluator(TestEvaluator testEvaluator) {
+		this.testEvaluator = testEvaluator;
+	}
+
+	protected R getReturnObj() {
+		return returnObj;
+	}
+
+	protected void setReturnObj(R returnObj) {
+		this.returnObj = returnObj;
+	}
+
 	public R contains(String string) {
-		return getEvaluator().testCondition(() -> "[" + callRef() + "] contains [" + string + "]",
+		return getEvaluator().testCondition(
+				"contains", op -> op.addValue("value", string).addValue("actual",callRef()),
 				() -> callRef().contains(string), returnObj, testContext);
 	}
 
 	public R notContains(String string) {
-		return getEvaluator().testCondition(() -> "[" + callRef() + "] not contains [" + string + "]",
+		return getEvaluator().testCondition(
+				"not contains", op -> op.addValue("value", string).addValue("actual",callRef()),
 				() -> !callRef().contains(string), returnObj, testContext);
 	}
 
+	public R containedBy(String string) {
+		return getEvaluator().testCondition(
+				"contained by", op -> op.addValue("value", string).addValue("actual",callRef()),
+				() -> string.contains(callRef()), returnObj, testContext);
+	}
+
+	public R notContainedBy(String string) {
+		return getEvaluator().testCondition(
+				"not contained by", op -> op.addValue("value", string).addValue("actual",callRef()),
+				() -> !string.contains(callRef()), returnObj, testContext);
+	}
+
 	public R equals(String string) {
-		return getEvaluator().testCondition(() -> "[" + callRef() + "] equals [" + string + "]",
+		return getEvaluator().testCondition(
+				"equals", op -> op.addValue("value", string).addValue("actual",callRef()),
 				() -> callRef() == null && string == null || callRef().equals(string), returnObj, testContext);
 	}
 
 	public R notEquals(String string) {
-		return getEvaluator().testCondition(() -> "[" + callRef() + "] not equals [" + string + "]",
+		return getEvaluator().testCondition(
+				"not equals", op -> op.addValue("value", string).addValue("actual",callRef()),
 				() -> callRef() == null && string != null || !callRef().equals(string), returnObj, testContext);
 	}
 
 	public R matches(String regex) {
-		return getEvaluator().testCondition(() -> "[" + callRef() + "] matches regex [" + regex + "]",
+		return getEvaluator().testCondition(
+				"matches regex", op -> op.addValue("value", regex).addValue("actual",callRef()),
 				() -> callRef().matches(regex), returnObj, testContext);
 	}
 
 	public R notMatches(String regex) {
-		return getEvaluator().testCondition(() -> "[" + callRef() + "] not matches regex [" + regex + "]",
+		return getEvaluator().testCondition(
+				"not matches regex", op -> op.addValue("value", regex).addValue("actual",callRef()),
 				() -> !callRef().matches(regex), returnObj, testContext);
 	}
 
 	public R startsWith(String string) {
-		return getEvaluator().testCondition(() -> "[" + callRef() + "] starts with [" + string + "]",
+		return getEvaluator().testCondition(
+				"starts with", op -> op.addValue("value", string).addValue("actual",callRef()),
 				() -> callRef().startsWith(string), returnObj, testContext);
 	}
 
 	public R notStartsWith(String string) {
-		return getEvaluator().testCondition(() -> "[" + callRef() + "] not starts with [" + string + "]",
+		return getEvaluator().testCondition(
+				"not starts with", op -> op.addValue("value", string).addValue("actual",callRef()),
 				() -> !callRef().startsWith(string), returnObj, testContext);
 	}
 
 	public R endsWith(String string) {
-		return getEvaluator().testCondition(() -> "[" + callRef() + "] ends with [" + string + "]",
+		return getEvaluator().testCondition(
+				"ends with", op -> op.addValue("value", string).addValue("actual",callRef()),
 				() -> callRef().endsWith(string), returnObj, testContext);
 	}
 
 	public R notEndsWith(String string) {
-		return getEvaluator().testCondition(() -> "[" + callRef() + "] not ends with [" + string + "]",
+		return getEvaluator().testCondition(
+				"not ends with", op -> op.addValue("value", string).addValue("actual",callRef()),
 				() -> !callRef().endsWith(string), returnObj, testContext);
 	}
 
 	public R isEmpty() {
-		return getEvaluator().testCondition(() -> "[" + callRef() + "] is empty",
+		return getEvaluator().testCondition(
+				"is empty", op -> op.addValue("actual", callRef()),
 				() -> (callRef() == null || callRef().isEmpty()), returnObj, testContext);
 	}
 
 	public R notEmpty() {
-		return getEvaluator().testCondition(() -> "[" + callRef() + "] not empty",
+		return getEvaluator().testCondition(
+				"not empty", op -> op.addValue("actual", callRef()),
 				() -> (callRef() != null && !callRef().isEmpty()), returnObj, testContext);
 	}
 
@@ -129,7 +161,7 @@ public class StringTester<R> {
 	public R storeMatch(String key, String pattern, int group) {
 		return getEvaluator().testRun(
 				TestEvaluator.TEST_FIND,
-				() -> "pattern match: pattern:[" + pattern + "], string:[" + callRef() + "], match group:[" + group + "]",
+				"matches regex", op -> op.addValue("value", pattern).addValue("actual",callRef()).addValue("group",group),
 				() -> {
 					Matcher matcher = Pattern.compile(pattern).matcher(callRef());
 					matcher.find();

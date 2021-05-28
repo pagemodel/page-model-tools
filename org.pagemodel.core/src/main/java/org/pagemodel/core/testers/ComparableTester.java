@@ -18,18 +18,13 @@ package org.pagemodel.core.testers;
 
 import org.pagemodel.core.TestContext;
 import org.pagemodel.core.utils.ThrowingFunction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.lang.invoke.MethodHandles;
 import java.util.concurrent.Callable;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class ComparableTester<C extends Comparable<C>, R> {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
 	protected R returnObj;
 	protected final Callable<C> ref;
 	protected final TestContext testContext;
@@ -54,9 +49,21 @@ public class ComparableTester<C extends Comparable<C>, R> {
 		return testEvaluator;
 	}
 
+	protected void setEvaluator(TestEvaluator testEvaluator) {
+		this.testEvaluator = testEvaluator;
+	}
+
+	protected R getReturnObj() {
+		return returnObj;
+	}
+
+	protected void setReturnObj(R returnObj) {
+		this.returnObj = returnObj;
+	}
+
 	public R equals(C val) {
 		return getEvaluator().testCondition(
-				() -> "[" + callRef() + "] equals [" + val + "]",
+				"equals", op -> op.addValue("value", val).addValue("actual",callRef()),
 				() -> {
 					C refVal = callRef();
 					return (refVal == null && val == null) || (refVal != null && val != null && refVal.compareTo(val) == 0);
@@ -66,7 +73,7 @@ public class ComparableTester<C extends Comparable<C>, R> {
 
 	public R notEquals(C val) {
 		return getEvaluator().testCondition(
-				() -> "[" + callRef() + "] not equals [" + val + "]",
+				"not equals", op -> op.addValue("value", val).addValue("actual",callRef()),
 				() -> {
 					C refVal = callRef();
 					return (refVal == null && val != null) || (refVal != null && (val == null || refVal.compareTo(val) != 0));
@@ -75,22 +82,26 @@ public class ComparableTester<C extends Comparable<C>, R> {
 	}
 
 	public R greaterThan(C val) {
-		return getEvaluator().testCondition(() -> "[" + callRef() + "] greater than [" + val + "]",
+		return getEvaluator().testCondition(
+				"greater than", op -> op.addValue("value", val).addValue("actual",callRef()),
 				() -> callRef().compareTo(val) > 0, returnObj, testContext);
 	}
 
 	public R notGreaterThan(C val) {
-		return getEvaluator().testCondition(() -> "[" + callRef() + "] not greater than [" + val + "]",
+		return getEvaluator().testCondition(
+				"not greater than", op -> op.addValue("value", val).addValue("actual",callRef()),
 				() -> callRef().compareTo(val) <= 0, returnObj, testContext);
 	}
 
 	public R lessThan(C val) {
-		return getEvaluator().testCondition(() -> "[" + callRef() + "] less than [" + val + "]",
+		return getEvaluator().testCondition(
+				"less than", op -> op.addValue("value", val).addValue("actual",callRef()),
 				() -> callRef().compareTo(val) < 0, returnObj, testContext);
 	}
 
 	public R notLessThan(C val) {
-		return getEvaluator().testCondition(() -> "[" + callRef() + "] not less than [" + val + "]",
+		return getEvaluator().testCondition(
+				"not less than", op -> op.addValue("value", val).addValue("actual",callRef()),
 				() -> callRef().compareTo(val) >= 0, returnObj, testContext);
 	}
 

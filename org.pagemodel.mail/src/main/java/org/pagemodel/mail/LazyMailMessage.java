@@ -16,14 +16,13 @@
 
 package org.pagemodel.mail;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -32,15 +31,18 @@ import java.util.Map;
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class LazyMailMessage extends MailMessage {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
 	private boolean recipientsLoaded = false;
 	private boolean bodyLoaded = false;
 	private boolean attachmentsLoaded = false;
 	private boolean headersLoaded = false;
 
 	public LazyMailMessage(Message message) {
-		setMessage(message);
+		try {
+			MimeMessage messageCopy = new MimeMessage((MimeMessage) message);
+			setMessage(messageCopy);
+		}catch (MessagingException ex){
+			throw new RuntimeException(ex);
+		}
 	}
 
 	@Override
@@ -98,7 +100,7 @@ public class LazyMailMessage extends MailMessage {
 	}
 
 	@Override
-	public Map<String, String> getHeaders() {
+	public Map<String, List<String>> getHeaders() {
 		loadHeaders();
 		return super.getHeaders();
 	}
@@ -122,11 +124,24 @@ public class LazyMailMessage extends MailMessage {
 	public void loadSender() {
 		if(sender == null) {
 			try {
-				setSender(message.getFrom().toString());
+				Address[] from = message.getFrom();
+				if(from == null){
+					setSender(null);
+				}else {
+					setSender(String.join(",",
+							Arrays.stream(message.getFrom()).map(this::getEmail).toArray(String[]::new)));
+				}
 			} catch (MessagingException ex) {
 				throw new RuntimeException(ex);
 			}
 		}
+	}
+
+	private String getEmail(Address address){
+		if(address instanceof InternetAddress){
+			return ((InternetAddress)address).getAddress();
+		}
+		return address.toString();
 	}
 
 	public void loadRecipients(){
@@ -135,13 +150,13 @@ public class LazyMailMessage extends MailMessage {
 		}
 		try {
 			for (Address address : MimeMailAdapter.getRecipients(message, Message.RecipientType.TO)) {
-				addRecipientsTo(address.toString());
+				addRecipientsTo(getEmail(address));
 			}
 			for (Address address : MimeMailAdapter.getRecipients(message, Message.RecipientType.CC)) {
-				addRecipientsCc(address.toString());
+				addRecipientsCc(getEmail(address));
 			}
 			for (Address address : MimeMailAdapter.getRecipients(message, Message.RecipientType.BCC)) {
-				addRecipientsBcc(address.toString());
+				addRecipientsBcc(getEmail(address));
 			}
 		}catch (MessagingException ex) {
 			throw new RuntimeException(ex);

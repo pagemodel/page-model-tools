@@ -1,22 +1,44 @@
 <configuration>
-  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-    <withJansi>true</withJansi>
-    <encoder>
-      <pattern>[%d{HH:mm:ss.SSS}] %msg%n</pattern>
-    </encoder>
-  </appender>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <withJansi>true</withJansi>
+        <encoder>
+            <pattern>[%d{HH:mm:ss.SSS}] %msg%n</pattern>
+        </encoder>
+    </appender>
 
-  <timestamp key="bySecond" datePattern="yyyy-MM-dd_HH.mm.ss"/>
-  <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-    <file>build/testrun-${bySecond}.pmlog</file>
-    <encoder>
-      <pattern>[%d{HH:mm:ss.SSS}] %msg%n</pattern>
-    </encoder>
-  </appender>
+    <timestamp key="bySecond" datePattern="yyyy-MM-dd_HH.mm.ss"/>
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>build/testrun-${bySecond}.pmlog</file>
+        <encoder>
+            <pattern>[%d{HH:mm:ss.SSS}] %msg%n</pattern>
+        </encoder>
+    </appender>
 
-  <root level="INFO">
-    <appender-ref ref="STDOUT"/>
-      <appender-ref ref="FILE" />
-  </root>
-  <logger name="net.schmizz.sshj" level="error"/>
+    <appender name="JSON" class="ch.qos.logback.core.FileAppender">
+        <file>build/testrun-${bySecond}.json</file>
+        <encoder>
+            <pattern> {"date": "%d{HH:mm:ss.SSS}", "event": %msg}%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="org.pagemodel.core.testers.TestEvaluator.json" level="info" additivity="false">
+        <appender-ref ref="JSON"/>
+    </logger>
+
+    <appender name="HTML" class="ch.qos.logback.core.FileAppender">
+        <file>build/testrun-${bySecond}.html</file>
+        <encoder>
+            <pattern> %msg %n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="org.pagemodel.core.testers.TestEvaluator.html" level="info" additivity="false">
+        <appender-ref ref="HTML"/>
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="FILE"/>
+    </root>
+    <logger name="net.schmizz.sshj" level="error"/>
 </configuration>

@@ -18,7 +18,10 @@ package org.pagemodel.web;
 
 import org.openqa.selenium.WebDriver;
 import org.pagemodel.core.TestContext;
+import org.pagemodel.core.utils.json.JsonLogConsoleOut;
 import org.pagemodel.web.utils.PageException;
+
+import java.util.Map;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
@@ -44,6 +47,14 @@ public interface WebTestContext extends TestContext {
 	PageException createException(boolean screenshotOnError, String message, Throwable cause);
 
 	default PageException createException(String message, Throwable cause) {
-		return createException(true, message, cause);
+		return createException(getLogExceptions(), message, cause);
 	}
+
+	default PageException createException(boolean screenshotOnError, Map<String,Object> event, Throwable cause) {
+		return createException(screenshotOnError, JsonLogConsoleOut.formatEvent(event), cause);
+	}
+
+	public void setLogExceptions(boolean flag);
+
+	public boolean getLogExceptions();
 }

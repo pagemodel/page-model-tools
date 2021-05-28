@@ -21,16 +21,11 @@ import org.pagemodel.web.PageModel;
 import org.pagemodel.web.PageUtils;
 import org.pagemodel.web.WebTestContext;
 import org.pagemodel.web.paths.PageFlow;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class WebActionTester<R> {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	private final PageModel page;
 	private final WebTestContext testContext;
@@ -60,7 +55,9 @@ public class WebActionTester<R> {
 		final R retPage = retPageInst;
 		return getEvaluator().testRun(
 				TestEvaluator.TEST_ASSERT,
-				() -> "redirect: from [" + page.getClass().getSimpleName() + "] to [" + returnPageClass.getSimpleName() + "]",
+				"expect redirect", op -> op
+						.addValue("expected", returnPageClass.getSimpleName())
+						.addValue("model", page.getClass().getSimpleName()),
 				() -> PageUtils.waitForModelDisplayed(retPage).onPageLoad(),
 				retPage, testContext);
 	}
@@ -69,7 +66,7 @@ public class WebActionTester<R> {
 		//TODO: why do we have to cast? intellij shows it as redundant, but will not compile without
 		return (R)getEvaluator().testRun(
 				TestEvaluator.TEST_ASSERT,
-				() -> "no redirect: [" + page.getClass().getSimpleName() + "]",
+				"no redirect", op -> op.addValue("model", page.getClass().getSimpleName()),
 				() -> PageUtils.waitForModelDisplayed(page),
 				keySender.getReturnObj(), testContext);
 	}

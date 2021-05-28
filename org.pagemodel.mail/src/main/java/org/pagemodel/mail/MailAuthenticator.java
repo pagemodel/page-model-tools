@@ -16,17 +16,10 @@
 
 package org.pagemodel.mail;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
-
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class MailAuthenticator {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
 	private String domain;
 	private String host;
 	private String username;

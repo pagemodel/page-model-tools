@@ -26,6 +26,9 @@ public interface ThrowingRunnable<E extends Exception> {
 			try {
 				runnable.run();
 			} catch (Exception e) {
+				if(RuntimeException.class.isAssignableFrom(e.getClass())){
+					throw (RuntimeException) e;
+				}
 				throw new RuntimeException(e);
 			}
 		};

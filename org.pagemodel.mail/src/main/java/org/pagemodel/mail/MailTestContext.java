@@ -16,6 +16,7 @@
 
 package org.pagemodel.mail;
 
+import org.pagemodel.core.DefaultTestContext;
 import org.pagemodel.core.TestContext;
 
 /**
@@ -30,4 +31,6 @@ public interface MailTestContext extends TestContext {
 	default public MailMessage loadMail(String key) {
 		return load(key);
 	}
+
+	public static class DefaultMailTestContext extends DefaultTestContext implements MailTestContext { }
 }

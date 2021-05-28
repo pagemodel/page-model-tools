@@ -42,6 +42,9 @@ import org.openqa.selenium.remote.LocalFileDetector;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.safari.SafariDriver;
 import org.openqa.selenium.safari.SafariOptions;
+import org.pagemodel.core.testers.TestEvaluator;
+import org.pagemodel.core.utils.json.JsonLogConsoleOut;
+import org.pagemodel.core.utils.json.JsonObjectBuilder;
 import org.pagemodel.web.DefaultWebTestContext;
 import org.pagemodel.web.utils.PageException;
 import org.slf4j.Logger;
@@ -54,6 +57,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -63,7 +67,7 @@ public abstract class WebDriverFactory {
 	private static final Logger log = LoggerFactory.getLogger(WebDriverFactory.class);
 
 	public static final int DEFAULT_PAGE_LOAD_TIMEOUT_SECONDS = 20;
-	public static final int DEFAULT_IMPLICITLY_WAIT_SECONDS = 20;
+	public static final int DEFAULT_IMPLICITLY_WAIT_MILLISECONDS = 0;
 	public static final int DEFAULT_SCRIPT_TIMEOUT_SECONDS = 20;
 	public final static String DOWNLOAD_DIRECTORY;
 
@@ -98,12 +102,22 @@ public abstract class WebDriverFactory {
 
 	public static WebDriver create(WebDriverConfig config, String url){
 		WebDriver driver;
+		TestEvaluator.Now eval = new TestEvaluator.Now();
+		Consumer<JsonObjectBuilder> event;
 		if (config.getRemoteUrl() != null) {
-			log.info("Opening url [" + url + "] with capablities: " + new Gson().toJson(config.getCapabilities().toJson()) + ", remote url: [" + config.getRemoteUrl() + "]");
+			event = eval.getExecuteEvent(
+					"open url", op -> op
+					.addValue("value", url)
+					.addValue("remoteUrl", config.getRemoteUrl())
+					.addValue("capabilities",  config.getCapabilities().toJson()));
+			eval.logEvent(event);
 			driver = getRemoteWebDriver(config.getRemoteUrl(), config.getCapabilities());
-
 		}else{
-			log.info("Opening url [" + url + "] with capablities: " + new Gson().toJson(config.getCapabilities().toJson()));
+			event = eval.getEventJson(TestEvaluator.TEST_EXECUTE,
+					"open url", op -> op
+					.addValue("value", url)
+					.addValue("capabilities",  config.getCapabilities().toJson()));
+			eval.logEvent(event);
 			driver = getWebDriver(config.getCapabilities());
 		}
 		try {
@@ -111,8 +125,7 @@ public abstract class WebDriverFactory {
 			clickThroughCertErrorPage(driver);
 		} catch (Throwable e){
 			close(driver);
-			throw new PageException(new DefaultWebTestContext(driver),
-					"Error: Failed opening url ["+ url + "] with capablities: " + new Gson().toJson(config));
+			throw new PageException(new DefaultWebTestContext(driver), JsonLogConsoleOut.formatEvent(event));
 		}
 		return driver;
 	}
@@ -121,11 +134,15 @@ public abstract class WebDriverFactory {
 		if (driver == null) {
 			return;
 		}
+		TestEvaluator.Now eval = new TestEvaluator.Now();
+		eval.logEvent(TestEvaluator.TEST_EXECUTE,
+				"close driver", op -> op
+				.addValue("url", driver.getCurrentUrl()));
 		try {
 			driver.close();
 			driver.quit();
 		} catch (Throwable e) {
-			log.debug("Exception caught closing WebDriver.", e);
+			log.trace("Exception caught closing WebDriver.", e);
 		}
 	}
 
@@ -144,7 +161,7 @@ public abstract class WebDriverFactory {
 		try {
 			WebDriver driver = browserFactoryMap.get(browser).apply(capabilities);
 			driver.manage().timeouts().pageLoadTimeout(DEFAULT_PAGE_LOAD_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-			driver.manage().timeouts().implicitlyWait(DEFAULT_IMPLICITLY_WAIT_SECONDS, TimeUnit.SECONDS);
+			driver.manage().timeouts().implicitlyWait(DEFAULT_IMPLICITLY_WAIT_MILLISECONDS, TimeUnit.MILLISECONDS);
 			driver.manage().timeouts().setScriptTimeout(DEFAULT_SCRIPT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
 			return driver;
 		} catch (Exception ex){

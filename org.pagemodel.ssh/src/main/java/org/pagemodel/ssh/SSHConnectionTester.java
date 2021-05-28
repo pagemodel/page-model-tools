@@ -21,18 +21,14 @@ import net.schmizz.sshj.xfer.FileSystemFile;
 import net.schmizz.sshj.xfer.LocalSourceFile;
 import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.core.utils.ThrowingFunction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.lang.invoke.MethodHandles;
 import java.net.URI;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class SSHConnectionTester<R> {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	protected SSHTester<R> sshTester;
 	private TestEvaluator testEvaluator;
 
@@ -82,31 +78,33 @@ public class SSHConnectionTester<R> {
 	}
 
 	public SSHConnectionTester<R> scpFileUpload(SSHAuthenticator authenticator, String resourceFilePath, String remotePath) {
-		log.info("Transferring file: Local Path [" + resourceFilePath + "], Remote Path [" + remotePath + "], " +
-				"Host [" + authenticator.getHost() + "], Username [" + authenticator.getUsername() + "], Password [" + authenticator.getPassword() + "]");
-		try {
-			SSHClient ssh = authenticator.connectAndAuthenticate();
-			URI uri = this.getClass().getResource(resourceFilePath).toURI();
-			LocalSourceFile file = new FileSystemFile(new File(uri));
-			ssh.newSCPFileTransfer().upload(file, remotePath);
-			ssh.disconnect();
-		} catch (Exception ex) {
-			throw new RuntimeException(ex);
-		}
-		return this;
+		return getEvaluator().testExecute("scp upload", op -> op
+				.addValue("local", resourceFilePath)
+				.addValue("remote", remotePath)
+				.addValue("server", authenticator.getHost())
+				.addValue("user", authenticator.getUsername()),
+				() -> {
+					SSHClient ssh = authenticator.connectAndAuthenticate();
+					URI uri = this.getClass().getResource(resourceFilePath).toURI();
+					LocalSourceFile file = new FileSystemFile(new File(uri));
+					ssh.newSCPFileTransfer().upload(file, remotePath);
+					ssh.disconnect();
+				},
+				this, getContext());
 	}
 
 	public SSHConnectionTester<R> scpFileDownload(SSHAuthenticator authenticator, String remotePath, String localPath) {
-		log.info("Transferring file: Remote Path [" + remotePath + "], Remote Path [" + localPath + "], " +
-				"Host [" + authenticator.getHost() + "], Username [" + authenticator.getUsername() + "], Password [" + authenticator.getPassword() + "]");
-		try {
-			SSHClient ssh = authenticator.connectAndAuthenticate();
-			ssh.newSCPFileTransfer().download(remotePath, localPath);
-			ssh.disconnect();
-		} catch (Exception ex) {
-			throw new RuntimeException(ex);
-		}
-		return this;
+		return getEvaluator().testExecute("scp download", op -> op
+						.addValue("remote", remotePath)
+						.addValue("local", localPath)
+						.addValue("server", authenticator.getHost())
+						.addValue("user", authenticator.getUsername()),
+				() -> {
+					SSHClient ssh = authenticator.connectAndAuthenticate();
+					ssh.newSCPFileTransfer().download(remotePath, localPath);
+					ssh.disconnect();
+				},
+				this, getContext());
 	}
 
 	public R doAction(ThrowingFunction<? super SSHConnectionTester<R>, R, ?> sshAction) {

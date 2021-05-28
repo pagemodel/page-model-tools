@@ -20,10 +20,7 @@ import org.pagemodel.core.TestContext;
 import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.core.utils.ThrowingCallable;
 import org.pagemodel.core.utils.ThrowingConsumer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 
@@ -31,7 +28,6 @@ import java.util.concurrent.Callable;
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class MailTester<R> {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	protected TestContext testContext;
 	protected R returnObj;
@@ -48,7 +44,7 @@ public class MailTester<R> {
 	}
 
 	public MailMessageBuilder<R> composeMail(){
-		getEvaluator().log("Compose new mail");
+		getEvaluator().logEvent(TestEvaluator.TEST_EXECUTE, "compose mail", null);
 		return new MailMessageBuilder<>(returnObj, testContext, getEvaluator());
 	}
 

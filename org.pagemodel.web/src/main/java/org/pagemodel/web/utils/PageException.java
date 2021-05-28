@@ -16,75 +16,65 @@
 
 package org.pagemodel.web.utils;
 
+import org.pagemodel.core.TestContext;
+import org.pagemodel.core.testers.TestEvaluator;
+import org.pagemodel.core.utils.TestRuntimeException;
+import org.pagemodel.web.PageUtils;
 import org.pagemodel.web.WebTestContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.lang.invoke.MethodHandles;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
  */
-public class PageException extends RuntimeException {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-	static boolean TAKE_SCREENSHOT_ON_ERROR = true;
-	private WebTestContext testContext;
+public class PageException extends TestRuntimeException {
 	private String screenshotPath;
-	private boolean screenshotFlag;
 
-	public PageException(WebTestContext testContext, boolean takeScreenshot) {
-		captureExceptionDetails(testContext, takeScreenshot);
+	public PageException(TestContext testContext, boolean takeScreenshot) {
+		super(testContext, takeScreenshot);
 	}
 
-	public PageException(WebTestContext testContext) {
-		this(testContext, TAKE_SCREENSHOT_ON_ERROR);
+	public PageException(TestContext testContext) {
+		super(testContext);
 	}
 
-	public PageException(WebTestContext testContext, boolean takeScreenshot, String message) {
-		super(message);
-		captureExceptionDetails(testContext, takeScreenshot);
+	public PageException(TestContext testContext, boolean takeScreenshot, String message) {
+		super(testContext, takeScreenshot, message);
 	}
 
-	public PageException(WebTestContext testContext, String message) {
-		this(testContext, TAKE_SCREENSHOT_ON_ERROR, message);
+	public PageException(TestContext testContext, String message) {
+		super(testContext, message);
 	}
 
-	public PageException(WebTestContext testContext, boolean takeScreenshot, Throwable cause) {
-		super(cause);
-		captureExceptionDetails(testContext, takeScreenshot);
+	public PageException(TestContext testContext, boolean takeScreenshot, Throwable cause) {
+		super(testContext, takeScreenshot, cause);
 	}
 
-	public PageException(WebTestContext testContext, Throwable cause) {
-		this(testContext, TAKE_SCREENSHOT_ON_ERROR, cause);
+	public PageException(TestContext testContext, Throwable cause) {
+		super(testContext, cause);
 	}
 
-	public PageException(WebTestContext testContext, boolean takeScreenshot, String message, Throwable cause) {
-		super(message, cause);
-		captureExceptionDetails(testContext, takeScreenshot);
+	public PageException(TestContext testContext, boolean takeScreenshot, String message, Throwable cause) {
+		super(testContext, takeScreenshot, message, cause);
 	}
 
-	public PageException(WebTestContext testContext, String message, Throwable cause) {
-		this(testContext, TAKE_SCREENSHOT_ON_ERROR, message, cause);
+	public PageException(TestContext testContext, String message, Throwable cause) {
+		super(testContext, message, cause);
 	}
 
-	public PageException(WebTestContext testContext, boolean takeScreenshot, String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
-		captureExceptionDetails(testContext, takeScreenshot);
+	public PageException(TestContext testContext, boolean takeScreenshot, String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+		super(testContext, takeScreenshot, message, cause, enableSuppression, writableStackTrace);
 	}
 
-	public PageException(WebTestContext testContext, String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-		this(testContext, TAKE_SCREENSHOT_ON_ERROR, message, cause, enableSuppression, writableStackTrace);
+	public PageException(TestContext testContext, String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+		super(testContext, message, cause, enableSuppression, writableStackTrace);
 	}
 
-	protected void captureExceptionDetails(WebTestContext testContext, boolean screenshotFlag) {
-		this.testContext = testContext;
-		this.screenshotFlag = screenshotFlag;
-		if(screenshotFlag){
-			log.error("Test Failure: " + getMessage(), this);
+	protected void captureExceptionDetails(TestContext testContext, boolean logException) {
+		super.captureExceptionDetails(testContext, logException);
+		if(logOnError()){
+			takeScreenshot();
 		}
-		takeScreenshot();
 	}
 
 	public void removeScreenshot() {
@@ -99,17 +89,17 @@ public class PageException extends RuntimeException {
 		}
 	}
 
-	protected boolean takeScreenshotOnError() {
-		return true;
-	}
-
 	private void takeScreenshot() {
-		if (!screenshotFlag) {
+		if (!logOnError()) {
 			return;
 		}
-		if (testContext == null || testContext.getDriver() == null) {
+		if(testContext == null || !(testContext instanceof WebTestContext)){
 			return;
 		}
-		screenshotPath = Screenshot.takeScreenshot(testContext, "TestFailure");
+		WebTestContext webContext = (WebTestContext) testContext;
+		if (webContext.getDriver() == null) {
+			return;
+		}
+		PageUtils.logPageSource(webContext, TestEvaluator.TEST_ERROR);
 	}
 }

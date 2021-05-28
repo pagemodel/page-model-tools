@@ -147,7 +147,7 @@
         }
       }
       {
-        'match' : '(\\S*(Field|Button|Link|Display|FileUpload|Checkbox|DropDown|Select|Radio|Image|Tab|Control|IFrame|Row|Dialog|Modal|Nav|Section|Component))'
+        'match' : '(\\S*(Field|Button|Link|Display|FileUpload|Checkbox|DropDown|Select|Radio|Image|Tab|Control|IFrame|Row|Dialog|Modal|Nav|Menu|Section|Component))'
         'name' : 'constant.other.pagemodel'
       }
       {

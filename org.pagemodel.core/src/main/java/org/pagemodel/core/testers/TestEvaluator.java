@@ -17,49 +17,58 @@
 package org.pagemodel.core.testers;
 
 import org.pagemodel.core.TestContext;
+import org.pagemodel.core.utils.TestRuntimeException;
 import org.pagemodel.core.utils.ThrowingCallable;
 import org.pagemodel.core.utils.ThrowingRunnable;
+import org.pagemodel.core.utils.json.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.invoke.MethodHandles;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
+
+import static org.pagemodel.core.logging.Logging.*;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public abstract class TestEvaluator {
-	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private static final Logger plaintextLogger = LoggerFactory.getLogger(TestEvaluator.class.getName() + ".plaintext");
+	private static final Logger jsonLogger = LoggerFactory.getLogger(TestEvaluator.class.getName() + ".json");
+	private static final Logger htmlLogger = LoggerFactory.getLogger(TestEvaluator.class.getName() + ".html");
+
+	static {
+		startLoggers();
+	}
 
 	public final static String TEST_ASSERT = "Assert";
 	public final static String TEST_EXECUTE = "Execute";
 	public final static String TEST_STORE = "Store";
 	public final static String TEST_LOAD = "Load";
-	public final static String TEST_REMOVE = "Remove";
-	public final static String TEST_SET = "Set";
-	public final static String TEST_ADD = "Add";
-	public final static String TEST_UPDATE = "Update";
+	public final static String TEST_BUILD = "Build";
 	public final static String TEST_FIND = "Find";
+	public final static String TEST_ERROR = "Error";
+	public final static String TEST_LOG = "Log";
 
 	protected String testType = TEST_ASSERT;
 	protected String label;
-	protected Callable<String> testMessageRef;
-	protected Callable<String> sourceDisplay;
+	protected String actionDisplay;
+	protected Consumer<JsonObjectBuilder> eventParams;
+	protected List<Consumer<JsonObjectBuilder>> sourceEvents = new LinkedList<>();
 
-	public <T> T testCondition(Callable<String> messageRef, Callable<Boolean> test, T returnObj, TestContext testContext) {
-		return doTest(TEST_ASSERT, messageRef, test, returnObj, testContext);
+	public <T> T testCondition(String actionDisplay, Consumer<JsonObjectBuilder> jsonEvent, Callable<Boolean> test, T returnObj, TestContext testContext) {
+		return doTest(TEST_ASSERT, actionDisplay, jsonEvent, test, returnObj, testContext);
 	}
 
-	public <T> T testExecute(Callable<String> messageRef, ThrowingRunnable<?> test, T returnObj, TestContext testContext) {
-		return testRun(TEST_EXECUTE, messageRef, test, returnObj, testContext);
+	public <T> T testExecute(String actionDisplay, Consumer<JsonObjectBuilder> jsonEvent, ThrowingRunnable<?> test, T returnObj, TestContext testContext) {
+		return testRun(TEST_EXECUTE, actionDisplay, jsonEvent, test, returnObj, testContext);
 	}
-	public <T> T testRun(String testType, String message, ThrowingRunnable<?> test, T returnObj, TestContext testContext) {
-		return testRun(testType, () -> message, test, returnObj, testContext);
-	}
-	public <T> T testRun(String testType, Callable<String> messageRef, ThrowingRunnable<?> test, T returnObj, TestContext testContext) {
-		return doTest(testType, messageRef,
+
+	public <T> T testRun(String testType, String actionDisplay, Consumer<JsonObjectBuilder> jsonEvent, ThrowingRunnable<?> test, T returnObj, TestContext testContext) {
+		return doTest(testType, actionDisplay, jsonEvent,
 				() -> {
 					test.run();
 					return true;
@@ -67,50 +76,134 @@ public abstract class TestEvaluator {
 				returnObj, testContext);
 	}
 
-	protected <T> T doTest(String testType, Callable<String> messageRef, Callable<Boolean> test, T returnObj, TestContext testContext) {
+	protected <T> T doTest(String testType, String actionDisplay, Consumer<JsonObjectBuilder> jsonEvent, Callable<Boolean> test, T returnObj, TestContext testContext) {
 		try {
-			setTestMessageRef(testType, messageRef);
-			log(getTestMessage(getTestMessageRef(), getSourceDisplayRef()));
+			setTestEventRef(testType, actionDisplay, jsonEvent);
+			logEvent(testType, actionDisplay, getEventParams(), getSourceEvents());
 			try {
 				if (callTest(test)) {
 					return returnObj;
 				}
+			} catch (TestRuntimeException ex) {
+				logEvent(testType + "-failed", actionDisplay, getEventParams(), getSourceEvents());
+				throw ex;
 			} catch (Throwable ex) {
-				throw testContext.createException(getTestMessage(getTestMessageRef(), getSourceDisplayRef()), ex);
+				throw testContext.createException(JsonBuilder.toMap(getAssertEvent(actionDisplay, getEventParams(), getSourceEvents())), ex);
 			}
-			throw testContext.createException(getTestMessage(getTestMessageRef(), getSourceDisplayRef()));
+			throw testContext.createException(JsonBuilder.toMap(getAssertEvent(actionDisplay, getEventParams(), getSourceEvents())));
 		}finally {
-			setSourceDisplayRef(null);
+			setSourceFindEvent(null, null);
 		}
 	}
 
-	public void log(String message){
-		logger.info(message);
+	public void logMessage(String message){
+		logEvent("Log", "log", op -> op.addValue("message", message));
 	}
 
-	public void log(String message, Throwable t){
+	public void logException(String message, Throwable t){
+		logEvent(TEST_ERROR, "exception", op -> op
+				.addValue("error", message)
+				.merge(exceptionJson(t)));
+	}
+
+	public void logException(Throwable t){
+		logEvent(TEST_ERROR, "exception", op -> op
+				.merge(exceptionJson(t)));
+	}
+	private Map<String,Object> exceptionJson(Throwable t){
+		return exceptionJson(t, true);
+	}
+
+	private Map<String,Object> exceptionJson(Throwable t, boolean root){
+		JsonObjectBuilder obj = JsonBuilder.object()
+				.addValue("type", t.getClass().getName())
+				.addValue("message", t.getLocalizedMessage())
+				.addValue("exception-obj", t)
+				.addArray("stacktrace", arr -> {
+					for(StackTraceElement st : t.getStackTrace()){
+						StacktraceFilter.MethodMatch match = StacktraceFilter.highlights.matchMethod(st.getClassName(), st.getMethodName());
+						String highlight = "none";
+						if(match.methodMatch){
+							highlight = match.methodHighlight.getHighlight().isEmpty() ? "method" : match.methodHighlight.getHighlight();
+						}else if(match.classMatch){
+							highlight = match.classHighlight.getHighlight().isEmpty() ? "class" : match.classHighlight.getHighlight();
+						}else if(match.packageMatch){
+							if(match.classMatchDepth > 0){
+								highlight = match.classHighlight.getHighlight().isEmpty() ? "class" : match.classHighlight.getHighlight();
+							}else{
+								highlight = match.packageHighlight.getHighlight().isEmpty() ? "package" : match.packageHighlight.getHighlight();
+							}
+						}else if(match.packageMatchDepth > 0 && match.packageHighlight.isSticky()){
+							highlight = match.packageHighlight.getHighlight().isEmpty() ? "package" : match.packageHighlight.getHighlight();
+						}else if(match.packageMatchDepth >= 3){
+							highlight = match.packageHighlight.getHighlight().isEmpty() ? "group" : match.packageHighlight.getHighlight() + "-grp";
+						}
+						final String highlightVal = highlight;
+						arr.addObject(item -> item
+								.addValue("hl-" + highlightVal, highlightVal)
+								.addValue("class", st.getClassName())
+								.addValue("method", st.getMethodName())
+								.addValue("file", st.getFileName())
+								.addValue("line", st.getLineNumber()));
+					}
+				});
+		if(t.getCause() != null) {
+			obj.addValue("cause", exceptionJson(t.getCause(), false));
+		}
+		return obj.toMap();
+	}
+
+	public void logEvent(Consumer<JsonObjectBuilder> jsonEvent){
+		if(logPlaintext) {
+			log(JsonLogConsoleOut.formatEvent(jsonEvent), null, plaintextLogger);
+		}
+		if(logHtml) {
+			log(JsonLogHtmlOut.formatEvent(jsonEvent), null, htmlLogger);
+		}
+		if(logJson) {
+			log(JsonBuilder.toJsonString(jsonEvent), null, jsonLogger);
+		}
+
+	}
+	public void logException(Consumer<JsonObjectBuilder> jsonEvent, Throwable t){
+		if(logHtml || logJson || logPlaintext) {
+			Consumer<JsonObjectBuilder> combined = t == null ? jsonEvent : jsonEvent.andThen(obj -> obj.addValue("exception", exceptionJson(t)));
+			if (logPlaintext) {
+				log(JsonLogConsoleOut.formatEvent(combined), t, plaintextLogger);
+			}
+			if (logHtml) {
+				log(JsonLogHtmlOut.formatEvent(combined), t, htmlLogger);
+			}
+			if (logJson) {
+				log(JsonBuilder.toJsonString(combined), t, jsonLogger);
+			}
+		}
+	}
+
+	protected void log(String message, Throwable t, Logger logger){
 		logger.info(message, t);
 	}
 
-	abstract protected Boolean callTest(Callable<Boolean> test);
+	public void logEvent(String type, String actionDisplay, Consumer<JsonObjectBuilder> jsonEvent){
+		logEvent(type, actionDisplay, jsonEvent, null);
+	}
 
-	static class ThrowingTest<T> {
-		private Callable<T> test;
-		private T returnObj;
+	public void logEvent(String type, String actionDisplay, Consumer<JsonObjectBuilder> jsonEvent, List<Consumer<JsonObjectBuilder>> sourceEvents){
+		logEvent(getEventJson(type, actionDisplay, jsonEvent, sourceEvents));
+	}
 
-		public ThrowingTest(Callable<T> test) {
-			this.test = test;
-		}
+	public void logException(String type, String actionDisplay, Consumer<JsonObjectBuilder> jsonEvent, List<Consumer<JsonObjectBuilder>> sourceEvents, Throwable t){
+		logException(getEventJson(type, actionDisplay, jsonEvent, sourceEvents), t);
+	}
 
-		public Boolean call() throws Exception {
-			returnObj = test.call();
-			return true;
-		}
-
-		public T getValue(){
-			return returnObj;
+	private static void startLoggers(){
+//		jsonLogger.info("[");
+		if(logHtml) {
+			htmlLogger.info(JsonLogHtmlOut.htmlHeader);
 		}
 	}
+
+	abstract protected Boolean callTest(Callable<Boolean> test);
 
 	public Quiet quiet(){
 		if(Quiet.class.isAssignableFrom(this.getClass())){
@@ -119,51 +212,82 @@ public abstract class TestEvaluator {
 		return new Quiet(this);
 	}
 
-	public Callable<String> getTestMessageRef() {
-		return testMessageRef;
+	public String getActionDisplay() {
+		return actionDisplay;
 	}
 
-	protected void setTestMessageRef(String testType, Callable<String> testMessageRef) {
+	protected void setTestEventRef(String testType, String actionDisplay, Consumer<JsonObjectBuilder> eventParams) {
 		this.testType = testType;
-		this.testMessageRef = testMessageRef;
+		this.actionDisplay = actionDisplay;
+		this.eventParams = eventParams;
 	}
 
-	public Callable<String> getSourceDisplayRef() {
-		return sourceDisplay;
+	public Consumer<JsonObjectBuilder> getEventParams() {
+		return eventParams;
 	}
 
-	public void setSourceDisplayRef(Callable<String> sourceDisplay) {
-		this.sourceDisplay = sourceDisplay;
+	public List<Consumer<JsonObjectBuilder>> getSourceEvents() {
+		return sourceEvents;
 	}
 
-	public String getFindMessage(Callable<String> messageRef) {
-		return TEST_FIND + getLabel() + " " + ThrowingCallable.nullOnError(messageRef).call();
+	public void clearSourceEvents(){
+		sourceEvents.clear();
 	}
 
-	public String getTestMessage(Callable<String> messageRef){
-		return getTestMessage(messageRef, sourceDisplay);
-	}
-
-	public String getTestMessage(Callable<String> messageRef, Callable<String> sourceRef){
-		StringBuilder sb = new StringBuilder();
-		if (sourceRef != null) {
-			sb.append(String.format("%s%s %s\n%17s", TEST_FIND, getLabel(),ThrowingCallable.nullOnError(sourceRef).call(),"\t"));
+	public void addSourceEvent(String testType, String actionDisplay, Consumer<JsonObjectBuilder> eventParams) {
+		if(testType == null || actionDisplay == null || eventParams == null){
+			// TODO: remove this when safe
+			sourceEvents.clear();
+			return;
 		}
-		sb.append(String.format("%s%s %s", testType, getLabel(), ThrowingCallable.nullOnError(messageRef).call()));
-		return sb.toString();
+		this.sourceEvents.add(getEventJson(testType, actionDisplay, eventParams));
 	}
 
-	public String getActionMessage(Callable<String> messageRef){
-		return TEST_EXECUTE + getLabel() + " " + ThrowingCallable.nullOnError(messageRef).call();
+	public void setSourceFindEvent(String actionDisplay, Consumer<JsonObjectBuilder> eventParams){
+		addSourceEvent(TEST_FIND, actionDisplay, eventParams);
 	}
 
-	public String getLabel() {
-		return label;
+	public Consumer<JsonObjectBuilder> getAssertEvent(String actionDisplay, Consumer<JsonObjectBuilder> eventParams, List<Consumer<JsonObjectBuilder>> sourceEventRefs){
+		return getEventJson(TEST_ASSERT, actionDisplay, eventParams, sourceEventRefs);
 	}
 
-	public static class Now extends  TestEvaluator {
+	public Consumer<JsonObjectBuilder> getAssertEvent(String actionDisplay, Consumer<JsonObjectBuilder> eventParams){
+		return getEventJson(TEST_ASSERT, actionDisplay, eventParams);
+	}
+
+	public Consumer<JsonObjectBuilder> getExecuteEvent(String actionDisplay, Consumer<JsonObjectBuilder> eventParams){
+		return getEventJson(TEST_EXECUTE, actionDisplay, eventParams);
+	}
+
+	public Consumer<JsonObjectBuilder> getEventJson(String type, String actionDisplay, Consumer<JsonObjectBuilder> jsonEvent) {
+		return getEventJson(type, actionDisplay, jsonEvent, null);
+	}
+
+	public Consumer<JsonObjectBuilder> getEventJson(String type, String actionDisplay, Consumer<JsonObjectBuilder> jsonEvent, List<Consumer<JsonObjectBuilder>> sourceEvents){
+		return obj -> obj
+				.addValue("type", type)
+				.addObject("eval", getEvalTypeJson())
+				.addObject("op", op -> op
+						.addValue("action", actionDisplay)
+						.doAdd(jsonEvent))
+				.doAdd(op -> {
+					if(sourceEvents != null){
+						op.addArray("source", arr -> {
+							for(Consumer<JsonObjectBuilder> src : sourceEvents){
+								arr.addValue(JsonBuilder.toMapRec(src));
+							}
+						});
+					}
+				});
+	}
+
+	public Consumer<JsonObjectBuilder> getEvalTypeJson(){
+		return eval -> eval.addValue("type", label);
+	}
+
+	public static class Now extends TestEvaluator {
 		public Now() {
-			this.label = "";
+			this.label = "now";
 		}
 
 		@Override
@@ -180,8 +304,8 @@ public abstract class TestEvaluator {
 		}
 
 		@Override
-		public void log(String message) {
-			logger.debug(message);
+		protected void log(String message, Throwable t, Logger logger){
+			logger.debug(message, t);
 		}
 
 		public TestEvaluator getInnerEvaluator(){
@@ -189,28 +313,38 @@ public abstract class TestEvaluator {
 		}
 
 		@Override
-		public Callable<String> getTestMessageRef() {
-			return testEvaluator.getTestMessageRef();
+		public Consumer<JsonObjectBuilder> getEventParams() {
+			return testEvaluator.getEventParams();
 		}
 
 		@Override
-		protected void setTestMessageRef(String testType, Callable<String> testMessageRef) {
-			testEvaluator.setTestMessageRef(testType, testMessageRef);
+		public List<Consumer<JsonObjectBuilder>> getSourceEvents() {
+			return testEvaluator.getSourceEvents();
 		}
 
 		@Override
-		public String getTestMessage(Callable<String> messageRef) {
-			return testEvaluator.getTestMessage(messageRef);
+		public void clearSourceEvents(){
+			testEvaluator.clearSourceEvents();
 		}
 
 		@Override
-		public String getActionMessage(Callable<String> messageRef) {
-			return testEvaluator.getActionMessage(messageRef);
+		protected void setTestEventRef(String testType, String actionDisplay, Consumer<JsonObjectBuilder> eventParams) {
+			testEvaluator.setTestEventRef(testType, actionDisplay, eventParams);
 		}
 
 		@Override
-		public String getLabel() {
-			return testEvaluator.getLabel();
+		public void addSourceEvent(String testType, String actionDisplay, Consumer<JsonObjectBuilder> eventParams) {
+			testEvaluator.addSourceEvent(testType, actionDisplay, eventParams);
+		}
+
+		@Override
+		public Consumer<JsonObjectBuilder> getEventJson(String type, String actionDisplay, Consumer<JsonObjectBuilder> jsonEvent, List<Consumer<JsonObjectBuilder>> sourceEvents) {
+			return testEvaluator.getEventJson(type, actionDisplay, jsonEvent, sourceEvents);
+		}
+
+		@Override
+		public Consumer<JsonObjectBuilder> getEvalTypeJson(){
+			return testEvaluator.getEvalTypeJson();
 		}
 
 		@Override
@@ -228,13 +362,13 @@ public abstract class TestEvaluator {
 		}
 
 		@Override
-		public <T> T doTest(String testType, Callable<String> messageRef, Callable<Boolean> test, T returnObj, TestContext testContext) {
+		public <T> T doTest(String testType, String actionDisplay, Consumer<JsonObjectBuilder> jsonEvent, Callable<Boolean> test, T returnObj, TestContext testContext) {
 			try {
 				if (!testStatus) {
 					return returnObj;
 				}
-				setTestMessageRef(testType, messageRef);
-				log(getTestMessage(getTestMessageRef(), getSourceDisplayRef()));
+				setTestEventRef(testType, actionDisplay, jsonEvent);
+				logEvent(TEST_ASSERT, actionDisplay, getEventParams(), getSourceEvents());
 				try {
 					if (callTest(test)) {
 						return returnObj;
@@ -244,13 +378,13 @@ public abstract class TestEvaluator {
 				testStatus = false;
 				return returnObj;
 			}finally {
-				setSourceDisplayRef(null);
+				setSourceFindEvent(null, null);
 			}
 		}
 
 		@Override
-		public void log(String message) {
-			logger.debug(message);
+		protected void log(String message, Throwable t, Logger logger){
+			logger.debug(message, t);
 		}
 
 		public TestEvaluator getInnerEvaluator(){
@@ -266,28 +400,38 @@ public abstract class TestEvaluator {
 		}
 
 		@Override
-		public Callable<String> getTestMessageRef() {
-			return testEvaluator.getTestMessageRef();
+		public Consumer<JsonObjectBuilder> getEventParams() {
+			return testEvaluator.getEventParams();
 		}
 
 		@Override
-		protected void setTestMessageRef(String testType, Callable<String> testMessageRef) {
-			testEvaluator.setTestMessageRef(testType, testMessageRef);
+		public List<Consumer<JsonObjectBuilder>> getSourceEvents() {
+			return testEvaluator.getSourceEvents();
 		}
 
 		@Override
-		public String getTestMessage(Callable<String> messageRef) {
-			return testEvaluator.getTestMessage(messageRef);
+		public void clearSourceEvents(){
+			testEvaluator.clearSourceEvents();
 		}
 
 		@Override
-		public String getActionMessage(Callable<String> messageRef) {
-			return testEvaluator.getActionMessage(messageRef);
+		protected void setTestEventRef(String testType, String actionDisplay, Consumer<JsonObjectBuilder> eventParams) {
+			testEvaluator.setTestEventRef(testType, actionDisplay, eventParams);
 		}
 
 		@Override
-		public String getLabel() {
-			return testEvaluator.getLabel();
+		public void addSourceEvent(String testType, String actionDisplay, Consumer<JsonObjectBuilder> eventParams) {
+			testEvaluator.addSourceEvent(testType, actionDisplay, eventParams);
+		}
+
+		@Override
+		public Consumer<JsonObjectBuilder> getEventJson(String type, String actionDisplay, Consumer<JsonObjectBuilder> jsonEvent, List<Consumer<JsonObjectBuilder>> sourceEvents) {
+			return testEvaluator.getEventJson(type, actionDisplay, jsonEvent, sourceEvents);
+		}
+
+		@Override
+		public Consumer<JsonObjectBuilder> getEvalTypeJson(){
+			return testEvaluator.getEvalTypeJson();
 		}
 
 		@Override
@@ -298,16 +442,16 @@ public abstract class TestEvaluator {
 
 	public static class LogTests extends TestEvaluator {
 		private TestEvaluator testEvaluator;
-		private List<String> logMessages = new LinkedList<>();
+		protected List<Consumer<JsonObjectBuilder>> logMessages = new LinkedList<>();
 
 		public LogTests(TestEvaluator testEvaluator) {
 			this.testEvaluator = testEvaluator;
 		}
 
 		@Override
-		protected <T> T doTest(String testType, Callable<String> messageRef, Callable<Boolean> test, T returnObj, TestContext testContext) {
-			setTestMessageRef(testType, messageRef);
-			logMessages.add(getTestMessage(getTestMessageRef(), getSourceDisplayRef()));
+		protected <T> T doTest(String testType, String actionDisplay, Consumer<JsonObjectBuilder> jsonEvent, Callable<Boolean> test, T returnObj, TestContext testContext) {
+			setTestEventRef(testType, actionDisplay, jsonEvent);
+			logMessages.add(getAssertEvent(actionDisplay, getEventParams(), getSourceEvents()));
 			return returnObj;
 		}
 
@@ -315,33 +459,43 @@ public abstract class TestEvaluator {
 			return testEvaluator;
 		}
 
-		public String getTestLog(){
-			return String.join("\n", logMessages);
+		public List<Consumer<JsonObjectBuilder>> getTestLog(){
+			return logMessages;
 		}
 
 		@Override
-		public Callable<String> getTestMessageRef() {
-			return testEvaluator.getTestMessageRef();
+		public Consumer<JsonObjectBuilder> getEventParams() {
+			return testEvaluator.getEventParams();
 		}
 
 		@Override
-		protected void setTestMessageRef(String testType, Callable<String> testMessageRef) {
-			testEvaluator.setTestMessageRef(testType, testMessageRef);
+		public List<Consumer<JsonObjectBuilder>> getSourceEvents() {
+			return testEvaluator.getSourceEvents();
 		}
 
 		@Override
-		public String getTestMessage(Callable<String> messageRef) {
-			return testEvaluator.getTestMessage(messageRef);
+		public void clearSourceEvents(){
+			testEvaluator.clearSourceEvents();
 		}
 
 		@Override
-		public String getActionMessage(Callable<String> messageRef) {
-			return testEvaluator.getActionMessage(messageRef);
+		protected void setTestEventRef(String testType, String actionDisplay, Consumer<JsonObjectBuilder> eventParams) {
+			testEvaluator.setTestEventRef(testType, actionDisplay, eventParams);
 		}
 
 		@Override
-		public String getLabel() {
-			return testEvaluator.getLabel();
+		public void addSourceEvent(String testType, String actionDisplay, Consumer<JsonObjectBuilder> eventParams) {
+			testEvaluator.addSourceEvent(testType, actionDisplay, eventParams);
+		}
+
+		@Override
+		public Consumer<JsonObjectBuilder> getEventJson(String type, String actionDisplay, Consumer<JsonObjectBuilder> jsonEvent, List<Consumer<JsonObjectBuilder>> sourceEvents) {
+			return testEvaluator.getEventJson(type, actionDisplay, jsonEvent, sourceEvents);
+		}
+
+		@Override
+		public Consumer<JsonObjectBuilder> getEvalTypeJson(){
+			return testEvaluator.getEvalTypeJson();
 		}
 
 		@Override

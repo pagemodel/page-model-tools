@@ -32,18 +32,44 @@ public class GradleGenTask extends DefaultTask {
 		}
 		File modelDir = new File(this.getProject().getProjectDir(), extension.getSrcDir());
 		File outDir = new File(this.getProject().getProjectDir(), extension.getGenRootDir());
-		generatePageModelClasses(modelDir, outDir);
+		Boolean cleanGenDir = extension.getCleanGenDir();
+
+		if (cleanGenDir && outDir.exists()) {
+			deleteDirectory(outDir);
+
+		}
+		generatePageModelClasses(modelDir, outDir, cleanGenDir);
 	}
 
-	public static void generatePageModelClasses(final File inputDir, final File outputDir) throws IOException {
+	private static boolean deleteDirectory(File directory) {
+		if(directory.exists()){
+			File[] files = directory.listFiles();
+			if(null!=files){
+				for(int i=0; i<files.length; i++) {
+					if(files[i].isDirectory()) {
+						deleteDirectory(files[i]);
+					}
+					else {
+						files[i].delete();
+					}
+				}
+			}
+		}
+		return(directory.delete());
+	}
+
+	public static void generatePageModelClasses(final File inputDir, final File outputDir, final boolean cleanGenDir) throws IOException {
 		if(!inputDir.exists()){
 			throw new RuntimeException("Error: pagemodel directory does not exist [" + inputDir.getPath() + "]");
+		}
+		if(!outputDir.exists()){
+			outputDir.mkdirs();
 		}
 		for(File pagemodel : inputDir.listFiles(file -> file.getName().endsWith(".pagemodel"))){
 			generatePageModelClass(pagemodel, outputDir);
 		}
 		for(File modelDir : inputDir.listFiles(file -> file.isDirectory())){
-			generatePageModelClasses(modelDir, outputDir);
+			generatePageModelClasses(modelDir, outputDir, cleanGenDir);
 		}
 	}
 

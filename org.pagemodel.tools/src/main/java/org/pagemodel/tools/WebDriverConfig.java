@@ -4,10 +4,13 @@ package org.pagemodel.tools;
 import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.CapabilityType;
+import org.pagemodel.core.utils.json.JsonBuilder;
+import org.pagemodel.core.utils.json.JsonObjectBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 
 public class WebDriverConfig {
 
@@ -74,5 +77,20 @@ public class WebDriverConfig {
 	public void setCapabilities(MutableCapabilities capabilities) {
 		this.capabilities = capabilities.asMap();
 		this.caps = capabilities;
+	}
+
+	public void updateField(String field, Consumer<JsonObjectBuilder> objUpdate){
+		caps = null;
+		JsonBuilder.object(capabilities).updateObject(field, objUpdate);
+	}
+
+	public void setField(String field, Object value){
+		caps = null;
+		capabilities.put(field, value);
+	}
+
+	public JsonObjectBuilder modify(){
+		caps = null;
+		return JsonBuilder.object(capabilities);
 	}
 }

@@ -17,10 +17,7 @@
 package org.pagemodel.core;
 
 import org.pagemodel.core.testers.TestEvaluator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,7 +25,6 @@ import java.util.Map;
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class DefaultTestContext implements TestContext {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	protected Map<String, Object> storedObjects = new HashMap<>();
 	protected TestEvaluator testEvaluator;
@@ -49,61 +45,70 @@ public class DefaultTestContext implements TestContext {
 
 	@Override
 	public <T> void store(String key, T value) {
-		getEvaluator().log(TestEvaluator.TEST_EXECUTE + " store: key:[" + key + "], value:[" + value + "]");
-		if (key == null) {
-			throw new NullPointerException("Attempting to store value with null key");
-		}
-		if (value == null) {
-			throw new NullPointerException("Attempting to store null value for key [" + key + "]");
-		}
-		if (storedObjects.containsKey(key)) {
-			throw new IllegalArgumentException("Unable to store [" + key + " -> " + value + "] key already in use [" + key + " -> " + storedObjects.get(key) + "]");
-		}
-		storedObjects.put(key, value);
+		getEvaluator().testRun(TestEvaluator.TEST_EXECUTE,
+				"store", op -> op.addValue("key", key).addValue("value", value),
+				() -> {
+					if (key == null) {
+						throw new NullPointerException("Attempting to store value with null key");
+					}
+					if (value == null) {
+						throw new NullPointerException("Attempting to store null value for key [" + key + "]");
+					}
+					if (storedObjects.containsKey(key)) {
+						throw new IllegalArgumentException("Unable to store [" + key + " -> " + value + "] key already in use [" + key + " -> " + storedObjects.get(key) + "]");
+					}
+					storedObjects.put(key, value);
+				}, this, this);
 	}
 
 	@Override
 	public <T> T load(Class<T> clazz, String key) {
-		return getEvaluator().quiet().testCondition(() -> "load: key:[" + key + "], value:[" + storedObjects.get(key) + "]", () -> {
-			if (key == null) {
-				throw new NullPointerException("Attempting to load value with null key");
-			}
-			if (!storedObjects.containsKey(key)) {
-				throw new IllegalArgumentException("No value stored with key [" + key + "]");
-			}
-			Object obj = storedObjects.get(key);
-			if(obj == null || !clazz.isAssignableFrom(obj.getClass())){
-				throw new ClassCastException("Error: Unable to cast from [" + obj == null ? null : obj.getClass().getSimpleName() + "] to [" + clazz.getSimpleName() + "] for value:[" + obj + "] with key:[" + key + "]");
-			}
-			return true;
-		}, (T)storedObjects.get(key), this);
+		return getEvaluator().quiet().testCondition(
+				"load", op -> op.addValue("value", key).addValue("actual",storedObjects.get(key)).addValue("class",clazz.getSimpleName()),
+				() -> {
+					if (key == null) {
+						throw new NullPointerException("Attempting to load value with null key");
+					}
+					if (!storedObjects.containsKey(key)) {
+						throw new IllegalArgumentException("No value stored with key [" + key + "]");
+					}
+					Object obj = storedObjects.get(key);
+					if(obj == null || !clazz.isAssignableFrom(obj.getClass())){
+						throw new ClassCastException("Error: Unable to cast from [" + obj == null ? null : obj.getClass().getSimpleName() + "] to [" + clazz.getSimpleName() + "] for value:[" + obj + "] with key:[" + key + "]");
+					}
+					return true;
+				}, (T)storedObjects.get(key), this);
 	}
 
 	@Override
 	public <T> T load(String key) {
-		return getEvaluator().quiet().testCondition(() -> "load: key:[" + key + "], value:[" + storedObjects.get(key) + "]", () -> {
-			if (key == null) {
-				throw new NullPointerException("Attempting to load value with null key");
-			}
-			if (!storedObjects.containsKey(key)) {
-				throw new IllegalArgumentException("No value stored with key [" + key + "]");
-			}
-			return true;
-		}, (T)storedObjects.get(key), this);
+		return getEvaluator().quiet().testCondition(
+				"load", op -> op.addValue("value", key).addValue("actual",storedObjects.get(key)),
+				() -> {
+					if (key == null) {
+						throw new NullPointerException("Attempting to load value with null key");
+					}
+					if (!storedObjects.containsKey(key)) {
+						throw new IllegalArgumentException("No value stored with key [" + key + "]");
+					}
+					return true;
+				}, (T)storedObjects.get(key), this);
 	}
 
 	@Override
 	public DefaultTestContext removeStored(String key) {
-		return getEvaluator().testCondition(() -> "Removing: key:[" + key + "], value:[" + storedObjects.get(key) + "]", () -> {
-			if (key == null) {
-				throw new NullPointerException("Attempting to remove value with null key");
-			}
-			if (!storedObjects.containsKey(key)) {
-				throw new IllegalArgumentException("No value stored with key [" + key + "]");
-			}
-			storedObjects.remove(key);
-			return true;
-		}, this, this);
+		return getEvaluator().testCondition(
+				"remove stored", op -> op.addValue("value", key).addValue("actual",storedObjects.get(key)),
+				() -> {
+					if (key == null) {
+						throw new NullPointerException("Attempting to remove value with null key");
+					}
+					if (!storedObjects.containsKey(key)) {
+						throw new IllegalArgumentException("No value stored with key [" + key + "]");
+					}
+					storedObjects.remove(key);
+					return true;
+				}, this, this);
 	}
 
 	@Override

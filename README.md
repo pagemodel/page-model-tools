@@ -42,8 +42,7 @@ Until org.pagemodel is published to a maven repository, it must be built from so
 #### Build page-model-tools from source:
 
 1. Clone the repository
-2. build org.pagemodel.gen.gradle and publish to maven local
-3. build org.pagemodel projects and publish to maven local
+2. build org.pagemodel projects and publish to maven local
 ###### Prerquisites:
 * Java 8 JDK with JAVA_HOME set
 * Chrome browser
@@ -52,41 +51,40 @@ Until org.pagemodel is published to a maven repository, it must be built from so
 ###### Linux and MacOS:
 ```
 git clone https://github.com/pagemodel/page-model-tools.git
-cd page-model-tools/org.pagemodel.gen.gradle
-../gradlew --rerun-tasks clean build publishToMavenLocal --console=plain
-cd ..
+cd page-model-tools
 ./gradlew --rerun-tasks clean build publishToMavenLocal --parallel --console=plain
 cd ..
 ```
 ###### Windows:
 ```
 git clone https://github.com/pagemodel/page-model-tools.git
-cd page-model-tools\org.pagemodel.gen.gradle
-..\gradlew.bat --rerun-tasks clean build publishToMavenLocal --console=plain
-cd ..
+cd page-model-tools
 gradlew.bat --rerun-tasks clean build publishToMavenLocal --parallel --console=plain
 cd ..
 ```
 
 #### Create a new testing project :
 
-1. after building the sources, get the built `org.pagemodel.gen.project-0.8.0-SNAPSHOT.jar`
+1. after building the sources, get the built `org.pagemodel.gen.project-0.8.1-SNAPSHOT.jar`
 2. run the jar to generate a new project
 3. run the sample tests in your project
 4. see [project structure](docs/project-structure.md) for an overview of the project files
+5. see [Page Model Examples](docs/page-model-example.md) for more about the .pagemodel files
+6. see [Page and Element test methods](docs/test-methods.md) for an overview of test methods provided by the api
+7. download [DemoProject-0.8.0.tar.gz](docs/DemoProject-0.8.0.tar.gz) for a complete example project using https://demoblaze.com with a step-by-step git history of creating it.
 
 ###### Linux and MacOS:
 ```
-cp page-model-tools/org.pagemodel.gen.project/build/libs/org.pagemodel.gen.project-0.8.0-SNAPSHOT.jar .
-java -jar org.pagemodel.gen.project-0.8.0-SNAPSHOT.jar XYZ com.example ./XYZTests/
+cp page-model-tools/org.pagemodel.gen.project/build/libs/org.pagemodel.gen.project-0.8.1-SNAPSHOT.jar .
+java -jar org.pagemodel.gen.project-0.8.1-SNAPSHOT.jar XYZ com.example ./XYZTests/
 cd XYZTests
 ./gradlew --rerun-tasks test --console=plain
 ```
 
 ###### Windows:
 ```
-copy page-model-tools\org.pagemodel.gen.project\build\libs\org.pagemodel.gen.project-0.8.0-SNAPSHOT.jar .
-java -jar org.pagemodel.gen.project-0.8.0-SNAPSHOT.jar XYZ com.example XYZTests
+copy page-model-tools\org.pagemodel.gen.project\build\libs\org.pagemodel.gen.project-0.8.1-SNAPSHOT.jar .
+java -jar org.pagemodel.gen.project-0.8.1-SNAPSHOT.jar XYZ com.example XYZTests
 cd XYZTests
 gradlew.bat --rerun-tasks test --console=plain
 ```
@@ -111,7 +109,7 @@ cd ../XYZTests/
 ###### Windows:
 ```
 cd page-model-tools
-docker build -f "scripts\docker\pagemodel-headless-chrome.dockerfile" -t pagemodel-headless-chrome:0.8.0 .
+docker build -f "scripts\docker\pagemodel-headless-chrome.dockerfile" -t pagemodel-headless-chrome:0.8.1 .
 cd ..\XYZTests
 docker build -f "scripts\docker\xyz-headless-chrome.dockerfile" -t xyz-headless-chrome:1.0.0 .
 docker run --rm -ti -u seluser:seluser -v %PWD%:/home/seluser/dev:rw,delegated -w /home/seluser/dev xyz-headless-chrome:1.0.0 ./gradlew --rerun-tasks test --console=plain -Dbrowser=headless
@@ -128,9 +126,6 @@ XYZTestSanity/src/test/resources/profiles.xyz.json
 XYZPageModels/src/main/resources/pagemodels/
 ```
 See [Page Model Examples](docs/page-model-example.md) for more about the .pagemodel files.
-
-Dowload [DemoProject-0.8.0.tar.gz](docs/DemoProject-0.8.0.tar.gz) for a demo project using https://demoblaze.com with a step-by-step git history of creating the project.
-
 ##### Rebuild to regenerate page model classes:
 ###### Linux and MacOS:
 ```

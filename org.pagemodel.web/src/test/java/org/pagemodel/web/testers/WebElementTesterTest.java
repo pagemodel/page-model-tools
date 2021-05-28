@@ -29,6 +29,7 @@ public class WebElementTesterTest {
 	private PageModel navPage;
 	private Object returnObj;
 	private WebElementTester tester;
+	private TestEvaluator testEvaluator;
 
 	static class TestPage extends PageModel.DefaultPageModel<TestPage> {
 		public TestPage(WebTestContext testContext) {
@@ -53,8 +54,9 @@ public class WebElementTesterTest {
 		context = new TestTestContext(driver);
 		returnObj = new Object();
 		currentPage = new TestPage(context);
+		testEvaluator = new TestEvaluator.Now();
 		tester = new WebElementTester(returnObj,
-				ClickAction.make(() -> element, currentPage),
+				ClickAction.make(() -> element, currentPage, testEvaluator),
 				new TestEvaluator.Now());
 	}
 
@@ -79,7 +81,7 @@ public class WebElementTesterTest {
 		tester.notExists();
 
 		Assert.assertEquals(null, new WebElementTester(returnObj,
-				ClickAction.make(() -> {throw new Exception();}, currentPage),
+				ClickAction.make(() -> {throw new Exception();}, currentPage, testEvaluator),
 				new TestEvaluator.Now()).callRef().getElement());
 
 		element = mock(WebElement.class);

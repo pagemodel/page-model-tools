@@ -19,6 +19,8 @@ package org.pagemodel.mail;
 import org.pagemodel.core.TestContext;
 import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.core.utils.ThrowingConsumer;
+import org.pagemodel.core.utils.json.JsonBuilder;
+import org.pagemodel.core.utils.json.JsonObjectBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +28,7 @@ import javax.mail.*;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
@@ -33,6 +36,7 @@ import java.util.concurrent.Callable;
  */
 public class PopServer extends MailServer{
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	private TestEvaluator evalLog = new TestEvaluator.Now();
 	private int popPort = -1;
 
 	public PopServer(MailAuthenticator mailAuthenticator) {
@@ -83,7 +87,17 @@ public class PopServer extends MailServer{
 		Set<Integer> checkedMessageIds = new HashSet<>();
 		long start = System.currentTimeMillis();
 		long end = start + (timeoutSeconds * 1000);
-		log.info("Waiting for mail with timeout: [" + timeoutSeconds + "], matching:\n" + logMailPredicate(testContext, mailPredicate));
+		evalLog.logEvent(TestEvaluator.TEST_EXECUTE, "fetch mail", op -> op
+				.addValue("timeout", timeoutSeconds)
+				.doAdd(o -> {
+					if(minMailLimit != 1){
+						o.addValue("min count", minMailLimit);
+					}
+					if(maxMailLimit != 1){
+						o.addValue("max count", maxMailLimit);
+					}
+				}),
+				logMailPredicate(testContext, mailPredicate));
 		int batchSize = Math.min(Math.max(20, maxMailLimit * 4), 80);
 		while (results.size() < minMailLimit && System.currentTimeMillis() < end) {
 			try {
@@ -108,7 +122,20 @@ public class PopServer extends MailServer{
 			long elapsed = (System.currentTimeMillis() - start)/1000;
 			log.info("Waiting for mail with timeout: [" + timeoutSeconds + "], elapsed: [" + elapsed + "]");
 		}
-		throw new RuntimeException("Error: Unable to find [" + minMailLimit + "] message.  Found [" + results.size() + "] matching:\n" + logMailPredicate(testContext, mailPredicate));
+		throw testContext.createException(JsonBuilder.object()
+				.doAdd(evalLog.getEventJson(TestEvaluator.TEST_EXECUTE, "fetch mail", op -> op
+						.addValue("timeout", timeoutSeconds)
+						.doAdd(o -> {
+							if(minMailLimit != 1){
+								o.addValue("min count", minMailLimit);
+							}
+							if(maxMailLimit != 1){
+								o.addValue("max count", maxMailLimit);
+							}
+						})
+						.addValue("found", results.size()),
+						logMailPredicate(testContext, mailPredicate)))
+				.toMap());
 	}
 
 	public List<MailMessage> waitForMailNotFound(TestContext testContext, ThrowingConsumer<MailMessageTester<?>,?> mailPredicate, int timeoutSeconds) {
@@ -120,7 +147,10 @@ public class PopServer extends MailServer{
 		Set<Integer> checkedMessageIds = new HashSet<>();
 		long start = System.currentTimeMillis();
 		long end = start + (timeoutSeconds * 1000);
-		log.info("Waiting for mail not found with timeout: [" + timeoutSeconds + "], found limit: [" + foundMailLimit + "], matching:\n" + logMailPredicate(testContext, mailPredicate));
+		evalLog.logEvent(TestEvaluator.TEST_EXECUTE, "mail not found", op -> op
+				.addValue("timeout", timeoutSeconds)
+				.addValue("found limit", foundMailLimit),
+				logMailPredicate(testContext, mailPredicate));
 		int batchSize = Math.min(Math.max(20, foundMailLimit * 4), 80);
 		while (results.size() <= foundMailLimit && System.currentTimeMillis() < end) {
 			try {
@@ -129,12 +159,15 @@ public class PopServer extends MailServer{
 					if (!results.contains(mailMessage)) {
 						results.add(mailMessage);
 						if (results.size() > foundMailLimit) {
-							throw new RuntimeException("Error: Expected to find at most [" + foundMailLimit + "] messages.  Found [" + results.size() + "] matching:\n" + logMailPredicate(testContext, mailPredicate));
+							break;
 						}
 					}
 				}
 			}catch (Exception ex){
 				log.info("Error: exception caught while fetching mail.", ex);
+			}
+			if (results.size() > foundMailLimit) {
+				throw new RuntimeException("Error: Expected to find at most [" + foundMailLimit + "] messages.  Found [" + results.size() + "] matching:\n" + logMailPredicate(testContext, mailPredicate));
 			}
 			try {
 				Thread.sleep(1000);
@@ -148,8 +181,17 @@ public class PopServer extends MailServer{
 		return results;
 	}
 
-	private String logMailPredicate(TestContext testContext, ThrowingConsumer<MailMessageTester<?>,?> mailPredicate){
-		TestEvaluator.LogTests testEvaluator = new TestEvaluator.LogTests(new TestEvaluator.Now());
+	private List<Consumer<JsonObjectBuilder>> logMailPredicate(TestContext testContext, ThrowingConsumer<MailMessageTester<?>,?> mailPredicate){
+		TestEvaluator.LogTests testEvaluator = new TestEvaluator.LogTests(new TestEvaluator.Now()){
+			@Override
+			protected <T> T doTest(String testType, String actionDisplay, Consumer<JsonObjectBuilder> jsonEvent, Callable<Boolean> test, T returnObj, TestContext testContext) {
+				setTestEventRef(testType, actionDisplay, jsonEvent);
+				final Map<String,Object> event = JsonBuilder.toMap(getAssertEvent(actionDisplay, getEventParams(), getSourceEvents()));
+				logMessages.add(obj -> obj.merge(event));
+				clearSourceEvents();
+				return returnObj;
+			}
+		};
 		MailMessageTester tester = new MailMessageTester(() -> null, null, testContext, testEvaluator);
 		tester.returnObj = tester;
 		try {
@@ -177,7 +219,9 @@ public class PopServer extends MailServer{
 	 * @throws MessagingException for POP server errors
 	 */
 	private List<MailMessage> getReceivedMail(TestContext testContext, Callable<MailMessage> sentMailRef, MailTester.SentMailFilter mailPredicate, int maxMailLimit, int batchSize, Set<Integer> checkedMessageIds) throws MessagingException {
-		Properties properties = System.getProperties();
+		Properties properties = new Properties();
+		properties.putAll(System.getProperties());
+
 		if(this.getUseTls()) {
 			properties.setProperty("mail.pop3.ssl.enable", "true");
 			properties.setProperty("mail.pop3s.ssl.enable", "true");
@@ -189,8 +233,8 @@ public class PopServer extends MailServer{
 			properties.setProperty("mail.pop3.ssl.checkserveridentity", "false");
 			properties.setProperty("mail.pop3s.ssl.checkserveridentity", "false");
 		}
-
-		Session session = Session.getDefaultInstance(properties);
+		Session session = Session.getInstance(properties);
+		//Session session = Session.getDefaultInstance(properties);
 		Store store = session.getStore("pop3");
 		store.connect(getHost(), getPopPort(),  getUsername(), getPassword());
 		Folder inbox = store.getFolder("Inbox");

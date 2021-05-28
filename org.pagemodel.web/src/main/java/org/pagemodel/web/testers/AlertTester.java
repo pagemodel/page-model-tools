@@ -20,19 +20,16 @@ import org.openqa.selenium.Alert;
 import org.openqa.selenium.NoAlertPresentException;
 import org.pagemodel.core.testers.StringTester;
 import org.pagemodel.core.testers.TestEvaluator;
+import org.pagemodel.core.utils.json.JsonBuilder;
 import org.pagemodel.web.PageModel;
 import org.pagemodel.web.WebTestContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.lang.invoke.MethodHandles;
+import java.util.Map;
 
 /**
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public class AlertTester<R> {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
 	protected final R returnObj;
 	protected final WebTestContext testContext;
 	protected PageModel<?> page;
@@ -49,24 +46,28 @@ public class AlertTester<R> {
 	}
 
 	public R exists() {
-		return getEvaluator().testCondition(() -> "alert exists [" + getAlertText() + "]",
+		return getEvaluator().testCondition(
+				"exists", op -> op
+						.addValue("alert", getAlertJson()),
 				() -> getAlert() != null, returnObj, testContext);
 	}
 
 	public R notExists() {
-		return getEvaluator().testCondition(() -> "alert not exists [" + getAlertText() + "]",
+		return getEvaluator().testCondition(
+				"not exists", op -> op
+						.addValue("alert", getAlertJson()),
 				() -> getAlert() == null, returnObj, testContext);
 	}
 
 	public R accept() {
-		log.info(getEvaluator().getActionMessage(() -> "accept alert [" + getAlertText() + "]"));
+		getEvaluator().logEvent(TestEvaluator.TEST_EXECUTE, "accept", op -> op.merge(getAlertJson()));
 		exists();
 		getAlert().accept();
 		return returnObj;
 	}
 
 	public R dismiss() {
-		log.info(getEvaluator().getActionMessage(() -> "dismiss alert [" + getAlertText() + "]"));
+		getEvaluator().logEvent(TestEvaluator.TEST_EXECUTE,"dismiss", op -> op.merge(getAlertJson()));
 		exists();
 		getAlert().dismiss();
 		return returnObj;
@@ -77,7 +78,9 @@ public class AlertTester<R> {
 	}
 
 	public R sendKeys(String text) {
-		log.info(getEvaluator().getActionMessage(() -> "send keys: " + text + " to alert [" + getAlertText() + "]"));
+		getEvaluator().logEvent(TestEvaluator.TEST_EXECUTE,"send keys", op -> op
+				.addValue("value", text)
+				.merge(getAlertJson()));
 		exists();
 		getAlert().sendKeys(text);
 		return returnObj;
@@ -99,11 +102,25 @@ public class AlertTester<R> {
 		}
 	}
 
-	protected String getAlertText() {
+	protected Map<String,Object> getAlertJson() {
+		String text;
 		try {
-			return testContext.getDriver().switchTo().alert().getText();
+			text = testContext.getDriver().switchTo().alert().getText();
 		} catch (Exception ex) {
-			return null;
+			text = null;
 		}
+		return JsonBuilder.object()
+				.addValue("alert", text)
+				.toMap();
+	}
+
+	protected String getAlertDisplay() {
+		String text;
+		try {
+			text = testContext.getDriver().switchTo().alert().getText();
+		} catch (Exception ex) {
+			text = null;
+		}
+		return "\"alert\": \"" + text + "\"";
 	}
 }

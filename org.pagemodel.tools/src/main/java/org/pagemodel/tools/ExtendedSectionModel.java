@@ -16,6 +16,7 @@
 
 package org.pagemodel.tools;
 
+import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.web.SectionModel;
 import org.pagemodel.web.testers.ClickAction;
 
@@ -23,8 +24,8 @@ import org.pagemodel.web.testers.ClickAction;
  * @author Matt Stevenson <matt@pagemodel.org>
  */
 public abstract class ExtendedSectionModel<S extends ExtendedSectionModel<? super S, P, R>, P extends ExtendedModelBase<? super P>, R extends ExtendedModelBase<? super R>> extends SectionModel<S, P, R> implements ExtendedModelBase<S> {
-	public ExtendedSectionModel(ClickAction<P, ?> clickAction) {
-		super(clickAction);
+	public ExtendedSectionModel(ClickAction<P, ?> clickAction, TestEvaluator testEvaluator) {
+		super(clickAction, testEvaluator);
 	}
 
 	@Override
