@@ -56,7 +56,7 @@ public class PageTests extends MyAppTestBase {
 				.testStatusDropDown().attribute("value").equals("Pending")
 				.testUserDisplay().text().contains("sam")
 				.testRoutingDisplay().text().endsWith("-a")
-				.testStatusDropDown().selectValue("Approved")
+				.testStatusDropDown().selectText("Approved")
 				.testSectionParent()
 
 				.testTopNav().testSignOutLink().click()
