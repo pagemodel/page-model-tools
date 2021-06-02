@@ -4,7 +4,7 @@ This document describes the directories and files of a generated project.
 
 Our project is generated with the following command:
 ```
-java -jar org.pagemodel.gen.project-0.8.1-SNAPSHOT.jar XYZ com.example.pmt XYZTest
+java -jar org.pagemodel.gen.project-0.8.1.jar XYZ com.example.pmt XYZTest
 ```
 command output:
 ```

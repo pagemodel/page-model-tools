@@ -65,7 +65,7 @@ cd ..
 
 #### Create a new testing project :
 
-1. after building the sources, get the built `org.pagemodel.gen.project-0.8.1-SNAPSHOT.jar`
+1. after building the sources, get the built `org.pagemodel.gen.project-0.8.1.jar`
 2. run the jar to generate a new project
 3. run the sample tests in your project
 4. see [project structure](docs/project-structure.md) for an overview of the project files
@@ -75,16 +75,16 @@ cd ..
 
 ###### Linux and MacOS:
 ```
-cp page-model-tools/org.pagemodel.gen.project/build/libs/org.pagemodel.gen.project-0.8.1-SNAPSHOT.jar .
-java -jar org.pagemodel.gen.project-0.8.1-SNAPSHOT.jar XYZ com.example ./XYZTests/
+cp page-model-tools/org.pagemodel.gen.project/build/libs/org.pagemodel.gen.project-0.8.1.jar .
+java -jar org.pagemodel.gen.project-0.8.1.jar XYZ com.example ./XYZTests/
 cd XYZTests
 ./gradlew --rerun-tasks test --console=plain
 ```
 
 ###### Windows:
 ```
-copy page-model-tools\org.pagemodel.gen.project\build\libs\org.pagemodel.gen.project-0.8.1-SNAPSHOT.jar .
-java -jar org.pagemodel.gen.project-0.8.1-SNAPSHOT.jar XYZ com.example XYZTests
+copy page-model-tools\org.pagemodel.gen.project\build\libs\org.pagemodel.gen.project-0.8.1.jar .
+java -jar org.pagemodel.gen.project-0.8.1.jar XYZ com.example XYZTests
 cd XYZTests
 gradlew.bat --rerun-tasks test --console=plain
 ```

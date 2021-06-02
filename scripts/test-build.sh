@@ -11,8 +11,8 @@ cd ..
 ./gradlew --rerun-tasks clean build publishToMavenLocal -x test --parallel --console=plain
 cd ..
 
-cp ./pmt-test/org.pagemodel.gen.project/build/libs/org.pagemodel.gen.project-0.8.1-SNAPSHOT.jar .
-java -jar org.pagemodel.gen.project-0.8.1-SNAPSHOT.jar XYZ com.example.xyz.test ./XYZTests/
+cp ./pmt-test/org.pagemodel.gen.project/build/libs/org.pagemodel.gen.project-0.8.1.jar .
+java -jar org.pagemodel.gen.project-0.8.1.jar XYZ com.example.xyz.test ./XYZTests/
 cd XYZTests/
 ./gradlew --rerun-tasks build -x test --console=plain
 cd ..
@@ -35,8 +35,8 @@ docker run --rm -ti -u seluser:seluser -v $(pwd):/home/seluser/dev:rw,delegated 
 # cd ..
 # ./gradlew --rerun-tasks clean build publishToMavenLocal -x test --parallel --console=plain
 # cd ..
-# cp page-model-tools/org.pagemodel.gen.project/build/libs/org.pagemodel.gen.project-0.8.1-SNAPSHOT.jar .
-# java -jar org.pagemodel.gen.project-0.8.1-SNAPSHOT.jar XYZ com.example.xyz.test ./XYZTests/
+# cp page-model-tools/org.pagemodel.gen.project/build/libs/org.pagemodel.gen.project-0.8.1.jar .
+# java -jar org.pagemodel.gen.project-0.8.1.jar XYZ com.example.xyz.test ./XYZTests/
 # cd XYZTests/
 # ./gradlew --rerun-tasks build test --console=plain
 # cd ..
