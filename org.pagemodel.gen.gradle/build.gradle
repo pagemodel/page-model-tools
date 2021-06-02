@@ -1,11 +1,13 @@
 apply plugin: 'java-library'
 apply plugin: 'maven-publish'
+apply plugin: 'signing'
 apply plugin: 'idea'
 
 sourceCompatibility = 1.8
 
 version = '0.8.1-SNAPSHOT'
 group = 'org.pagemodel'
+description 'pagemodel.org generator gradle plugin - generate java classes from pagemodel files'
 
 dependencies {
     api gradleApi()
@@ -14,14 +16,22 @@ dependencies {
 
 buildscript {
     repositories {
-        mavenLocal()
         mavenCentral()
     }
 }
 
 repositories {
-    mavenLocal()
     mavenCentral()
+}
+
+test {
+    testLogging.showStandardStreams = true
+    testLogging.exceptionFormat = 'full'
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
 }
 
 jar {
@@ -34,14 +44,47 @@ jar {
 
 publishing {
     publications {
-        mavenDeploy(MavenPublication) {
-            groupId project.group
-            artifactId project.name
-            version project.version
+        mavenJava(MavenPublication) {
+            artifactId = project.name
             from components.java
+            pom {
+                name = project.name
+                description = project.description
+                url = 'https://github.com/pagemodel/page-model-tools'
+                licenses {
+                    license {
+                        name = 'APACHE-2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'mstevenson'
+                        name = 'Matt Stevenson'
+                        email = 'matt@pagemodel.org'
+                    }
+                }
+                scm {
+                    url = 'https://github.com/pagemodel/page-model-tools'
+                    connection = 'scm:git:git://github.com/pagemodel/page-model-tools.git'
+                    developerConnection = 'scm:git:ssh://git@github.com/pagemodel/page-model-tools.git'
+                }
+            }
         }
     }
     repositories {
-        mavenLocal()
+        maven {
+            def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2"
+            def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            credentials {
+                username ossrhUsername
+                password ossrhPassword
+            }
+        }
     }
+}
+
+signing {
+    sign publishing.publications.mavenJava
 }

@@ -1,3 +1,5 @@
+description 'pagemodel.org project generator - generates scaffolding for new projects'
+
 dependencies {
 }
 

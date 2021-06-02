@@ -1,3 +1,5 @@
+description 'pagemodel.org tools - web, mail, and ssh testing and project tools'
+
 dependencies {
     api project(':org.pagemodel.core')
     api project(':org.pagemodel.web')

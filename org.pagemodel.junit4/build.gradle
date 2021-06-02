@@ -1,3 +1,5 @@
+description 'pagemodel.org junit4 tools - collect information from junit4 tests'
+
 dependencies {
     api project(':org.pagemodel.core')
     

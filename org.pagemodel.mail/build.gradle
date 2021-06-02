@@ -1,3 +1,5 @@
+description 'pagemodel.org mail testing - compose, fetch, and test email using javax.mail'
+
 dependencies {
     api project(':org.pagemodel.core')
     api 'com.sun.mail:javax.mail:1.5.6'

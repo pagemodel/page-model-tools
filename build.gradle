@@ -1,6 +1,23 @@
+ext.ossrhUsername = ossrhUsername
+ext.ossrhPassword = ossrhPassword
+
+tasks.register('run') {
+    dependsOn gradle.includedBuild('org.pagemodel.gen.gradle').task(':run')
+}
+tasks.register('clean') {
+    dependsOn gradle.includedBuild('org.pagemodel.gen.gradle').task(':clean')
+}
+tasks.register('publish') {
+    dependsOn gradle.includedBuild('org.pagemodel.gen.gradle').task(':publish')
+}
+tasks.register('publishToMavenLocal') {
+    dependsOn gradle.includedBuild('org.pagemodel.gen.gradle').task(':publishToMavenLocal')
+}
+
 subprojects {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
+    apply plugin: 'signing'
     apply plugin: 'idea'
 
     sourceCompatibility = 1.8
@@ -10,54 +27,77 @@ subprojects {
 
     buildscript {
         repositories {
-            mavenLocal()
             mavenCentral()
         }
     }
 
     repositories {
-        mavenLocal()
         mavenCentral()
-    }
-
-    jar {
-        manifest {
-            attributes(
-                    "License-Name": "APACHE-2.0",
-                    "License-URL": "http://www.apache.org/licenses/LICENSE-2.0")
-        }
-    }
-
-    publishing {
-        publications {
-            mavenDeploy(MavenPublication) {
-                groupId project.group
-                artifactId project.name
-                version project.version
-                from components.java
-            }
-        }
-        repositories {
-            mavenLocal()
-        }
     }
 
     test {
         testLogging.showStandardStreams = true
         testLogging.exceptionFormat = 'full'
-
-        systemProperty 'driver', System.getProperty("driver")
-        systemProperty 'myapp', System.getProperty("myapp")
-        systemProperty 'mail.external', System.getProperty("mail.external")
     }
-}
 
-tasks.register('run') {
-    dependsOn gradle.includedBuild('org.pagemodel.gen.gradle').task(':run')
-}
-tasks.register('publish') {
-    dependsOn gradle.includedBuild('org.pagemodel.gen.gradle').task(':publish')
-}
-tasks.register('publishToMavenLocal') {
-    dependsOn gradle.includedBuild('org.pagemodel.gen.gradle').task(':publishToMavenLocal')
+    java {
+        withJavadocJar()
+        withSourcesJar()
+    }
+
+    jar {
+        manifest {
+            attributes(
+                "License-Name": "APACHE-2.0",
+                "License-URL": "http://www.apache.org/licenses/LICENSE-2.0"
+            )
+        }
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                artifactId = project.name
+                from components.java
+                pom {
+                    name = project.name
+                    description = project.description
+                    url = 'https://github.com/pagemodel/page-model-tools'
+                    licenses {
+                        license {
+                            name = 'APACHE-2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'mstevenson'
+                            name = 'Matt Stevenson'
+                            email = 'matt@pagemodel.org'
+                        }
+                    }
+                    scm {
+                        url = 'https://github.com/pagemodel/page-model-tools'
+                        connection = 'scm:git:git://github.com/pagemodel/page-model-tools.git'
+                        developerConnection = 'scm:git:ssh://git@github.com/pagemodel/page-model-tools.git'
+                    }
+                }
+            }
+        }
+        repositories {
+            maven {
+                def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2"
+                def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+                credentials {
+                    username ossrhUsername
+                    password ossrhPassword
+                }
+            }
+        }
+    }
+
+    signing {
+        sign publishing.publications.mavenJava
+    }
 }

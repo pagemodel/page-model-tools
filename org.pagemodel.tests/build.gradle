@@ -1,3 +1,5 @@
+description 'pagemodel.org functional tests'
+
 buildscript {
     dependencies {
         classpath "org.pagemodel:org.pagemodel.gen.gradle:${version}"
