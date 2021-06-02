@@ -5,7 +5,7 @@ apply plugin: 'idea'
 
 sourceCompatibility = 1.8
 
-version = '0.8.1-SNAPSHOT'
+version = '0.8.1'
 group = 'org.pagemodel'
 description 'pagemodel.org generator gradle plugin - generate java classes from pagemodel files'
 
