@@ -1,4 +1,4 @@
-description 'pagemodel.org tools - web, mail, and ssh testing and project tools'
+publishing.publications.mavenJava.pom.description = 'pagemodel.org tools - web, mail, and ssh testing and project tools'
 
 dependencies {
     api project(':org.pagemodel.core')

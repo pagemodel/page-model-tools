@@ -1,4 +1,4 @@
-description 'pagemodel.org mail testing - compose, fetch, and test email using javax.mail'
+publishing.publications.mavenJava.pom.description = 'pagemodel.org mail testing - compose, fetch, and test email using javax.mail'
 
 dependencies {
     api project(':org.pagemodel.core')

@@ -1,4 +1,4 @@
-description 'pagemodel.org functional tests'
+publishing.publications.mavenJava.pom.description = 'pagemodel.org functional tests'
 
 buildscript {
     dependencies {

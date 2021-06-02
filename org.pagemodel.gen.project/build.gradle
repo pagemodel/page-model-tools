@@ -1,4 +1,4 @@
-description 'pagemodel.org project generator - generates scaffolding for new projects'
+publishing.publications.mavenJava.pom.description = 'pagemodel.org project generator - generates scaffolding for new projects'
 
 dependencies {
 }

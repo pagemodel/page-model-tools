@@ -1,4 +1,4 @@
-description 'pagemodel.org web testing - web testing using selenium'
+publishing.publications.mavenJava.pom.description = 'pagemodel.org web testing - web testing using selenium'
 
 dependencies {
     api project(':org.pagemodel.core')

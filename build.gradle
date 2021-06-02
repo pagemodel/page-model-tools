@@ -53,7 +53,6 @@ subprojects {
             )
         }
     }
-
     publishing {
         publications {
             mavenJava(MavenPublication) {
@@ -61,7 +60,7 @@ subprojects {
                 from components.java
                 pom {
                     name = project.name
-                    description = project.description
+                    description = 'page model tools - web test automation framework'
                     url = 'https://github.com/pagemodel/page-model-tools'
                     licenses {
                         license {

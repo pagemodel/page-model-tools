@@ -1,4 +1,4 @@
-description 'pagemodel.org core classes - primitives testers, logging, properties, exceptions'
+publishing.publications.mavenJava.pom.description = 'pagemodel.org core classes - primitives testers, logging, properties, exceptions'
 
 dependencies {
     api 'org.slf4j:slf4j-api:1.7.25'
