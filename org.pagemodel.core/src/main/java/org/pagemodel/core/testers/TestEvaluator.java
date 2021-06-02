@@ -154,28 +154,31 @@ public abstract class TestEvaluator {
 	}
 
 	public void logEvent(Consumer<JsonObjectBuilder> jsonEvent){
-		if(logPlaintext) {
-			log(JsonLogConsoleOut.formatEvent(jsonEvent), null, plaintextLogger);
+		if(logHtml || logJson || logPlaintext) {
+			Map<String,Object> event = JsonBuilder.toMap(jsonEvent);
+			if (logPlaintext) {
+				log(JsonLogConsoleOut.formatEvent(event), null, plaintextLogger);
+			}
+			if (logHtml) {
+				log(JsonLogHtmlOut.formatEvent(event), null, htmlLogger);
+			}
+			if (logJson) {
+				log(JsonBuilder.toJsonString(event), null, jsonLogger);
+			}
 		}
-		if(logHtml) {
-			log(JsonLogHtmlOut.formatEvent(jsonEvent), null, htmlLogger);
-		}
-		if(logJson) {
-			log(JsonBuilder.toJsonString(jsonEvent), null, jsonLogger);
-		}
-
 	}
 	public void logException(Consumer<JsonObjectBuilder> jsonEvent, Throwable t){
 		if(logHtml || logJson || logPlaintext) {
 			Consumer<JsonObjectBuilder> combined = t == null ? jsonEvent : jsonEvent.andThen(obj -> obj.addValue("exception", exceptionJson(t)));
+			Map<String,Object> event = JsonBuilder.toMap(combined);
 			if (logPlaintext) {
-				log(JsonLogConsoleOut.formatEvent(combined), t, plaintextLogger);
+				log(JsonLogConsoleOut.formatEvent(event), t, plaintextLogger);
 			}
 			if (logHtml) {
-				log(JsonLogHtmlOut.formatEvent(combined), t, htmlLogger);
+				log(JsonLogHtmlOut.formatEvent(event), t, htmlLogger);
 			}
 			if (logJson) {
-				log(JsonBuilder.toJsonString(combined), t, jsonLogger);
+				log(JsonBuilder.toJsonString(event), t, jsonLogger);
 			}
 		}
 	}
