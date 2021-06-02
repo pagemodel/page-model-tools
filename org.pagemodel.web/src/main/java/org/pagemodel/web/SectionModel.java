@@ -17,6 +17,7 @@
 package org.pagemodel.web;
 
 import org.pagemodel.core.testers.TestEvaluator;
+import org.pagemodel.core.utils.TestRuntimeException;
 import org.pagemodel.core.utils.ThrowingConsumer;
 import org.pagemodel.core.utils.ThrowingFunction;
 import org.pagemodel.core.utils.ThrowingRunnable;
@@ -142,6 +143,8 @@ public abstract class SectionModel<S extends SectionModel<? super S, P, R>, P ex
 		try {
 			action.run();
 			return (S) this;
+		} catch (TestRuntimeException t) {
+			throw t;
 		} catch (Throwable t) {
 			throw testContext.createException("Error: Page action failed.", t);
 		}
@@ -151,6 +154,8 @@ public abstract class SectionModel<S extends SectionModel<? super S, P, R>, P ex
 	public <R> R doAction(Callable<R> action) {
 		try {
 			return action.call();
+		} catch (TestRuntimeException t) {
+			throw t;
 		} catch (Throwable t) {
 			throw testContext.createException("Error: Page action failed.", t);
 		}
@@ -160,6 +165,8 @@ public abstract class SectionModel<S extends SectionModel<? super S, P, R>, P ex
 	public <R> R doAction(ThrowingFunction<S, R, ?> action) {
 		try {
 			return action.apply((S) this);
+		} catch (TestRuntimeException t) {
+			throw t;
 		} catch (Throwable t) {
 			throw testContext.createException("Error: Page action failed.", t);
 		}
@@ -171,6 +178,8 @@ public abstract class SectionModel<S extends SectionModel<? super S, P, R>, P ex
 			S t = (S) this;
 			action.accept(t);
 			return t;
+		} catch (TestRuntimeException t) {
+			throw t;
 		} catch (Throwable t) {
 			throw testContext.createException("Error: Page action failed.", t);
 		}

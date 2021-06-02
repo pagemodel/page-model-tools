@@ -3,6 +3,7 @@ package org.pagemodel.web;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.pagemodel.core.testers.TestEvaluator;
+import org.pagemodel.core.utils.TestRuntimeException;
 import org.pagemodel.core.utils.ThrowingConsumer;
 import org.pagemodel.core.utils.ThrowingFunction;
 import org.pagemodel.core.utils.ThrowingRunnable;
@@ -52,6 +53,8 @@ public interface PageModel<P extends PageModel<? super P>> extends ModelBase {
 		try {
 			action.run();
 			return (P) this;
+		} catch (TestRuntimeException t) {
+			throw t;
 		} catch (Throwable t) {
 			throw getContext().createException("Error: Page action failed.", t);
 		}
@@ -60,6 +63,8 @@ public interface PageModel<P extends PageModel<? super P>> extends ModelBase {
 	default public <R> R doAction(Callable<R> action) {
 		try {
 			return action.call();
+		} catch (TestRuntimeException t) {
+			throw t;
 		} catch (Throwable t) {
 			throw getContext().createException("Error: Page action failed.", t);
 		}
@@ -69,6 +74,8 @@ public interface PageModel<P extends PageModel<? super P>> extends ModelBase {
 
 		try {
 			return action.apply((P) this);
+		} catch (TestRuntimeException t) {
+			throw t;
 		} catch (Throwable t) {
 			throw getContext().createException("Error: Page action failed.", t);
 		}
@@ -79,6 +86,8 @@ public interface PageModel<P extends PageModel<? super P>> extends ModelBase {
 			P t = (P) this;
 			action.accept(t);
 			return t;
+		} catch (TestRuntimeException t) {
+			throw t;
 		} catch (Throwable t) {
 			throw getContext().createException("Error: Page action failed.", t);
 		}
