@@ -44,7 +44,7 @@ public class PageTests extends MyAppTestBase {
 				})
 				.testSiteStatusDisplay().text().equals("Online")
 				.log("my action", op -> op.addValue("field", "value"))
-				.testSiteVersionDisplay().text().startsWith("0.8.1")
+				.testSiteVersionDisplay().text().startsWith("0.8.2")
 				.testStatusDateDisplay().text().storeValue("status_date")
 				.testStatusDateDisplay().text().asDate().storeValue("status_date3")
 //				.testPage().waitFor().numberOfSeconds(1)

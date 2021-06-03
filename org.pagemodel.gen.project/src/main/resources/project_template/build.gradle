@@ -5,9 +5,10 @@ subprojects {
     sourceCompatibility = 1.8
 
     ext {
-        pagemodelVersion = "0.8.1"
+        pagemodelNumber = "0.8.2"
+        pagemodelVersion = "${pagemodelNumber}-SNAPSHOT"
     }
-    version = "1.0.0_${pagemodelVersion}-SNAPSHOT"
+    version = "1.0.0_${pagemodelNumber}-SNAPSHOT"
     group = 'org.pagemodel.tests'
 
     buildscript {

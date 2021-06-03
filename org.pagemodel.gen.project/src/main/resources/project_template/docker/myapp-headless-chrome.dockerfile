@@ -1,4 +1,4 @@
-FROM pagemodel-headless-chrome:0.8.1
+FROM pagemodel-headless-chrome:0.8.2
 
 USER seluser
 COPY --chown=seluser . /home/seluser/myapp

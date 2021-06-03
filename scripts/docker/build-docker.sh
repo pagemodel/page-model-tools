@@ -21,7 +21,7 @@ fi
 if [ -f ../../build.gradle ]; then
   VERSION="$(grep -o "version\s*=\s*'[^']*'" ../../build.gradle | cut -d"'" -f2)"
 else
-  VERSION="0.8.1"
+  VERSION="0.8.2"
 fi
 if [[ "$#" -gt 0 ]]; then
   if [ "$1" == "-v" ] || [ "$1" == "--version" ]; then
