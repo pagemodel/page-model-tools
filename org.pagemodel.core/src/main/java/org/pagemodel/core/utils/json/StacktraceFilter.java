@@ -20,6 +20,7 @@ public class StacktraceFilter {
 		highlights.addPackageHighlight("com.sun").setHighlight("system").setStop(true);
 		highlights.addPackageHighlight("java").setHighlight("system").setStop(true);
 		highlights.addPackageHighlight("sun").setHighlight("system").setStop(true);
+		highlights.addPackageHighlight("jdk").setHighlight("system").setStop(true);
 		highlights.addPackageHighlight("org.junit").setHighlight("system").setStop(true);
 		highlights.addPackageHighlight("org.gradle").setHighlight("system").setStop(true);
 
