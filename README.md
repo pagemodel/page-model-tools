@@ -1,6 +1,7 @@
 # Page Model Tools
+Page Model Tools 0.8.1 has been released to maven central under group id: org.pagemodel.
 
-What is Page Model Tools?
+## What is Page Model Tools?
 
 #### Page Model language for .pagemodel files:
 Quickly build maintainable and reusable Page Object Models to describe your web application.
@@ -38,44 +39,23 @@ Updating to newer versions of Page Model Tools do not require changes to your pa
 
 ## Getting Started:
 
-Until org.pagemodel is published to a maven repository, it must be built from source and published to your local maven repository.
-#### Build page-model-tools from source:
-
-1. Clone the repository
-2. build org.pagemodel projects and publish to maven local
 ###### Prerquisites:
 * Java 8 JDK with JAVA_HOME set
-* Chrome browser
-* Docker (optional)
+* Web browser or Docker
 
-###### Linux and MacOS:
-```
-git clone https://github.com/pagemodel/page-model-tools.git
-cd page-model-tools
-./gradlew --rerun-tasks clean build publishToMavenLocal --parallel --console=plain
-cd ..
-```
-###### Windows:
-```
-git clone https://github.com/pagemodel/page-model-tools.git
-cd page-model-tools
-gradlew.bat --rerun-tasks clean build publishToMavenLocal --parallel --console=plain
-cd ..
-```
 
 #### Create a new testing project :
 
-1. after building the sources, get the built `org.pagemodel.gen.project-0.8.1.jar`
+1. download [org.pagemodel.gen.project-0.8.1.jar](https://repo.maven.apache.org/maven2/org/pagemodel/org.pagemodel.gen.project/0.8.1/org.pagemodel.gen.project-0.8.1.jar)
 2. run the jar to generate a new project
 3. run the sample tests in your project
 4. see [project structure](docs/project-structure.md) for an overview of the project files
 5. see [Page Model Examples](docs/page-model-example.md) for more about the .pagemodel files
-6. see [Page and Element test methods](docs/test-methods.md) for an overview of test methods provided by the api
+6. see [Page and Element test meafter building the sources, get the built thods](docs/test-methods.md) for an overview of test methods provided by the api
 7. download [DemoProject-0.8.0.tar.gz](docs/DemoProject-0.8.0.tar.gz) for a complete example project using https://demoblaze.com with a step-by-step git history of creating it.
 
 ###### Linux and MacOS:
 ```
-cp page-model-tools/org.pagemodel.gen.project/build/libs/org.pagemodel.gen.project-0.8.1.jar .
 java -jar org.pagemodel.gen.project-0.8.1.jar XYZ com.example ./XYZTests/
 cd XYZTests
 ./gradlew --rerun-tasks test --console=plain
@@ -83,36 +63,9 @@ cd XYZTests
 
 ###### Windows:
 ```
-copy page-model-tools\org.pagemodel.gen.project\build\libs\org.pagemodel.gen.project-0.8.1.jar .
 java -jar org.pagemodel.gen.project-0.8.1.jar XYZ com.example XYZTests
 cd XYZTests
 gradlew.bat --rerun-tasks test --console=plain
-```
-
-#### Docker setup:
-Build a docker image that supports headless chrome with prepopulated gradle dependencies for pipelne testing.
-
-If not using docker, skip ahead to `Configure project for your web application`
-
-Until the pagemodel-headless-chrom docker image is published to a docker registry, it must be built locally.
-1. build `pagemodel-headless-chrome` base docker image
-2. build `xyz-headless-chrome` docker image
-3. run tests in docker
-###### Linux and MacOS:
-```
-cd page-model-tools/
-./scripts/docker/build-docker.sh
-cd ../XYZTests/
-./scripts/docker/build-docker.sh
-./scripts/dtest ./gradlew --rerun-tasks test --console=plain -Dbrowser=headless
-```
-###### Windows:
-```
-cd page-model-tools
-docker build -f "scripts\docker\pagemodel-headless-chrome.dockerfile" -t pagemodel-headless-chrome:0.8.1 .
-cd ..\XYZTests
-docker build -f "scripts\docker\xyz-headless-chrome.dockerfile" -t xyz-headless-chrome:1.0.0 .
-docker run --rm -ti -u seluser:seluser -v %PWD%:/home/seluser/dev:rw,delegated -w /home/seluser/dev xyz-headless-chrome:1.0.0 ./gradlew --rerun-tasks test --console=plain -Dbrowser=headless
 ```
 
 #### Configure project for your web application:

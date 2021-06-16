@@ -8,6 +8,7 @@ TextMate bundles can be imported into TextMate, IntelliJ, VS Code, and other edi
 The .pagemodel TextMate Bundle is in [org.pagemodel.syntax/textmate/pagemodel.tmbundle](../org.pagemodel.syntax/textmate/pagemodel.tmbundle)
 
 ###### Add to IntelliJ:
+1. Download [pagemodel.tmbundle-0.8.1.zip](https://github.com/pagemodel/page-model-tools/raw/0.8.2/org.pagemodel.syntax/textmate/pagemodel.tmbundle-0.8.1.zip) and extract `pagemodel.tmbundle`
 1. Ensure `pagemodel.tmbundle` is in a permanent location as IntelliJ will link to it and not copy.
 2. `Preferences > Editor > TextMate Bundles`
 3. Click the `+` button below the bundle list.
