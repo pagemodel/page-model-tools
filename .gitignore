@@ -11,3 +11,5 @@ org.pagemodel.gen.gradle/gradle*
 pmt-test
 XYZTests
 org.pagemodel.*.jar
+.vscode
+*iml

@@ -40,5 +40,6 @@
         <appender-ref ref="STDOUT"/>
         <appender-ref ref="FILE"/>
     </root>
+    <withJansi>false</withJansi>
     <logger name="net.schmizz.sshj" level="error"/>
 </configuration>
