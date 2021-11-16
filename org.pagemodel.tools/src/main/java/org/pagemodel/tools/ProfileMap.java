@@ -57,6 +57,12 @@ public class ProfileMap<T> {
 		}
 	}
 
+	public static <T> ProfileMap<T> loadStream(Class<T> type, InputStream input) {
+		ProfileMap<T> profileMap = new ProfileMap<>(type);
+		profileMap.profileMap.putAll(profileMap.loadConfigMapStream(input));
+		return profileMap;
+	}
+
 	private static <T> void registerDefaultProfiles(Class<T> type){
 		if(profileDefaults.containsKey(type)){
 			return;
@@ -109,13 +115,18 @@ public class ProfileMap<T> {
 	}
 
 	protected Map<String, T> loadConfigMapFile(String configPath) throws FileNotFoundException {
-		Reader reader = new FileReader(configPath);
-		Type typeOfHashMap = TypeToken.getParameterized(Map.class, String.class, type).getType();
-		return new Gson().fromJson(reader,typeOfHashMap);
+		return loadConfigMapFromReader(new FileReader(configPath));
+	}
+
+	protected Map<String, T> loadConfigMapStream(InputStream input) {
+		return loadConfigMapFromReader(new InputStreamReader(input));
 	}
 
 	protected Map<String, T> loadConfigMapUrl(String urlStr) throws IOException {
-		InputStreamReader reader = new InputStreamReader(new URL(urlStr).openStream());
+		return loadConfigMapFromReader(new InputStreamReader(new URL(urlStr).openStream()));
+	}
+
+	private Map<String, T> loadConfigMapFromReader(Reader reader) {
 		Type typeOfHashMap = TypeToken.getParameterized(Map.class, String.class, type).getType();
 		return new Gson().fromJson(reader,typeOfHashMap);
 	}
