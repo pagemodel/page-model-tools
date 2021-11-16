@@ -55,7 +55,7 @@ public class MyAppTestBase {
 	@BeforeClass
 	public static synchronized void loadConfig() {
 		if (!configLoaded) {
-			myAppProfiles = ProfileMap.loadFile(MyAppConfig.class, "src/test/resources/profiles.myapp.json");
+			myAppProfiles = ProfileMap.loadStream(MyAppConfig.class, MyAppTestBase.class.getResourceAsStream("/profiles.myapp.json"));
 			mailProfiles = ProfileMap.loadFile(MailAuthenticator.class, "src/test/resources/profiles.mail.json");
 			driverProfiles = ProfileMap.loadFile(WebDriverConfig.class, "src/test/resources/profiles.driver.json");
 
