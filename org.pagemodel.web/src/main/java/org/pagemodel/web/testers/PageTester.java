@@ -22,12 +22,16 @@ import org.pagemodel.core.utils.json.JsonBuilder;
 import org.pagemodel.web.PageModel;
 import org.pagemodel.web.PageUtils;
 import org.pagemodel.web.WebTestContext;
+import org.pagemodel.web.paths.PageFlow;
 import org.pagemodel.web.utils.RefreshTracker;
 import org.pagemodel.web.utils.Screenshot;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+
+import static org.pagemodel.web.PageUtils.DEFAULT_PAGE_LOAD_TIMEOUT_SECONDS;
 
 /**
  * @author Matt Stevenson [matt@pagemodel.org]
@@ -209,6 +213,10 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 	}
 
 	public <T extends PageModel<? super T>> T navigateTo(String url, Class<T> clazz) {
+		return navigateTo(url, clazz, DEFAULT_PAGE_LOAD_TIMEOUT_SECONDS);
+	}
+
+	public <T extends PageModel<? super T>> T navigateTo(String url, Class<T> clazz, int timeoutSec) {
 		T retPage = PageUtils.makeInstance(clazz, testContext);
 		String className = clazz == null ? null : clazz.getSimpleName();
 		return getEvaluator().testExecute(
@@ -218,7 +226,24 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 						.addValue("model",getModelName()),
 				() -> {
 					testContext.getDriver().navigate().to(url);
-					PageUtils.waitForModelDisplayed(retPage);
+					PageUtils.waitForModelDisplayed(retPage, timeoutSec);
+				},
+				retPage, page.getContext());
+	}
+
+	public <T extends PageModel<? super T>> T navigateFlowTo(String url, Class<T> clazz, int timeoutSec, Consumer<PageFlow<T>> flow) {
+		T retPage = PageUtils.makeInstance(clazz, testContext);
+		String className = clazz == null ? null : clazz.getSimpleName();
+		return getEvaluator().testExecute(
+				"navigate", op -> op
+						.addValue("value", url)
+						.addValue("expected",className)
+						.addValue("model",getModelName()),
+				() -> {
+					PageFlow<T> pageFlow = new PageFlow<>(page.getContext(), clazz);
+					flow.accept(pageFlow);
+					testContext.getDriver().navigate().to(url);
+					pageFlow.testPaths(timeoutSec);
 				},
 				retPage, page.getContext());
 	}

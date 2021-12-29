@@ -84,6 +84,6 @@ public class WebActionTester<R> {
 	}
 
 	public <N extends PageModel<? super N>> PageFlow<N> testPathsToPage(Class<N> navPageClass) {
-		return new PageFlow<>(testContext, (Class<? extends PageModel<?>>) page.getClass());
+		return new PageFlow<>(testContext, page.getClass());
 	}
 }

@@ -91,12 +91,15 @@ public class SystemProperties {
 	}
 
 	private static String sha256(String text){
+		if(text == null){
+			return "null";
+		}
 		try {
 			MessageDigest digest = MessageDigest.getInstance("SHA-256");
 			byte[] hash = digest.digest(text.getBytes(StandardCharsets.UTF_8));
 			return Base64.getEncoder().encodeToString(hash);
 		}catch(Exception ex){
-			return null;
+			return "null";
 		}
 	}
 }

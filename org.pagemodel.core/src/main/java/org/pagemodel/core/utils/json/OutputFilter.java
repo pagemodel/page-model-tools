@@ -26,6 +26,7 @@ public class OutputFilter {
 			return "null";
 		}
 		String string = object.toString();
+		//TODO: Sort replacements by length and start with longest to avoind substring conflicts
 		for(Map.Entry<String,String> e : replacements.entrySet()){
 			string = string.replace(e.getKey(), e.getValue());
 		}

@@ -36,7 +36,7 @@ public class PageFlow<N extends PageModel<? super N>> {
 	private Set<Class<? extends PageModel<?>>> pageTypes = new LinkedHashSet<>();
 	private Map<Class<? extends PageModel<?>>, Function<? extends PageModel<?>, N>> pagePaths = new HashMap<>();
 
-	public PageFlow(WebTestContext testContext, Class<? extends PageModel<?>> currentPageClass) {
+	public <P extends PageModel<? super P>> PageFlow(WebTestContext testContext, Class<P> currentPageClass) {
 		this.testContext = testContext;
 		this.currentPageClass = currentPageClass;
 	}

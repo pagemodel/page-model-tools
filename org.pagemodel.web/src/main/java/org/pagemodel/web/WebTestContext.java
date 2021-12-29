@@ -18,6 +18,7 @@ package org.pagemodel.web;
 
 import org.openqa.selenium.WebDriver;
 import org.pagemodel.core.TestContext;
+import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.core.utils.json.JsonLogConsoleOut;
 import org.pagemodel.web.utils.PageException;
 
@@ -36,6 +37,7 @@ public interface WebTestContext extends TestContext {
 		if (getDriver() == null) {
 			return;
 		}
+		this.getEvaluator().logEvent(TestEvaluator.TEST_EXECUTE, "close browser", json -> {});
 		try {
 			getDriver().quit();
 		} catch (Throwable t) {
