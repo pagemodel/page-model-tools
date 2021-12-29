@@ -20,7 +20,7 @@ import org.pagemodel.core.DefaultTestContext;
 import org.pagemodel.core.TestContext;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public interface MailTestContext extends TestContext {
 

@@ -21,7 +21,7 @@ import org.pagemodel.core.DefaultTestContext;
 import org.pagemodel.web.utils.PageException;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class DefaultWebTestContext extends DefaultTestContext implements WebTestContext {
 	protected WebDriver driver;

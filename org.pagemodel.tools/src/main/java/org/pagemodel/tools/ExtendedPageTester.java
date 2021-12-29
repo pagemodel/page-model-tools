@@ -24,7 +24,7 @@ import org.pagemodel.web.WebTestContext;
 import org.pagemodel.web.testers.*;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class ExtendedPageTester<P extends PageModel<? super P>> extends PageTester<P> {
 	public ExtendedPageTester(P page, WebTestContext testContext, TestEvaluator testEvaluator) {

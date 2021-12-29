@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class SelectTester<R, P extends PageModel<? super P>> extends ComponentModel<R,P,SelectTester<R,P>> {
 	public SelectTester(ClickAction<?, P> clickAction, TestEvaluator testEvaluator) {

@@ -24,7 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class CheckboxTester<R, N extends PageModel<? super N>> extends WebElementTester<R, N> {
 

@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class LocatedWebElement implements WebElement {
 	protected WebElement element;

@@ -26,7 +26,7 @@ import java.util.*;
 import java.util.function.Function;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class PageFlow<N extends PageModel<? super N>> {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

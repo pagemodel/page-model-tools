@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class MailMessageTester<R> {
 	protected R returnObj;

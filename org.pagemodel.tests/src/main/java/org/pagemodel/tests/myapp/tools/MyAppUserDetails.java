@@ -19,7 +19,7 @@ package org.pagemodel.tests.myapp.tools;
 import org.pagemodel.core.utils.Unique;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class MyAppUserDetails {
 

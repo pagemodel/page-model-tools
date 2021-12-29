@@ -22,7 +22,7 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class MailServer {
 	private String domain;

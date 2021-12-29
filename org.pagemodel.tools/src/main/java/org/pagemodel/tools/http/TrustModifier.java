@@ -25,7 +25,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 /**
- * @author Sean Hale <shale@tetrazoid.net>
+ * @author Sean Hale [shale@tetrazoid.net]
  */
 public class TrustModifier {
 	private static final TrustingHostnameVerifier

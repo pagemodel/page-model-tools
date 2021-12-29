@@ -33,7 +33,7 @@ import java.util.function.Consumer;
 import static org.pagemodel.core.logging.Logging.*;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public abstract class TestEvaluator {
 	private static final Logger plaintextLogger = LoggerFactory.getLogger(TestEvaluator.class.getName() + ".plaintext");

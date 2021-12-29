@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public abstract class ComponentModel<R, N extends PageModel<? super N>, C extends ComponentModel<? super R, N, ? super C>> extends WebElementTester<R, N> implements ModelBase {
 

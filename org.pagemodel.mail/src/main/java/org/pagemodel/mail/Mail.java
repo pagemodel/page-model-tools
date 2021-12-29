@@ -20,7 +20,7 @@ import org.pagemodel.core.TestContext;
 import org.pagemodel.core.testers.TestEvaluator;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class Mail {
 

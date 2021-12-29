@@ -26,7 +26,7 @@ import org.pagemodel.web.PageModel;
 import java.util.function.Consumer;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public interface ExtendedModelBase<P extends ExtendedModelBase<? super P>> extends PageModel<P> {
 

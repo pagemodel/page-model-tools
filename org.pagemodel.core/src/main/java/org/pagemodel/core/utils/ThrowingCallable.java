@@ -19,7 +19,7 @@ package org.pagemodel.core.utils;
 import java.util.concurrent.Callable;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public interface ThrowingCallable {
 	static <T, E extends Throwable> UncheckedCallable<T> unchecked(Callable<T> callable) {

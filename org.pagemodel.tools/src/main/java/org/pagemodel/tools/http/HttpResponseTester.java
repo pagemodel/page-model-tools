@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 /**
- * @author Sean Hale <shale@tetrazoid.net>
+ * @author Sean Hale [shale@tetrazoid.net]
  */
 public class HttpResponseTester<R> {
 	private final TestContext testContext;

@@ -23,7 +23,7 @@ import org.pagemodel.web.PageUtils;
 import java.io.File;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class MyAppTestContext extends ExtendedTestContext {
 	private MyAppConfig myAppConfig;

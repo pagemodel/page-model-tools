@@ -31,8 +31,8 @@ import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
- * @author Allen Moore <allen.moore@improving.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
+ * @author Allen Moore [allen.moore@improving.org]
  */
 public class PopServer extends MailServer{
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

@@ -23,7 +23,7 @@ import org.pagemodel.web.WebTestContext;
 import org.pagemodel.web.paths.PageFlow;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class WebActionTester<R> {
 

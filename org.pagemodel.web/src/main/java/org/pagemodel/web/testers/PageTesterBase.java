@@ -24,7 +24,7 @@ import org.pagemodel.web.WebTestContext;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class PageTesterBase<P extends PageModel<? super P>> {
 
@@ -78,7 +78,7 @@ public class PageTesterBase<P extends PageModel<? super P>> {
 	}
 
 	/**
-	 * @author Matt Stevenson <matt@pagemodel.org>
+	 * @author Matt Stevenson [matt@pagemodel.org]
 	 */
 	public static class PageWait<P extends PageModel<? super P>> extends PageTesterBase<P> {
 

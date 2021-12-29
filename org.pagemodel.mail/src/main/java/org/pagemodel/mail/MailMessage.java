@@ -23,7 +23,7 @@ import java.io.File;
 import java.util.*;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class MailMessage {
 	protected String sender;

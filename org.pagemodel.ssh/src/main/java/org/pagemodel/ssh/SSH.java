@@ -19,7 +19,7 @@ package org.pagemodel.ssh;
 import org.pagemodel.core.testers.TestEvaluator;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class SSH {
 

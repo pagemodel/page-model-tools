@@ -21,7 +21,7 @@ import org.pagemodel.core.testers.TestEvaluator;
 import java.io.IOException;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class SSHTester<R> {
 	public final static int DEFAULT_SSH_CMD_TIMEOUT = 20;

@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 
 /**
- * @author Sean Hale <shale@tetrazoid.net>
+ * @author Sean Hale [shale@tetrazoid.net]
  */
 public class Http {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

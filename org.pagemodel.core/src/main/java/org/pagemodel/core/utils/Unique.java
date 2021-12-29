@@ -20,7 +20,7 @@ import java.nio.ByteBuffer;
 import java.util.UUID;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class Unique {
 	public static String shortString(){

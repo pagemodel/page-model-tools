@@ -30,7 +30,7 @@ import java.util.Base64;
 import java.util.Date;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class Screenshot {
 

@@ -25,7 +25,7 @@ import org.pagemodel.web.WebTestContext;
 import java.io.File;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class PageException extends TestRuntimeException {
 	private String screenshotPath;

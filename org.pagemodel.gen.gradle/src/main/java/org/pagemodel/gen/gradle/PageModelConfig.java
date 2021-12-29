@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class PageModelConfig {
 	public static final String PAGE_MODEL = "PageModel";

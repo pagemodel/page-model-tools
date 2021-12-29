@@ -27,7 +27,7 @@ import org.pagemodel.web.testers.ClickAction;
 import org.pagemodel.web.testers.WebElementTester;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class RefreshTracker extends PageModel.DefaultPageModel<RefreshTracker> {
 	private String id;

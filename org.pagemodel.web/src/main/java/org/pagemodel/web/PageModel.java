@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 
 /**
  * @param <P> PageModel implementation type
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public interface PageModel<P extends PageModel<? super P>> extends ModelBase {
 

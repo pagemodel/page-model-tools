@@ -32,7 +32,7 @@ import org.pagemodel.web.utils.PageException;
 import java.util.function.Consumer;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class ExtendedTestContext extends DefaultWebTestContext implements SSHTestContext, MailTestContext {
 	public static String DEFAULT_BROWSER = "headless";

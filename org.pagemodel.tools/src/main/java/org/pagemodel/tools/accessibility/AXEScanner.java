@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class AXEScanner {
 	protected static final URL SCRIPT_URL = AXEScanner.class.getClassLoader().getResource("axe.min.js");

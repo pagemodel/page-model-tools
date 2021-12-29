@@ -35,7 +35,7 @@ import static net.sf.expectit.filter.Filters.removeNonPrintable;
 import static net.sf.expectit.matcher.Matchers.*;
 
 /**
- * @author Sean Hale <shale@tetrazoid.net>
+ * @author Sean Hale [shale@tetrazoid.net]
  */
 public class SSHSession {
 	private static final String sudoCommand = "sudo -i";

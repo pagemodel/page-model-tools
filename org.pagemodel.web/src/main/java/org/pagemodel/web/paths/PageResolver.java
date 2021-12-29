@@ -34,7 +34,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class PageResolver {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

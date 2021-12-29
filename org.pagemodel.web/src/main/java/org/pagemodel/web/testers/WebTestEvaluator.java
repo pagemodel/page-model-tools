@@ -31,7 +31,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class WebTestEvaluator {
 	public static class Wait extends TestEvaluator.Now {

@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class Attachment {
 	protected String filename;

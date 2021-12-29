@@ -26,7 +26,7 @@ import java.lang.invoke.MethodHandles;
 import java.net.URL;
 
 /**
- * @author Sean Hale <shale@tetrazoid.net>
+ * @author Sean Hale [shale@tetrazoid.net]
  */
 public class HttpTester<R> {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

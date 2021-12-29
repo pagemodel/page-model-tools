@@ -19,7 +19,7 @@ package org.pagemodel.tools;
 import org.pagemodel.web.PageModel;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public abstract class ExtendedPageModel<P extends ExtendedPageModel<? super P>> extends PageModel.DefaultPageModel<P>
 		implements ExtendedModelBase<P>{

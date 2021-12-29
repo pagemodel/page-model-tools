@@ -1,5 +1,5 @@
-ext.ossrhUsername = ossrhUsername
-ext.ossrhPassword = ossrhPassword
+//ext.ossrhUsername = ossrhUsername
+//ext.ossrhPassword = ossrhPassword
 
 tasks.register('run') {
     dependsOn gradle.includedBuild('org.pagemodel.gen.gradle').task(':run')
@@ -84,19 +84,20 @@ subprojects {
             }
         }
         repositories {
+            mavenLocal()
             maven {
                 def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2"
                 def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
                 url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-                credentials {
-                    username ossrhUsername
-                    password ossrhPassword
-                }
+//                credentials {
+//                    username ossrhUsername
+//                    password ossrhPassword
+//                }
             }
         }
     }
 
-    signing {
-        sign publishing.publications.mavenJava
-    }
+//    signing {
+//        sign publishing.publications.mavenJava
+//    }
 }

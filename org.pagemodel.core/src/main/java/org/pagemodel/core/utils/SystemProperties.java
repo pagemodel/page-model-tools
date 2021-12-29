@@ -26,7 +26,7 @@ import java.util.Base64;
 import java.util.Properties;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class SystemProperties {
 	private static TestEvaluator evalLogger = new TestEvaluator.Now();

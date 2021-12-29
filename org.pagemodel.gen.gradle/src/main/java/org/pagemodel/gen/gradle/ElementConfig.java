@@ -17,7 +17,7 @@
 package org.pagemodel.gen.gradle;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class ElementConfig {
 	public String name;

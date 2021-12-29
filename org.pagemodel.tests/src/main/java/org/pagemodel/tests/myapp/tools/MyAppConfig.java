@@ -19,7 +19,7 @@ package org.pagemodel.tests.myapp.tools;
 import org.pagemodel.ssh.SSHAuthenticator;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class MyAppConfig {
 	private String protocol;

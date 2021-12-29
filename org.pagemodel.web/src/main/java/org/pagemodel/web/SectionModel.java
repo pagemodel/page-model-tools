@@ -30,7 +30,7 @@ import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public abstract class SectionModel<S extends SectionModel<? super S, P, R>, P extends PageModel<? super P>, R extends PageModel<? super R>> extends ComponentModel<S, R, S> implements PageModel<S> {
 

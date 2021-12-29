@@ -17,7 +17,7 @@
 package org.pagemodel.core.utils;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 @FunctionalInterface
 public interface ThrowingRunnable<E extends Exception> {

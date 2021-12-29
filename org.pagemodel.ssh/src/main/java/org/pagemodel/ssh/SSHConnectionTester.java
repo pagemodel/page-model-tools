@@ -26,7 +26,7 @@ import java.io.File;
 import java.net.URI;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class SSHConnectionTester<R> {
 	protected SSHTester<R> sshTester;

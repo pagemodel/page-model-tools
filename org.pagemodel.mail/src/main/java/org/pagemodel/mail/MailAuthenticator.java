@@ -17,7 +17,7 @@
 package org.pagemodel.mail;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class MailAuthenticator {
 	private String domain;

@@ -21,8 +21,8 @@ import org.pagemodel.core.testers.StringTester;
 import org.pagemodel.core.testers.TestEvaluator;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
- * @author Sean Hale <shale@tetrazoid.net>
+ * @author Matt Stevenson [matt@pagemodel.org]
+ * @author Sean Hale [shale@tetrazoid.net]
  */
 public class SSHCommandTester<R> {
 

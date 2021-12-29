@@ -27,7 +27,7 @@ import org.pagemodel.web.WebTestContext;
 import java.util.Map;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class AlertTester<R> {
 	protected final R returnObj;

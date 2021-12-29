@@ -24,7 +24,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class SSHAuthenticator {
 	private String ipAddress;

@@ -24,7 +24,7 @@ import org.pagemodel.core.testers.TestEvaluator;
 import java.util.concurrent.Callable;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class DimensionTester<R> {
 	protected final R returnObj;

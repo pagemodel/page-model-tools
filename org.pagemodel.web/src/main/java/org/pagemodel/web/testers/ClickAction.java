@@ -34,7 +34,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class ClickAction<P extends PageModel<? super P>, N extends PageModel<? super N>> {
 	protected final Callable<WebElement> elementRef;

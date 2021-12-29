@@ -24,7 +24,7 @@ import org.pagemodel.web.utils.PageException;
 import java.util.Map;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public interface WebTestContext extends TestContext {
 

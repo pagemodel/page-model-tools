@@ -21,7 +21,7 @@ import org.pagemodel.tests.myapp.pages.LoginPage;
 import org.pagemodel.web.PageModel;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class MyAppUser {
 

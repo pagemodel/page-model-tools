@@ -19,7 +19,7 @@ package org.pagemodel.core.utils;
 import java.util.function.Consumer;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 @FunctionalInterface
 public interface ThrowingConsumer<T, E extends Throwable> {

@@ -32,7 +32,7 @@ import org.pagemodel.tools.WebDriverConfig;
 import static org.pagemodel.core.utils.SystemProperties.readSystemProperty;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class MyAppTestBase {
 	protected static boolean configLoaded = false;

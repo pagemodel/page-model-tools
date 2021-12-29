@@ -30,7 +30,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P> {
 	protected static final int DEFAULT_SCRIPT_TIMEOUT_SECONDS = 20;

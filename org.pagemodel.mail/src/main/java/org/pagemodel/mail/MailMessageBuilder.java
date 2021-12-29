@@ -29,7 +29,7 @@ import java.util.Arrays;
 import java.util.Date;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class MailMessageBuilder<R> {
 	protected MailMessage mailMessage;

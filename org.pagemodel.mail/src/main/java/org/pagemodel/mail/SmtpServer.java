@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class SmtpServer extends MailServer{
 	private int smtpPort = 25;

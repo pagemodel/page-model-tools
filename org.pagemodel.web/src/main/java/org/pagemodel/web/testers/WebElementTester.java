@@ -33,7 +33,7 @@ import java.util.function.Function;
 /**
  * @param <R> return type for method chaining
  * @param <N> return type for clicking element
- * @author Matt Stevenson <matt@pagemodel.org>
+ * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class WebElementTester<R, N extends PageModel<? super N>> {
 
@@ -272,7 +272,7 @@ public class WebElementTester<R, N extends PageModel<? super N>> {
 
 	/**
 	 * @param <R> return type for method chaining
-	 * @author Matt Stevenson <matt@pagemodel.org>
+	 * @author Matt Stevenson [matt@pagemodel.org]
 	 */
 	public static class WebElementWait<R, N extends PageModel<? super N>> extends WebElementTester<R, N> {
 		public static int DEFAULT_WAIT_SEC = 10;
@@ -302,7 +302,7 @@ public class WebElementTester<R, N extends PageModel<? super N>> {
 
 	/**
 	 * @param <R> return type for method chaining
-	 * @author Matt Stevenson <matt@pagemodel.org>
+	 * @author Matt Stevenson [matt@pagemodel.org]
 	 */
 	public static class WebElementRefresh<R, N extends PageModel<? super N>> extends WebElementTester<R,N> {
 		public static int DEFAULT_WAIT_SEC = 10;
