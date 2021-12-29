@@ -85,15 +85,47 @@ public class SSHAuthenticator {
 		return ipAddress;
 	}
 
+	public void setHost(String ipAddress) {
+		this.ipAddress = ipAddress;
+	}
+
 	public String getUsername() {
 		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
 	public String getPassword() {
 		return password;
 	}
 
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getKeyFilePath() {
+		return keyFilePath;
+	}
+
+	public void setKeyFilePath(String keyFilePath) {
+		this.keyFilePath = keyFilePath;
+	}
+
+	public String getKeyFilePassword() {
+		return keyFilePassword;
+	}
+
+	public void setKeyFilePassword(String keyFilePassword) {
+		this.keyFilePassword = keyFilePassword;
+	}
+
 	public String getSudoPassword() {
 		return sudoPassword;
+	}
+
+	public void setSudoPassword(String sudoPassword) {
+		this.sudoPassword = sudoPassword;
 	}
 }
