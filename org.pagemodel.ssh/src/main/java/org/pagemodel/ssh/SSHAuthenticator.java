@@ -22,12 +22,24 @@ import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class SSHAuthenticator {
+
+	/***
+	 * ipAddress field is replaced with host field
+	 * if both ipAddress and host are set, host will override ipAddress
+	 */
+	@Deprecated
 	private String ipAddress;
+
+	private String host;
+	private Integer port;
+	private LocalAddress localAddress;
 	private String username;
 	private String password;
 	private String keyFilePath;
@@ -42,8 +54,8 @@ public class SSHAuthenticator {
 		return new SSHAuthenticator(ipAddress, username, null, keyFilePath, keyFilePassword, sudoPassword);
 	}
 
-	public SSHAuthenticator(String ipAddress, String username, String password, String keyFilePath, String keyFilePassword, String sudoPassword) {
-		this.ipAddress = ipAddress;
+	public SSHAuthenticator(String host, String username, String password, String keyFilePath, String keyFilePassword, String sudoPassword) {
+		this.host = host;
 		this.username = username;
 		this.password = password;
 		this.keyFilePath = keyFilePath;
@@ -60,17 +72,13 @@ public class SSHAuthenticator {
 	}
 
 	public SSHClient connectAndAuthenticatePassword() throws IOException {
-		SSHClient ssh = new SSHClient();
-		ssh.addHostKeyVerifier(new PromiscuousVerifier());
-		ssh.connect(ipAddress);
+		SSHClient ssh = initClient();
 		ssh.authPassword(username, password);
 		return ssh;
 	}
 
 	public SSHClient connectAndAuthenticateKeyFile() throws IOException {
-		SSHClient ssh = new SSHClient();
-		ssh.addHostKeyVerifier(new PromiscuousVerifier());
-		ssh.connect(ipAddress);
+		SSHClient ssh = initClient();
 		KeyProvider kp;
 		if (keyFilePassword == null) {
 			kp = ssh.loadKeys(keyFilePath);
@@ -81,12 +89,50 @@ public class SSHAuthenticator {
 		return ssh;
 	}
 
-	public String getHost() {
-		return ipAddress;
+	private SSHClient initClient() throws IOException {
+		SSHClient ssh = new SSHClient();
+		ssh.addHostKeyVerifier(new PromiscuousVerifier());
+		int connectPort = port == null ? SSHClient.DEFAULT_PORT : port;
+		if(localAddress != null){
+			ssh.connect(host, connectPort, localAddress.getAddress(), localAddress.getPort());
+		}else{
+			ssh.connect(host, connectPort);
+		}
+		return ssh;
 	}
 
-	public void setHost(String ipAddress) {
-		this.ipAddress = ipAddress;
+	public String getHost() {
+		if(host != null) {
+			return host;
+		}else if(ipAddress != null){
+			host = ipAddress;
+			return host;
+		}
+		return null;
+	}
+
+	public void setHost(String host) {
+		this.host = host;
+	}
+
+	public Integer getPort() {
+		return port;
+	}
+
+	public void setPort(Integer port) {
+		this.port = port;
+	}
+
+	public LocalAddress getLocalAddress() {
+		return localAddress;
+	}
+
+	public void setLocalAddress(LocalAddress localAddress) {
+		this.localAddress = localAddress;
+	}
+
+	public void setLocalAddress(InetAddress inetAddress, int port) {
+		this.localAddress = new LocalAddress(inetAddress, port);
 	}
 
 	public String getUsername() {
@@ -127,5 +173,35 @@ public class SSHAuthenticator {
 
 	public void setSudoPassword(String sudoPassword) {
 		this.sudoPassword = sudoPassword;
+	}
+
+	public static class LocalAddress {
+		private String host;
+		private transient InetAddress address;
+		private int port;
+
+		public LocalAddress(String host, int port) {
+			this.host = host;
+			this.port = port;
+		}
+
+		public LocalAddress(InetAddress address, int port) {
+			this.address = address;
+			this.port = port;
+		}
+
+		public InetAddress getAddress() throws UnknownHostException{
+			if(address != null) {
+				return address;
+			}else if(host != null){
+				address = InetAddress.getByName(host);
+				return address;
+			}
+			return null;
+		}
+
+		public int getPort() {
+			return port;
+		}
 	}
 }

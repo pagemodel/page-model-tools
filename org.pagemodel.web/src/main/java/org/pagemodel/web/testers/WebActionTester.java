@@ -22,6 +22,8 @@ import org.pagemodel.web.PageUtils;
 import org.pagemodel.web.WebTestContext;
 import org.pagemodel.web.paths.PageFlow;
 
+import static org.pagemodel.web.PageUtils.DEFAULT_PAGE_LOAD_TIMEOUT_SECONDS;
+
 /**
  * @author Matt Stevenson [matt@pagemodel.org]
  */
@@ -48,6 +50,10 @@ public class WebActionTester<R> {
 	}
 
 	public <R extends PageModel<? super R>> R expectRedirect(Class<R> returnPageClass) {
+		return expectRedirect(returnPageClass, DEFAULT_PAGE_LOAD_TIMEOUT_SECONDS);
+	}
+
+	public <R extends PageModel<? super R>> R expectRedirect(Class<R> returnPageClass, int timeoutSec) {
 		R retPageInst = null;
 		try{
 			retPageInst = PageUtils.makeInstance(returnPageClass, testContext);
@@ -58,7 +64,7 @@ public class WebActionTester<R> {
 				"expect redirect", op -> op
 						.addValue("expected", returnPageClass.getSimpleName())
 						.addValue("model", page.getClass().getSimpleName()),
-				() -> PageUtils.waitForModelDisplayed(retPage).onPageLoad(),
+				() -> PageUtils.waitForModelDisplayed(retPage, timeoutSec).onPageLoad(),
 				retPage, testContext);
 	}
 
