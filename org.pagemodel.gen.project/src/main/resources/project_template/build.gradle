@@ -6,7 +6,7 @@ subprojects {
 
     ext {
         pagemodelNumber = "0.8.3"
-        pagemodelVersion = "${pagemodelNumber}-SNAPSHOT"
+        pagemodelVersion = "${pagemodelNumber}"
     }
     version = "1.0.0_${pagemodelNumber}-SNAPSHOT"
     group = 'org.pagemodel.tests'
