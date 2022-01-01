@@ -76,7 +76,7 @@ public class SystemProperties {
 				.addValue("value", value)
 				.doAdd(o -> {
 					if (secret){
-						o.addValue("hash", sha256(value).substring(0,6));
+						o.addValue("hash", sha256Substring(value));
 					}
 				}).addValue("source", source));
 		return value;
@@ -90,14 +90,14 @@ public class SystemProperties {
 		userDefaults = props;
 	}
 
-	private static String sha256(String text){
+	private static String sha256Substring(String text){
 		if(text == null){
 			return "null";
 		}
 		try {
 			MessageDigest digest = MessageDigest.getInstance("SHA-256");
 			byte[] hash = digest.digest(text.getBytes(StandardCharsets.UTF_8));
-			return Base64.getEncoder().encodeToString(hash);
+			return Base64.getEncoder().encodeToString(hash).substring(0,6);
 		}catch(Exception ex){
 			return "null";
 		}

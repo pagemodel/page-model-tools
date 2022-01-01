@@ -45,6 +45,7 @@ public class SSHAuthenticator {
 	private String keyFilePath;
 	private String keyFilePassword;
 	private String sudoPassword;
+	private String promptRegex;
 
 	public static SSHAuthenticator passwordAuth(String ipAddress, String username, String password, String sudoPassword) {
 		return new SSHAuthenticator(ipAddress, username, password, null, null, sudoPassword);
@@ -173,6 +174,14 @@ public class SSHAuthenticator {
 
 	public void setSudoPassword(String sudoPassword) {
 		this.sudoPassword = sudoPassword;
+	}
+
+	public String getPromptRegex() {
+		return promptRegex;
+	}
+
+	public void setPromptRegex(String promptRegex) {
+		this.promptRegex = promptRegex;
 	}
 
 	public static class LocalAddress {

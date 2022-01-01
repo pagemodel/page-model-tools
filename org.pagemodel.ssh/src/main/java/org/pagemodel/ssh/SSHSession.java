@@ -48,16 +48,10 @@ public class SSHSession {
 	private Shell shell;
 	private SSHAuthenticator authenticator;
 	private boolean sudoed;
-	private String promptRegex;
 
 	public SSHSession(SSHAuthenticator authenticator) {
-		this(authenticator, defaultPromptRegex);
-	}
-
-	public SSHSession(SSHAuthenticator authenticator, String promptRegex) {
 		this.authenticator = authenticator;
 		this.sudoed = false;
-		this.promptRegex = promptRegex;
 	}
 
 	public String runCommandAndGetOutput(String command, int timeoutInSeconds) throws IOException {
@@ -84,13 +78,13 @@ public class SSHSession {
 			cmd = cmd + " " + sudoOptions;
 		}
 		sendLineAndExpectOutput(cmd, contains(sudoPasswordPrompt));
-		sendLineAndExpectOutput(rootPassword, regexp(promptRegex));
+		sendLineAndExpectOutput(rootPassword, regexp(getPromptRegex()));
 		sudoed = true;
 	}
 
 	public void exitRoot() throws IOException {
 		if (sudoed) {
-			sendLineAndExpectOutput("exit", regexp(promptRegex));
+			sendLineAndExpectOutput("exit", regexp(getPromptRegex()));
 			sudoed = false;
 		}
 	}
@@ -112,7 +106,7 @@ public class SSHSession {
 				.withExceptionOnFailure()
 				.withTimeout(5, TimeUnit.SECONDS)
 				.build();
-		commandLine.expect(times(1, regexp(promptRegex)));
+		commandLine.expect(times(1, regexp(getPromptRegex())));
 	}
 
 	private void sendLineAndExpectOutput(String lineString, Matcher<Result> expectedOutput) throws IOException {
@@ -122,7 +116,7 @@ public class SSHSession {
 
 	private Result waitForPrompt(int timeoutInSeconds) throws IOException {
 		int timeoutInMs = timeoutInSeconds * 1000;
-		return commandLine.withTimeout(timeoutInMs, TimeUnit.MILLISECONDS).expect(regexp(promptRegex));
+		return commandLine.withTimeout(timeoutInMs, TimeUnit.MILLISECONDS).expect(regexp(getPromptRegex()));
 	}
 
 	private String undoLineWrapping(String command, String output) {
@@ -138,5 +132,9 @@ public class SSHSession {
 	public void sendCtrlC() throws IOException {
 		commandLine.sendBytes(new byte[]{3});
 		waitForPrompt(10);
+	}
+
+	private String getPromptRegex(){
+		return authenticator.getPromptRegex() == null ? defaultPromptRegex : authenticator.getPromptRegex();
 	}
 }
