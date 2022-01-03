@@ -5,7 +5,7 @@ subprojects {
     sourceCompatibility = 1.8
 
     ext {
-        pagemodelNumber = "0.8.5"
+        pagemodelNumber = "0.8.6-SNAPSHOT"
         pagemodelVersion = "${pagemodelNumber}"
     }
     version = "1.0.0_${pagemodelNumber}-SNAPSHOT"
