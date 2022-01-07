@@ -1,5 +1,5 @@
 # Page Model Tools
-Page Model Tools 0.8.1 has been released to maven central under group id: org.pagemodel.
+Page Model Tools 0.8.5 has been released to maven central under group id: org.pagemodel.
 
 ## What is Page Model Tools?
 
@@ -46,7 +46,7 @@ Updating to newer versions of Page Model Tools do not require changes to your pa
 
 #### Create a new testing project :
 
-1. download [org.pagemodel.gen.project-0.8.1.jar](https://repo.maven.apache.org/maven2/org/pagemodel/org.pagemodel.gen.project/0.8.1/org.pagemodel.gen.project-0.8.1.jar)
+1. download [org.pagemodel.gen.project-0.8.5.jar](https://repo.maven.apache.org/maven2/org/pagemodel/org.pagemodel.gen.project/0.8.5/org.pagemodel.gen.project-0.8.5.jar)
 2. run the jar to generate a new project
 3. run the sample tests in your project
 4. see [project structure](docs/project-structure.md) for an overview of the project files
@@ -56,14 +56,14 @@ Updating to newer versions of Page Model Tools do not require changes to your pa
 
 ###### Linux and MacOS:
 ```
-java -jar org.pagemodel.gen.project-0.8.1.jar XYZ com.example ./XYZTests/
+java -jar org.pagemodel.gen.project-0.8.5.jar XYZ com.example ./XYZTests/
 cd XYZTests
 ./gradlew --rerun-tasks test --console=plain
 ```
 
 ###### Windows:
 ```
-java -jar org.pagemodel.gen.project-0.8.1.jar XYZ com.example XYZTests
+java -jar org.pagemodel.gen.project-0.8.5.jar XYZ com.example XYZTests
 cd XYZTests
 gradlew.bat --rerun-tasks test --console=plain
 ```
