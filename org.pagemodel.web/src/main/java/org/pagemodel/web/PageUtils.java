@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
  * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class PageUtils {
-	public static final int DEFAULT_PAGE_LOAD_TIMEOUT_SECONDS = 20;
+	public static int DEFAULT_PAGE_LOAD_TIMEOUT_SECONDS = 20;
 
 	public static <T extends PageModel<? super T>> T makeInstance(final Class<T> clazz, final WebTestContext context) {
 		try {

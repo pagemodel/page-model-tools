@@ -66,15 +66,18 @@ import java.util.function.Function;
 public abstract class WebDriverFactory {
 	private static final Logger log = LoggerFactory.getLogger(WebDriverFactory.class);
 
-	public static final int DEFAULT_PAGE_LOAD_TIMEOUT_SECONDS = 20;
-	public static final int DEFAULT_IMPLICITLY_WAIT_MILLISECONDS = 0;
-	public static final int DEFAULT_SCRIPT_TIMEOUT_SECONDS = 20;
-	public final static String DOWNLOAD_DIRECTORY;
+	public static int DEFAULT_PAGE_LOAD_TIMEOUT_SECONDS = 20;
+	public static int DEFAULT_IMPLICITLY_WAIT_MILLISECONDS = 0;
+	public static int DEFAULT_SCRIPT_TIMEOUT_SECONDS = 20;
+	public static String DOWNLOAD_DIRECTORY;
 
-//	public final static BrowserOptions browserOptions = new BrowserOptions();
 	private final static Map<String, Function<MutableCapabilities,WebDriver>> browserFactoryMap = new HashMap<>();
 
 	static {
+		initClass();
+	}
+
+	public static void initClass() {
 		String home = System.getProperty("user.home");
 		DOWNLOAD_DIRECTORY = home + "/Downloads";
 		System.setProperty("webdriver.chrome.silentOutput", "true");
