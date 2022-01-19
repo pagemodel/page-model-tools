@@ -86,7 +86,7 @@ public class PageResolver {
 			return new WebDriverWait(testContext.getDriver(), timeoutSeconds)
 					.ignoring(NoSuchElementException.class)
 					.until(d -> {
-						return testContext.getDriver().findElement(By.tagName("div")) != null;
+						return testContext.getDriver().findElement(By.tagName("body")) != null;
 					});
 		} catch (TimeoutException te) {
 			log.info("Timed out waiting for page body to load", te);
