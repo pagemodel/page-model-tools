@@ -75,45 +75,64 @@ context.getLoginPage()
 The `MailTester` has different `fetchMail` methods for finding and fetching specific mail messages from a `PopServer`.
 After fetching a mail message you can perform tests on the message or store the `MailMessage` to your `TestContext` for later use.  
 
-There are two simple `fetchMail` methods for finding by subject 
-```java
-```
-and recipient, and an advanced method with a `MailTester` lambda.
-```java
-```
+There are two simple `fetchMail` methods to find by subject and recipient, and an advance fetch with a `MailTester` lambda.
 
 ### Simple mail fetching
 Fetch mail with an exact subject, and fetch mail with an exact subject and recipient:
 
-```java
 
+#### Fetch by Subject:
+```java
+Mail.testMail(context)
+        .fetchMail(popServer, 10, "mail subject")
+            // if a message with the subject is not found within the 10 second timeout, the test will fail
+            // fetchMail finds the mail message and returns a MailMessageTester to test properties of the message
+        .testSender().equals(sender)
+        .testHtmlBody().contains("special string")
+        .closeMail();
 ```
-These methods will find the most recent matching mail on the server if it exists.  If the message is not found, it will retry for up to 30 seconds before failing the test.
-(Note: if not using a unique subject string, make sure you have deleted matching mail from previous test runs)
+#### Fetch by subject and recipient
+```java
+Mail.testMail(context)
+        .fetchMail(popServer, 10, "mail subject", "recipient@mail.example.com")
+        ...
+```
 
-After fetching the message you can perform tests or store it:
-#### Test
-```java
-```
-#### Store
-```java
-```
+These methods will find the most recent matching mail on the server if it exists.  If the message is not found, it will retry for up to 10 seconds before failing the test.
+(Note: if not using a unique subject string, make sure you have deleted matching mail from previous test runs that could interfere)
 
 ### Advanced mail fetching - Mail Predicates:
 The advanced `fetchMail` takes a `mailPredicate` which is a lambda for a `MailMessageTester`.  You can use this `MailMessageTester` to test any part of a `MailMessage`.
 
 In these examples we will use the `mailPredicate` to do the same simple fetch in the previous example:
+
+#### Advanced fetch with `MailTester` lambda:
 ```java
+Mail.testMail(context)
+    .fetchMail(popServer, 10, mail -> mail
+        .testSubject().equals("subject part")
+        .testRecipientsTo().contains(recipient))
+    // The given lambda, testing the subject amd recipient, will be tested against each message in the mailbox starting with the most recent until a match is found.
+    // Once a message is found, a MailMessageTester is returned for additional testing of the message.
+    .testHtmlBody().contains("special string")
+    .closeMail();
 ```
 
-Here we will look for mail from a specific sender with a phrase in the body and containing 3 attachments:
+Here we will look for mail from a specific sender, with a phrase in the subject, 3 CC'd recipients, and sent after a given date:
 ```java
+Mail.testMail(context)
+        .fetchMail(popServer, 10, mail -> mail
+            .testSender().equals(sender)
+            .testSubject().contains("subject phrase")
+            .testRecipientsCc().size().equals(3)
+            .testSentDate().greaterThan(date))
+    ...
 ```
 
 Note: the `mailPredicate` will potentially be tested against all mail in the mailbox.  This should be the minimum needed to identify a mail message, and after fetching you can perform tests on the mail message.  Misusing this can result in your test waiting for the `timeout` before failing.
 
 ## Testing Mail
-The `MailMessageTester` allows testing any property of a MailMessage.
+After fetching mail, a `MailMessageTester` is returned to test any properties of a MailMessage:
 ```
 testSender
 testRecipientsTo
@@ -131,13 +150,37 @@ testAttachmentCount
 ```
 The `MailMessageTester` also contains a `doAction` method similar to `PageModel` for any other complex testing you may need to do.
 
+```java
+Mail.testMail(context)
+        .fetchMail(popServer, timeout, "mail subject")
+        .doAction(mail -> {
+            ...
+            context.storeMail("key", mail.getMailMessage());
+        })
+```
+
 ### Testing Mail Fields
 
 #### Storing Values from Mail
+```java
+Mail.testMail(context)
+        .fetchMail(popServer, timeout, "mail subject")
+        .testSentDate().storeValue("sent")
+        // The mail sent date will be stored to the TestContext with the key of "sent" 
+```
+
 
 #### Opening Mail Links
+The next example will find `href="..."` in the html body, and store the url to the `TestContext`.  Then we navigate to the stored url expecting to go to the `ActivationPage`.
 
-#### Testing HTML body with PageModel
+```java
+context.getLoginPage()
+        .testMail()
+        .fetchMail(popServer, timeout, "mail subject")
+        .testHtmlBody().storeMatch("url", "href=\"(.*)\"", 1)
+        .closeMail()
+        .testPage().navigateTo(context.loadString("url"), ActivationPage.class)
+```
 
 ### Testing Attachments
 #### Text Attachments
