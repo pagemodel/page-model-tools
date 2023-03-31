@@ -210,6 +210,16 @@ public class StringTester<R> {
 				() -> !callRef().startsWith(string), returnObj, testContext);
 	}
 
+	/**
+	 * Tests whether the string being tested does ends with the given string.
+	 * @param string the string to test against
+	 * @return the return object of the test method
+	 */
+	public R endsWith(String string) {
+		return getEvaluator().testCondition(
+				"ends with", op -> op.addValue("value", string).addValue("actual",callRef()),
+				() -> callRef().endsWith(string), returnObj, testContext);
+	}
 
 	/**
 	 * Tests whether the string being tested does not end with the given string.
