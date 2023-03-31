@@ -27,13 +27,28 @@ import java.util.regex.Pattern;
 /**
  * @author Matt Stevenson [matt@pagemodel.org]
  */
+/**
+ * This class contains methods for testing strings
+ * @param <R> the return type of the test method
+ */
 public class StringTester<R> {
 
+	// The return object of the test method
 	protected R returnObj;
+	// The callable reference to the string being tested
 	protected final Callable<String> ref;
+	// The test context for storing values
 	protected final TestContext testContext;
+	// The test evaluator for evaluating test conditions
 	private TestEvaluator testEvaluator;
 
+	/**
+	 * Constructor for StringTester
+	 * @param ref the callable reference to the string being tested
+	 * @param returnObj the return object of the test method
+	 * @param testContext the test context for storing values
+	 * @param testEvaluator the test evaluator for evaluating test conditions
+	 */
 	public StringTester(Callable<String> ref, R returnObj, TestContext testContext, TestEvaluator testEvaluator) {
 		this.ref = ref;
 		this.returnObj = returnObj;
@@ -41,6 +56,10 @@ public class StringTester<R> {
 		this.testEvaluator = testEvaluator;
 	}
 
+	/**
+	 * Calls the callable reference to the string being tested
+	 * @return the string being tested
+	 */
 	protected String callRef() {
 		try {
 			return ref.call();
@@ -49,86 +68,146 @@ public class StringTester<R> {
 		}
 	}
 
+	/**
+	 * Gets the test evaluator for evaluating test conditions
+	 * @return the test evaluator
+	 */
 	protected TestEvaluator getEvaluator(){
 		return testEvaluator;
 	}
 
+	/**
+	 * Sets the test evaluator for evaluating test conditions
+	 * @param testEvaluator the test evaluator
+	 */
 	protected void setEvaluator(TestEvaluator testEvaluator) {
 		this.testEvaluator = testEvaluator;
 	}
 
+	/**
+	 * Gets the return object of the test method
+	 * @return the return object
+	 */
 	protected R getReturnObj() {
 		return returnObj;
 	}
 
+	/**
+	 * Sets the return object of the test method
+	 * @param returnObj the return object
+	 */
 	protected void setReturnObj(R returnObj) {
 		this.returnObj = returnObj;
 	}
 
+	/**
+	 * Tests if the string being tested contains the given string
+	 * @param string the string to test for
+	 * @return the return object of the test method
+	 */
 	public R contains(String string) {
 		return getEvaluator().testCondition(
 				"contains", op -> op.addValue("value", string).addValue("actual",callRef()),
 				() -> callRef().contains(string), returnObj, testContext);
 	}
 
+	/**
+	 * Tests if the string being tested does not contain the given string
+	 * @param string the string to test for
+	 * @return the return object of the test method
+	 */
 	public R notContains(String string) {
 		return getEvaluator().testCondition(
 				"not contains", op -> op.addValue("value", string).addValue("actual",callRef()),
 				() -> !callRef().contains(string), returnObj, testContext);
 	}
 
+	/**
+	 * Tests if the given string contains the string being tested
+	 * @param string the string to test
+	 * @return the return object of the test method
+	 */
 	public R containedBy(String string) {
 		return getEvaluator().testCondition(
 				"contained by", op -> op.addValue("value", string).addValue("actual",callRef()),
 				() -> string.contains(callRef()), returnObj, testContext);
 	}
 
+	/**
+	 * Tests if the given string does not contain the string being tested
+	 * @param string the string to test
+	 * @return the return object of the test method
+	 */
 	public R notContainedBy(String string) {
 		return getEvaluator().testCondition(
 				"not contained by", op -> op.addValue("value", string).addValue("actual",callRef()),
 				() -> !string.contains(callRef()), returnObj, testContext);
 	}
 
+	/**
+	 * Tests if the string being tested equals the given string
+	 * @param string the string to test for equality
+	 * @return the return object of the test method
+	 */
 	public R equals(String string) {
 		return getEvaluator().testCondition(
 				"equals", op -> op.addValue("value", string).addValue("actual",callRef()),
 				() -> callRef() == null && string == null || callRef().equals(string), returnObj, testContext);
 	}
 
+	/**
+	 * Tests if the string being tested does not equal the given string
+	 * @param string the string to test for inequality
+	 * @return the return object of the test method
+	 */
 	public R notEquals(String string) {
 		return getEvaluator().testCondition(
 				"not equals", op -> op.addValue("value", string).addValue("actual",callRef()),
 				() -> callRef() == null && string != null || !callRef().equals(string), returnObj, testContext);
 	}
 
+	/**
+	 * Tests if the string being tested matches the given regex pattern
+	 * @param regex the regex pattern to test for
+	 * @return the return object of the test method
+	 */
 	public R matches(String regex) {
 		return getEvaluator().testCondition(
 				"matches regex", op -> op.addValue("value", regex).addValue("actual",callRef()),
 				() -> callRef().matches(regex), returnObj, testContext);
 	}
 
+	/**
+	 * Tests if the string being tested does not match the given regex pattern
+	 * @param regex the regex pattern to test for
+	 * @return the return object of the test method
+	 */
 	public R notMatches(String regex) {
 		return getEvaluator().testCondition(
 				"not matches regex", op -> op.addValue("value", regex).addValue("actual",callRef()),
 				() -> !callRef().matches(regex), returnObj, testContext);
 	}
 
+	/**
+	 * Tests if the string being tested starts with the given string
+	 * @param string the string to test for at the beginning of the string being tested
+	 * @return the return object of the test method
+	 */
 	public R startsWith(String string) {
 		return getEvaluator().testCondition(
 				"starts with", op -> op.addValue("value", string).addValue("actual",callRef()),
 				() -> callRef().startsWith(string), returnObj, testContext);
 	}
 
+	/**
+	 * Tests if the string being tested does not start with the given string
+	 * @param string the string to test for not being at the beginning of the string being tested
+	 * @return the return object of the test method
+	 */
 	public R notStartsWith(String string) {
 		return getEvaluator().testCondition(
 				"not starts with", op -> op.addValue("value", string).addValue("actual",callRef()),
 				() -> !callRef().startsWith(string), returnObj, testContext);
-	}
-
-	public R endsWith(String string) {
-		return getEvaluator().testCondition(
-				"ends with", op -> op.addValue("value", string).addValue("actual",callRef()),
-				() -> callRef().endsWith(string), returnObj, testContext);
 	}
 
 	public R notEndsWith(String string) {
