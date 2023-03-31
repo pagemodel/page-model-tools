@@ -210,33 +210,65 @@ public class StringTester<R> {
 				() -> !callRef().startsWith(string), returnObj, testContext);
 	}
 
+
+	/**
+	 * Tests whether the string being tested does not end with the given string.
+	 * @param string the string to test against
+	 * @return the return object of the test method
+	 */
 	public R notEndsWith(String string) {
 		return getEvaluator().testCondition(
 				"not ends with", op -> op.addValue("value", string).addValue("actual",callRef()),
 				() -> !callRef().endsWith(string), returnObj, testContext);
 	}
 
+	/**
+	 * Tests whether the string being tested is empty.
+	 * @return the return object of the test method
+	 */
 	public R isEmpty() {
 		return getEvaluator().testCondition(
 				"is empty", op -> op.addValue("actual", callRef()),
 				() -> (callRef() == null || callRef().isEmpty()), returnObj, testContext);
 	}
 
+	/**
+	 * Tests whether the string being tested is not empty.
+	 * @return the return object of the test method
+	 */
 	public R notEmpty() {
 		return getEvaluator().testCondition(
 				"not empty", op -> op.addValue("actual", callRef()),
 				() -> (callRef() != null && !callRef().isEmpty()), returnObj, testContext);
 	}
 
+	/**
+	 * Stores the value of the string being tested in the test context with the given key.
+	 * @param key the key to store the value under
+	 * @return the return object of the test method
+	 */
 	public R storeValue(String key) {
 		testContext.store(key, callRef());
 		return returnObj;
 	}
 
+	/**
+	 * Stores the match of the given regex pattern in the string being tested in the test context with the given key.
+	 * @param key the key to store the match under
+	 * @param pattern the regex pattern to match against
+	 * @return the return object of the test method
+	 */
 	public R storeMatch(String key, String pattern) {
 		return storeMatch(key, pattern, 0);
 	}
 
+	/**
+	 * Stores the match of the given regex pattern and group in the string being tested in the test context with the given key.
+	 * @param key the key to store the match under
+	 * @param pattern the regex pattern to match against
+	 * @param group the group to extract from the match
+	 * @return the return object of the test method
+	 */
 	public R storeMatch(String key, String pattern, int group) {
 		return getEvaluator().testRun(
 				TestEvaluator.TEST_FIND,
@@ -248,10 +280,21 @@ public class StringTester<R> {
 				}, returnObj, testContext);
 	}
 
+	/**
+	 * Returns a new StringTester that tests against the match of the given regex pattern in the string being tested.
+	 * @param pattern the regex pattern to match against
+	 * @return a new StringTester that tests against the match of the given regex pattern in the string being tested
+	 */
 	public StringTester<R> testMatch(String pattern) {
 		return testMatch(pattern, 0);
 	}
 
+	/**
+	 * Returns a new StringTester that tests against the match of the given regex pattern and group in the string being tested.
+	 * @param pattern the regex pattern to match against
+	 * @param group the group to extract from the match
+	 * @return a new StringTester that tests against the match of the given regex pattern and group in the string being tested
+	 */
 	public StringTester<R> testMatch(String pattern, int group) {
 		return new StringTester<>(() -> {
 			Matcher matcher = Pattern.compile(pattern).matcher(callRef());
@@ -260,14 +303,28 @@ public class StringTester<R> {
 		}, returnObj, testContext, getEvaluator());
 	}
 
+	/**
+	 * Returns a new StringTester that applies the given transformation function to the string being tested.
+	 * @param transform the transformation function to apply
+	 * @return a new StringTester that applies the given transformation function to the string being tested
+	 */
 	public StringTester<R> transform(ThrowingFunction<String,String,?> transform) {
 		return new StringTester<>(() -> ThrowingFunction.unchecked(transform).apply(callRef()), returnObj, testContext, getEvaluator());
 	}
 
+	/**
+	 * Returns a new ComparableTester that applies the given transformation function to the string being tested and tests against the result.
+	 * @param transform the transformation function to apply
+	 * @return a new ComparableTester that applies the given transformation function to the string being tested and tests against the result
+	 */
 	public <T extends Comparable<T>> ComparableTester<T, R> transformCompare(ThrowingFunction<String,T,?> transform) {
 		return new ComparableTester<>(() -> ThrowingFunction.unchecked(transform).apply(callRef()), returnObj, testContext, getEvaluator());
 	}
 
+	/**
+	 * Returns a new ComparableTester that tests against the length of the string being tested.
+	 * @return a new ComparableTester that tests against the length of the string being tested
+	 */
 	public ComparableTester<Integer, R> length() {
 		return new ComparableTester<>(() -> {
 			String val = callRef();
@@ -275,6 +332,11 @@ public class StringTester<R> {
 		}, returnObj, testContext, getEvaluator());
 	}
 
+	/**
+	 * Returns a new ComparableTester that parses the string being tested as an integer and tests against the result.
+	 * @return a new ComparableTester that parses the string being tested as an integer and tests against the result
+	 * @throws TestException if the string cannot be parsed as an integer
+	 */
 	public ComparableTester<Integer,R> asInteger() {
 		return new ComparableTester<>(() -> {
 			String val = callRef();
@@ -289,6 +351,11 @@ public class StringTester<R> {
 		}, returnObj, testContext, getEvaluator());
 	}
 
+	/**
+	 * Returns a new ComparableTester that parses the string being tested as a date and tests against the result.
+	 * @return a new ComparableTester that parses the string being tested as a date and tests against the result
+	 * @throws TestException if the string cannot be parsed as a date
+	 */
 	public ComparableTester<Date,R> asDate() {
 		return new ComparableTester<>(() -> {
 			String val = callRef();

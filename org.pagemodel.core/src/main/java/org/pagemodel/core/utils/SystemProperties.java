@@ -28,26 +28,59 @@ import java.util.Properties;
 /**
  * @author Matt Stevenson [matt@pagemodel.org]
  */
+/**
+ * This class provides utility methods for reading system properties, environment variables, and user defaults.
+ */
 public class SystemProperties {
+
+	/**
+	 * A TestEvaluator instance used for logging events related to property loading.
+	 */
 	private static TestEvaluator evalLogger = new TestEvaluator.Now();
+
+	/**
+	 * The path to the user defaults file.
+	 */
 	public final static String USER_DEFAULTS_FILE = "../user.defaults";
+
+	/**
+	 * A Properties object containing the user defaults loaded from the USER_DEFAULTS_FILE.
+	 */
 	private static Properties userDefaults;
 
-	/***
-	 * Attempts to read system property, if not found attempts to read environment variable.
-	 * If neither the system property or environment variable are available defaultVal is returned
-	 * @param property
-	 * @param defaultVal
-	 * @return system property, environment variable, or defaultVal
+	/**
+	 * Attempts to read a system property with the given name. If the property is not found, attempts to read an environment variable with the same name.
+	 * If neither the system property nor the environment variable are available, returns the default value.
+	 * @param property The name of the system property or environment variable to read.
+	 * @param defaultVal The default value to return if the property is not found.
+	 * @return The value of the system property, environment variable, or default value.
 	 */
 	public static String readSystemProperty(String property, String defaultVal) {
 		return readProperty(property, defaultVal, false);
 	}
 
+	/**
+	 * Attempts to read a secret property with the given name.
+	 * Secret properties are masked during logging.  Passwords and API keys should be loaded with readSecret.
+	 * Secrets are masked with a sha256 fragment.  This can be used to verify the correct value is loaded.
+	 * If the property is not found, attempts to read an environment variable with the same name.
+	 * If neither the system property nor the environment variable are available, returns the default value.
+	 * @param property The name of the system property or environment variable to read.
+	 * @param defaultVal The default value to return if the property is not found.
+	 * @return The value of the system property, environment variable, or default value.
+	 */
 	public static String readSecret(String property, String defaultVal) {
 		return readProperty(property, defaultVal, true);
 	}
 
+	/**
+	 * Attempts to read a property with the given name. If the property is not found, attempts to read an environment variable with the same name.
+	 * If neither the system property nor the environment variable are available, returns the default value.
+	 * @param property The name of the system property or environment variable to read.
+	 * @param defaultVal The default value to return if the property is not found.
+	 * @param secret Whether the property is a secret or not. If true, the property value will be masked in the logs.
+	 * @return The value of the system property, environment variable, or default value.
+	 */
 	private static String readProperty(String property, String defaultVal, boolean secret) {
 		String propVal = System.getProperty(property);
 		if (propVal != null && !propVal.isEmpty()) {
@@ -67,6 +100,14 @@ public class SystemProperties {
 		return logProperty(property, defaultVal, "default value (not found)", secret);
 	}
 
+	/**
+	 * Logs the property value and source, and optionally masks the value if it is a secret.
+	 * @param property The name of the property.
+	 * @param value The value of the property.
+	 * @param source The source of the property (system property, environment variable, user defaults, or default value).
+	 * @param secret Whether the property is a secret or not. If true, the property value will be masked in the logs.
+	 * @return The value of the property.
+	 */
 	private static String logProperty(String property, String value, String source, boolean secret){
 		if(secret) {
 			OutputFilter.addMaskedString(value);
@@ -82,6 +123,10 @@ public class SystemProperties {
 		return value;
 	}
 
+	/**
+	 * Loads the user defaults from the USER_DEFAULTS_FILE into the userDefaults Properties object.
+	 * @param filePath The path to the user defaults file.
+	 */
 	private static void loadUserDefaults(String filePath){
 		Properties props = new Properties();
 		try {
@@ -90,6 +135,11 @@ public class SystemProperties {
 		userDefaults = props;
 	}
 
+	/**
+	 * Computes the SHA-256 hash of the given string and returns the first 6 characters of the Base64-encoded hash.
+	 * @param text The string to hash.
+	 * @return The first 6 characters of the Base64-encoded SHA-256 hash of the string.
+	 */
 	private static String sha256Substring(String text){
 		if(text == null){
 			return "null";
