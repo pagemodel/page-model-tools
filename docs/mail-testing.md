@@ -159,7 +159,6 @@ Mail.testMail(context)
         })
 ```
 
-### Testing Mail Fields
 
 #### Storing Values from Mail
 ```java

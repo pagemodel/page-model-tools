@@ -44,8 +44,8 @@ public class MyAppTestBase {
 	protected static MailAuthenticator externalMailAuth;
 	protected static MyAppConfig myAppConfig;
 
-	protected static PopServer externalPop;
-	protected static SmtpServer externalSmtp;
+	protected static PopServer pop;
+	protected static SmtpServer smtp;
 
 	protected MyAppTestContext context;
 
@@ -63,8 +63,8 @@ public class MyAppTestBase {
 			webDriverConfig = driverProfiles.getProfile(readSystemProperty("driver", "headless"));
 			externalMailAuth = mailProfiles.getProfile(readSystemProperty("mail.external", "dev"));
 
-			externalPop = new PopServer(externalMailAuth);
-			externalSmtp = new SmtpServer(externalMailAuth);
+			pop = new PopServer(externalMailAuth);
+			smtp = new SmtpServer(externalMailAuth);
 			configLoaded = true;
 		}
 	}

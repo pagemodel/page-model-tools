@@ -32,10 +32,21 @@ import java.util.function.Consumer;
 /**
  * @author Matt Stevenson [matt@pagemodel.org]
  */
+/**
+ * This class represents a complex reusable component of a page, or a component which captures the page focus, such as a dialog.
+ * It is treated as both a PageModel and WebElementTester.
+ * It is similar to a ComponentModel, but maintains test focus returning itself rather than its parent.
+ */
 public abstract class SectionModel<S extends SectionModel<? super S, P, R>, P extends PageModel<? super P>, R extends PageModel<? super R>> extends ComponentModel<S, R, S> implements PageModel<S> {
 
 	protected WebTestContext testContext;
 
+	/**
+	 * Creates a new instance of the SectionModel class.
+	 * @param clickAction The click action.
+	 * @param testEvaluator The test evaluator.
+	 * @return The new instance of the SectionModel class.
+	 */
 	public static <S extends SectionModel<? super S, P, R>, P extends PageModel<? super P>, R extends PageModel<? super R>> S make(final Class<S> sectionClass, ClickAction<P, R> clickAction, TestEvaluator testEvaluator) {
 		try {
 			return sectionClass.getConstructor(ClickAction.class, TestEvaluator.class).newInstance(clickAction, testEvaluator);
@@ -47,6 +58,11 @@ public abstract class SectionModel<S extends SectionModel<? super S, P, R>, P ex
 	protected P parentPage;
 	private TestEvaluator testEvaluator;
 
+	/**
+	 * Creates a new instance of the SectionModel class.
+	 * @param clickAction The click action.
+	 * @param testEvaluator The test evaluator.
+	 */
 	public SectionModel(ClickAction<P, ?> clickAction, TestEvaluator testEvaluator) {
 		super(null, ClickAction.makeNav(clickAction.getElementRef(), null, (R)null, testEvaluator), testEvaluator);
 		setReturnObj((S)this);
@@ -64,24 +80,44 @@ public abstract class SectionModel<S extends SectionModel<? super S, P, R>, P ex
 		this.testEvaluator = new TestEvaluator.Now();
 	}
 
+	/**
+	 * Sets the test evaluator.
+	 * @param testEvaluator The test evaluator.
+	 */
 	protected void setTestEvaluator(TestEvaluator testEvaluator){
 		this.testEvaluator = testEvaluator;
 	}
 
+	/**
+	 * Gets the test evaluator.
+	 * @return The test evaluator.
+	 */
 	@Override
 	public TestEvaluator getEvaluator() {
 		return testEvaluator;
 	}
 
+	/**
+	 * Tests the section parent.
+	 * @return The section parent.
+	 */
 	public P testSectionParent() {
 		return parentPage;
 	}
 
+	/**
+	 * Gets the web test context.
+	 * @return The web test context.
+	 */
 	@Override
 	public WebTestContext getContext() {
 		return testContext;
 	}
 
+	/**
+	 * Tests if the model is displayed.
+	 * @return True if the model is displayed, false otherwise.
+	 */
 	@Override
 	public boolean modelDisplayed() {
 		TestEvaluator contextEvaluator = getContext().getEvaluator();
@@ -97,47 +133,85 @@ public abstract class SectionModel<S extends SectionModel<? super S, P, R>, P ex
 		}
 	}
 
+	/**
+	 * Casts the section to a section model.
+	 * @return The section model.
+	 */
 	@Override
 	protected S asSection() {
 		return (S)this;
 	}
 
+	/**
+	 * Logs the model displayed.
+	 */
 	protected void logModelDisplayed() {
 		testModelDisplayed().accept((S) this);
 	}
 
+	/**
+	 * Tests the model displayed.
+	 * @return The consumer.
+	 */
 	protected Consumer<S> testModelDisplayed(){
 		return page -> {};
 	}
 
+	/**
+	 * Tests the page.
+	 * @return The page tester.
+	 */
 	@Override
 	public PageTester<S> testPage() {
 		return new PageTester<>((S) this, getContext(), getEvaluator());
 	}
 
+	/**
+	 * Tests the alert.
+	 * @return The alert tester.
+	 */
 	@Override
 	public AlertTester<S> testAlert() {
 		return new AlertTester<>(this, (S) this, getContext(), getEvaluator());
 	}
 
+	/**
+	 * Expects a redirect.
+	 * @param returnPageClass The return page class.
+	 * @return The return page.
+	 */
 	@Override
 	public <R extends PageModel<? super R>> R expectRedirect(Class<R> returnPageClass) {
 		return PageUtils.waitForNavigateToPage(returnPageClass, getContext());
 	}
 
+	/**
+	 * Called when the page is left.
+	 */
 	@Override
 	public void onPageLeave() {
 	}
 
+	/**
+	 * Called when the page is loaded.
+	 */
 	@Override
 	public void onPageLoad() {
 	}
 
+	/**
+	 * Closes the browser.
+	 */
 	@Override
 	public void closeBrowser() {
 		testContext.quit();
 	}
 
+	/**
+	 * Performs an action.
+	 * @param action The action.
+	 * @return The section model.
+	 */
 	@Override
 	public S doAction(ThrowingRunnable<?> action) {
 		try {
@@ -150,6 +224,11 @@ public abstract class SectionModel<S extends SectionModel<? super S, P, R>, P ex
 		}
 	}
 
+	/**
+	 * Performs an action.
+	 * @param action The action.
+	 * @return The result of the action.
+	 */
 	@Override
 	public <R> R doAction(Callable<R> action) {
 		try {
@@ -161,6 +240,11 @@ public abstract class SectionModel<S extends SectionModel<? super S, P, R>, P ex
 		}
 	}
 
+	/**
+	 * Performs an action.
+	 * @param action The action.
+	 * @return The result of the action.
+	 */
 	@Override
 	public <R> R doAction(ThrowingFunction<S, R, ?> action) {
 		try {
@@ -172,6 +256,11 @@ public abstract class SectionModel<S extends SectionModel<? super S, P, R>, P ex
 		}
 	}
 
+	/**
+	 * Performs an action.
+	 * @param action The action.
+	 * @return The section model.
+	 */
 	@Override
 	public S doAction(ThrowingConsumer<S, ?> action) {
 		try {

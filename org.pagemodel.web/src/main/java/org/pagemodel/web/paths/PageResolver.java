@@ -36,16 +36,35 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author Matt Stevenson [matt@pagemodel.org]
  */
+/**
+ * This class provides utility methods for page loading and resolving page types.
+ */
 public class PageResolver {
+
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	public final static PageResolver RESOLVER = new PageResolver();
 	public final static int DEFAULT_LOAD_TIMEOUT_SEC = 10;
 
+	/**
+	 * Tries to resolve the given page types and returns the first one that is found.
+	 * Uses the default load timeout of 10 seconds.
+	 * @param testContext the WebTestContext object
+	 * @param classList the list of page types to try
+	 * @return the first page model found, or null if none are found
+	 */
 	public PageModel<?> tryPageTypes(WebTestContext testContext, Class<? extends PageModel>... classList) {
 		return tryPageTypes(testContext, DEFAULT_LOAD_TIMEOUT_SEC, classList);
 	}
 
+	/**
+	 * Tries to resolve the given page types and returns the first one that is found.
+	 * Uses the specified load timeout.
+	 * @param testContext the WebTestContext object
+	 * @param timeoutSeconds the load timeout in seconds
+	 * @param classList the list of page types to try
+	 * @return the first page model found, or null if none are found
+	 */
 	public <T extends PageModel<? super T>> T tryPageTypes(WebTestContext testContext, int timeoutSeconds, Class<? extends PageModel>... classList) {
 		long start = System.currentTimeMillis();
 		while (System.currentTimeMillis() - start < (timeoutSeconds * 1000)) {
@@ -60,6 +79,14 @@ public class PageResolver {
 		return null;
 	}
 
+	/**
+	 * Tries to resolve the given page types once and returns the first one that is found.
+	 * Uses the specified load timeout.
+	 * @param testContext the WebTestContext object
+	 * @param timeoutSeconds the load timeout in seconds
+	 * @param classList the list of page types to try
+	 * @return the first page model found, or null if none are found
+	 */
 	public <T extends PageModel<? super T>> T tryPageTypesOnce(WebTestContext testContext, int timeoutSeconds, Class<? extends PageModel>... classList) {
 		try {
 			testContext.getDriver().manage().timeouts().implicitlyWait(1, TimeUnit.SECONDS);
@@ -81,6 +108,12 @@ public class PageResolver {
 		}
 	}
 
+	/**
+	 * Waits for the page to load.
+	 * @param testContext the WebTestContext object
+	 * @param timeoutSeconds the load timeout in seconds
+	 * @return true if the page loads within the timeout, false otherwise
+	 */
 	public boolean waitForPageLoad(final WebTestContext testContext, int timeoutSeconds) {
 		try {
 			return new WebDriverWait(testContext.getDriver(), timeoutSeconds)
@@ -94,6 +127,12 @@ public class PageResolver {
 		}
 	}
 
+	/**
+	 * Tries to create an instance of the given page type and returns it if it is displayed.
+	 * @param clazz the page type to create
+	 * @param testContext the WebTestContext object
+	 * @return the page model if it is displayed, or null if it is not displayed or cannot be created
+	 */
 	public <T extends PageModel<? super T>> T tryPageType(Class<? extends PageModel> clazz, WebTestContext testContext) {
 		T page = null;
 		try {

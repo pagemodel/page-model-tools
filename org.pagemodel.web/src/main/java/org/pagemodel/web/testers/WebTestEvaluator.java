@@ -33,36 +33,72 @@ import java.util.function.Function;
 /**
  * @author Matt Stevenson [matt@pagemodel.org]
  */
+/**
+ * The WebTestEvaluator class provides two nested classes, Wait and WaitAndRefresh, for continuously evaluating a test until it passes or times out.
+ * Wait class will continuously re-evaluate a test until it is true or times out.
+ * WaitAndRefresh class will continuously refresh the page, perform any after refresh setup actions, and re-evaluate the test until it passes or times out.
+ */
 public class WebTestEvaluator {
+
+	/**
+	 * The Wait class extends the TestEvaluator.Now class and provides a method for continuously re-evaluating a test until it is true or times out.
+	 */
 	public static class Wait extends TestEvaluator.Now {
 		protected WebTestContext testContext;
 		protected int waitSec;
 
+		/**
+		 * Constructs a Wait object with the given WebTestContext and wait time in seconds.
+		 * @param testContext the WebTestContext object
+		 * @param waitSec the wait time in seconds
+		 */
 		public Wait(WebTestContext testContext, int waitSec) {
 			this.label = "wait";
 			this.testContext = testContext;
 			this.waitSec = waitSec;
 		}
 
+		/**
+		 * Sets the wait time in seconds and returns the Wait object.
+		 * @param waitSec the wait time in seconds
+		 * @return the Wait object
+		 */
 		public Wait withTimeout(int waitSec) {
 			this.waitSec = waitSec;
 			return this;
 		}
 
+		/**
+		 * Returns a Consumer object that adds the timeout value to the evaluation type JSON.
+		 * @return a Consumer object that adds the timeout value to the evaluation type JSON
+		 */
 		@Override
 		public Consumer<JsonObjectBuilder> getEvalTypeJson(){
 			return super.getEvalTypeJson()
 					.andThen(eval -> eval.addValue("timeout", waitSec));
 		}
 
+		/**
+		 * Returns the WebTestContext object.
+		 * @return the WebTestContext object
+		 */
 		public WebTestContext getTestContext() {
 			return testContext;
 		}
 
+		/**
+		 * Returns the wait time in seconds.
+		 * @return the wait time in seconds
+		 */
 		public int getWaitSec() {
 			return waitSec;
 		}
 
+		/**
+		 * Calls the test repeatedly until it returns true or times out.
+		 * @param test the Callable<Boolean> test to be evaluated
+		 * @return true if the test passes, false if it times out
+		 */
 		@Override
 		protected Boolean callTest(Callable<Boolean> test) {
 			FluentWait wait = new WebDriverWait(testContext.getDriver(), waitSec)
@@ -72,11 +108,22 @@ public class WebTestEvaluator {
 		}
 	}
 
+	/**
+	 * The WaitAndRefresh class extends the Wait class and provides a method for continuously refreshing the page, performing any after refresh setup actions, and re-evaluating the test until it passes or times out.
+	 * @param <R> the type of the return object
+	 */
 	public static class WaitAndRefresh<R> extends Wait {
 		protected Function<R, R> pageSetupFunction;
 		protected R returnObj;
 		protected PageModel page;
 
+		/**
+		 * Constructs a WaitAndRefresh object with the given WebTestContext, wait time in seconds, return object, and PageModel.
+		 * @param testContext the WebTestContext object
+		 * @param waitSec the wait time in seconds
+		 * @param returnObj the return object
+		 * @param page the PageModel object
+		 */
 		public WaitAndRefresh(WebTestContext testContext, int waitSec, R returnObj, PageModel page) {
 			super(testContext, waitSec);
 			this.label = "refresh";
@@ -84,30 +131,57 @@ public class WebTestEvaluator {
 			this.page = page;
 		}
 
+		/**
+		 * Sets the page setup function and returns the WaitAndRefresh object.
+		 * @param pageSetupFunction the page setup function
+		 * @return the WaitAndRefresh object
+		 */
 		public WaitAndRefresh<R> withPageSetup(Function<R, R> pageSetupFunction) {
 			this.pageSetupFunction = pageSetupFunction;
 			return this;
 		}
 
+		/**
+		 * Sets the wait time in seconds and returns the WaitAndRefresh object.
+		 * @param waitSec the wait time in seconds
+		 * @return the WaitAndRefresh object
+		 */
 		public WaitAndRefresh<R> withTimeout(int waitSec) {
 			this.waitSec = waitSec;
 			return this;
 		}
 
+		/**
+		 * Returns a Consumer object that adds the page setup value to the evaluation type JSON.
+		 * @return a Consumer object that adds the page setup value to the evaluation type JSON
+		 */
 		@Override
 		public Consumer<JsonObjectBuilder> getEvalTypeJson(){
 			return super.getEvalTypeJson()
 					.andThen(eval -> eval.addValue("pageSetup", (pageSetupFunction != null)));
 		}
 
+		/**
+		 * Returns the return object.
+		 * @return the return object
+		 */
 		public R getReturnObj() {
 			return returnObj;
 		}
 
+		/**
+		 * Returns the page setup function.
+		 * @return the page setup function
+		 */
 		public Function<R, R> getPageSetupFunction() {
 			return pageSetupFunction;
 		}
 
+		/**
+		 * Calls the test repeatedly until it returns true or times out, refreshing the page and performing any after refresh setup actions as necessary.
+		 * @param test the Callable<Boolean> test to be evaluated
+		 * @return true if the test passes, false if it times out
+		 */
 		@Override
 		protected Boolean callTest(Callable<Boolean> test) {
 			if (pageSetupFunction != null) {

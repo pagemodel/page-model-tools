@@ -1,30 +1,5 @@
 # .pagemodel file syntax
 
-## Syntax Highlighter
-It is recommended to install the .pagemodel syntax highlighter in your editor for working with .pagemodel files.
-
-#### TextMate Bundle
-TextMate bundles can be imported into TextMate, IntelliJ, VS Code, and other editors.
-The .pagemodel TextMate Bundle is in [org.pagemodel.syntax/textmate/pagemodel.tmbundle](../org.pagemodel.syntax/textmate/pagemodel.tmbundle)
-
-###### Add to IntelliJ:
-1. Download [pagemodel.tmbundle-0.8.1.zip](https://github.com/pagemodel/page-model-tools/raw/0.8.2/org.pagemodel.syntax/textmate/pagemodel.tmbundle-0.8.1.zip) and extract `pagemodel.tmbundle`
-1. Ensure `pagemodel.tmbundle` is in a permanent location as IntelliJ will link to it and not copy.
-2. `Preferences > Editor > TextMate Bundles`
-3. Click the `+` button below the bundle list.
-4. Add `pagemodel.tmbundle`
-5. Click `OK`
-6. Restart IntelliJ
-
-#### Atom Package
-The .pagemodel Atom Package is in [org.pagemodel.syntax/atom/language-pagemodel](../org.pagemodel.syntax/atom/language-pagemodel)
-
-###### Add to Atom:
-1. Ensure `language-pagemodel` is in a permanent location as Atom will link to it and not copy.
-2. Navigate into the `language-pagemodel` directory on the command line
-3. Run `apm link`
-4. Restart Atom
-
 ## File format 
 pagemodel files are in the form:
 ```

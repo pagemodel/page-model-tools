@@ -16,6 +16,7 @@
 
 package org.pagemodel.tests.myapp.tools;
 
+import org.pagemodel.mail.MailAuthenticator;
 import org.pagemodel.tests.myapp.pages.LoginPage;
 import org.pagemodel.tools.ExtendedTestContext;
 import org.pagemodel.tools.WebDriverConfig;
