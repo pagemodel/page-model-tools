@@ -24,50 +24,25 @@ import java.util.Map;
 /**
  * @author Matt Stevenson [matt@pagemodel.org]
  */
-/**
- * Default implementation of the {@link TestContext} interface.
- * Stores objects in a {@link Map} and uses a {@link TestEvaluator} to evaluate tests and conditions.
- */
 public class DefaultTestContext implements TestContext {
 
 	protected Map<String, Object> storedObjects = new HashMap<>();
 	protected TestEvaluator testEvaluator;
 
-	/**
-	 * Constructs a new DefaultTestContext with a default TestEvaluator.
-	 */
 	public DefaultTestContext() {
 		this.testEvaluator = new TestEvaluator.Now();
 	}
 
-	/**
-	 * Returns the TestEvaluator used by this context.
-	 *
-	 * @return the TestEvaluator used by this context
-	 */
 	@Override
 	public TestEvaluator getEvaluator() {
 		return testEvaluator;
 	}
 
-	/**
-	 * Sets the TestEvaluator used by this context.
-	 *
-	 * @param testEvaluator the TestEvaluator to set
-	 */
 	@Override
 	public void setEvaluator(TestEvaluator testEvaluator) {
 		this.testEvaluator = testEvaluator;
 	}
 
-	/**
-	 * Stores a value with the given key in the context.
-	 *
-	 * @param key the key to store the value under
-	 * @param value the value to store
-	 * @throws NullPointerException if the key or value is null
-	 * @throws IllegalArgumentException if the key is already in use
-	 */
 	@Override
 	public <T> void store(String key, T value) {
 		getEvaluator().testRun(TestEvaluator.TEST_EXECUTE,
@@ -86,15 +61,6 @@ public class DefaultTestContext implements TestContext {
 				}, this, this);
 	}
 
-	/**
-	 * Loads a value with the given key from the context and casts it to the specified class.
-	 *
-	 * @param clazz the class to cast the value to
-	 * @param key the key to load the value from
-	 * @return the value with the given key, cast to the specified class
-	 * @throws NullPointerException if the key is null
-	 * @throws IllegalArgumentException if no value is stored with the given key or if the stored value cannot be cast to the specified class
-	 */
 	@Override
 	public <T> T load(Class<T> clazz, String key) {
 		return getEvaluator().quiet().testCondition(
@@ -114,14 +80,6 @@ public class DefaultTestContext implements TestContext {
 				}, (T)storedObjects.get(key), this);
 	}
 
-	/**
-	 * Loads a value with the given key from the context.
-	 *
-	 * @param key the key to load the value from
-	 * @return the value with the given key
-	 * @throws NullPointerException if the key is null
-	 * @throws IllegalArgumentException if no value is stored with the given key
-	 */
 	@Override
 	public <T> T load(String key) {
 		return getEvaluator().quiet().testCondition(
@@ -137,14 +95,6 @@ public class DefaultTestContext implements TestContext {
 				}, (T)storedObjects.get(key), this);
 	}
 
-	/**
-	 * Removes the value with the given key from the context.
-	 *
-	 * @param key the key to remove the value from
-	 * @return this DefaultTestContext
-	 * @throws NullPointerException if the key is null
-	 * @throws IllegalArgumentException if no value is stored with the given key
-	 */
 	@Override
 	public DefaultTestContext removeStored(String key) {
 		return getEvaluator().testCondition(
@@ -161,16 +111,8 @@ public class DefaultTestContext implements TestContext {
 				}, this, this);
 	}
 
-	/**
-	 * Creates a new RuntimeException for this context with the given message and cause.
-	 *
-	 * @param message the message for the exception
-	 * @param cause the cause of the exception
-	 * @return a new RuntimeException with the given message and cause
-	 */
 	@Override
 	public <E extends RuntimeException> E createException(String message, Throwable cause) {
 		return (E)new RuntimeException(message, cause);
 	}
-
 }
