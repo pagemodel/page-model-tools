@@ -26,42 +26,16 @@ import java.util.List;
 /**
  * @author Matt Stevenson [matt@pagemodel.org]
  */
-/**
- * This class represents a tester for a checkbox element. It extends the WebElementTester class and
- * provides methods for setting and checking the state of the checkbox.
- *
- * @param <R> the type of the return object
- * @param <N> the type of the page model
- */
 public class CheckboxTester<R, N extends PageModel<? super N>> extends WebElementTester<R, N> {
 
-	/**
-	 * Constructs a CheckboxTester with a return object, click action, and test evaluator.
-	 *
-	 * @param returnObj the return object
-	 * @param clickAction the click action
-	 * @param testEvaluator the test evaluator
-	 */
 	public CheckboxTester(R returnObj, ClickAction<?, N> clickAction, TestEvaluator testEvaluator) {
 		super(returnObj, clickAction, testEvaluator);
 	}
 
-	/**
-	 * Constructs a CheckboxTester with a click action and test evaluator.
-	 *
-	 * @param clickAction the click action
-	 * @param testEvaluator the test evaluator
-	 */
 	public CheckboxTester(ClickAction<?, N> clickAction, TestEvaluator testEvaluator) {
 		super(clickAction, testEvaluator);
 	}
 
-	/**
-	 * Sets the state of the checkbox to the given value.
-	 *
-	 * @param value the value to set the checkbox to
-	 * @return the return object
-	 */
 	public R setCheckbox(boolean value) {
 		if (value) {
 			return setChecked();
@@ -70,11 +44,6 @@ public class CheckboxTester<R, N extends PageModel<? super N>> extends WebElemen
 		}
 	}
 
-	/**
-	 * Sets the state of the checkbox to checked.
-	 *
-	 * @return the return object
-	 */
 	public R setChecked() {
 		getEvaluator().logEvent(TestEvaluator.TEST_EXECUTE, "set checked", op -> op
 				.addValue("element", getElementJson()));
@@ -95,11 +64,6 @@ public class CheckboxTester<R, N extends PageModel<? super N>> extends WebElemen
 		}
 	}
 
-	/**
-	 * Sets the state of the checkbox to unchecked.
-	 *
-	 * @return the return object
-	 */
 	public R setUnchecked() {
 		getEvaluator().logEvent(TestEvaluator.TEST_EXECUTE, "set unchecked", op -> op
 				.addValue("element", getElementJson()));
@@ -120,16 +84,8 @@ public class CheckboxTester<R, N extends PageModel<? super N>> extends WebElemen
 		}
 	}
 
-	/**
-	 * A list of attribute values that indicate the checkbox is checked.
-	 */
 	private final static List<String> checkedAttrVals = Arrays.asList("true", "checked");
 
-	/**
-	 * Checks if the checkbox is not selected.
-	 *
-	 * @return the return object
-	 */
 	@Override
 	public R notSelected() {
 		return getEvaluator().testCondition(
@@ -139,11 +95,6 @@ public class CheckboxTester<R, N extends PageModel<? super N>> extends WebElemen
 				getReturnObj(), page.getContext());
 	}
 
-	/**
-	 * Checks if the checkbox is selected.
-	 *
-	 * @return the return object
-	 */
 	@Override
 	public R isSelected() {
 		return getEvaluator().testCondition(

@@ -6,24 +6,7 @@
         "password": "password",
         "popPort": -1,
         "smtpPort": 25,
-        "useTls": true,
+        "useTls": false,
         "allowInsecure": true
-    },
-    "dev-pop": {
-        "domain": "mail.example.com",
-        "host": "pop.example.com",
-        "username": "username",
-        "password": "password",
-        "popPort": -1,
-        "useTls": true,
-        "allowInsecure": false
-    },
-    "dev-smtp": {
-        "domain": "mail.example.com",
-        "host": "smtp.example.com",
-        "username": "username",
-        "password": "password",
-        "smtpPort": 25,
-        "useTls": true
     }
 }

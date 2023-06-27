@@ -63,37 +63,20 @@ import java.util.function.Function;
 /**
  * @author Matt Stevenson [matt@pagemodel.org]
  */
-/**
- * A factory class for creating instances of WebDriver. Supports various browser types and configurations.
- */
 public abstract class WebDriverFactory {
-
-	// Logger for the class
 	private static final Logger log = LoggerFactory.getLogger(WebDriverFactory.class);
 
-	// Default page load timeout in seconds
 	public static int DEFAULT_PAGE_LOAD_TIMEOUT_SECONDS = 20;
-
-	// Default implicit wait time in milliseconds
 	public static int DEFAULT_IMPLICITLY_WAIT_MILLISECONDS = 0;
-
-	// Default script timeout in seconds
 	public static int DEFAULT_SCRIPT_TIMEOUT_SECONDS = 20;
-
-	// Default download directory
 	public static String DOWNLOAD_DIRECTORY;
 
-	// Map of browser types and their corresponding factory methods
 	private final static Map<String, Function<MutableCapabilities,WebDriver>> browserFactoryMap = new HashMap<>();
 
-	// Static block to initialize the class
 	static {
 		initClass();
 	}
 
-	/**
-	 * Initializes the class by setting the download directory and browser factory map.
-	 */
 	public static void initClass() {
 		String home = System.getProperty("user.home");
 		DOWNLOAD_DIRECTORY = home + "/Downloads";
@@ -111,11 +94,8 @@ public abstract class WebDriverFactory {
 	}
 
 	/**
-	 * Opens a WebDriver instance for the specified browser and URL.
-	 * @param browser The browser type to open
-	 * @param url The URL to navigate to
-	 * @return The WebDriver instance
-	 * @deprecated Provided for backwards compatibility. Please use the create method instead.
+	 *
+	 * @deprecated Provided for backwards compatibility.  Please use the create method instead.
 	 */
 	@Deprecated()
 	public static WebDriver open(String browser, String url) {
@@ -123,12 +103,6 @@ public abstract class WebDriverFactory {
 		return create(webDriverConfig, url);
 	}
 
-	/**
-	 * Creates a WebDriver instance for the specified configuration and URL.
-	 * @param config The WebDriver configuration
-	 * @param url The URL to navigate to
-	 * @return The WebDriver instance
-	 */
 	public static WebDriver create(WebDriverConfig config, String url){
 		WebDriver driver;
 		TestEvaluator.Now eval = new TestEvaluator.Now();
@@ -159,10 +133,6 @@ public abstract class WebDriverFactory {
 		return driver;
 	}
 
-	/**
-	 * Closes the specified WebDriver instance.
-	 * @param driver The WebDriver instance to close
-	 */
 	public static void close(WebDriver driver) {
 		if (driver == null) {
 			return;
@@ -179,21 +149,12 @@ public abstract class WebDriverFactory {
 		}
 	}
 
-	/**
-	 * Clicks through a certificate error page if it is present.
-	 * @param driver The WebDriver instance
-	 */
 	private static void clickThroughCertErrorPage(WebDriver driver) {
 		if (driver.getPageSource().contains("overridelink")) {
 			driver.findElement(By.id("overridelink")).click();
 		}
 	}
 
-	/**
-	 * Gets a WebDriver instance for the specified capabilities.
-	 * @param capabilities The WebDriver capabilities
-	 * @return The WebDriver instance
-	 */
 	public static WebDriver getWebDriver(MutableCapabilities capabilities) {
 		String browser = capabilities.getBrowserName();
 		if(!browserFactoryMap.containsKey(browser)){
@@ -211,12 +172,6 @@ public abstract class WebDriverFactory {
 		}
 	}
 
-	/**
-	 * Gets a RemoteWebDriver instance for the specified remote URL and capabilities.
-	 * @param remoteURL The remote URL
-	 * @param caps The WebDriver capabilities
-	 * @return The RemoteWebDriver instance
-	 */
 	public static RemoteWebDriver getRemoteWebDriver(String remoteURL, Capabilities caps) {
 		try {
 			RemoteWebDriver driver = new RemoteWebDriver(new URL(remoteURL), caps);
@@ -229,11 +184,6 @@ public abstract class WebDriverFactory {
 		}
 	}
 
-	/**
-	 * Opens a ChromeDriver instance for the specified capabilities.
-	 * @param capabilities The WebDriver capabilities
-	 * @return The ChromeDriver instance
-	 */
 	private static WebDriver openChrome(MutableCapabilities capabilities) {
 		WebDriverManager.chromedriver().setup();
 		ChromeOptions options = loadChromeOptions(capabilities);
@@ -262,9 +212,10 @@ public abstract class WebDriverFactory {
 	}
 
 	/**
-	 * Converts a Capabilities object to ChromeOptions, fixing a bug in ChromeOptions.merge(Capabilities) that ignores and overwrites any goog:chromeOptions.
-	 * @param capabilities The WebDriver capabilities
-	 * @return The ChromeOptions object
+	 * Convert a Capabilities to ChromeOptions, fixes bug in ChromeOptions that ignores and overwrites any
+	 * goog:chromeOptions in ChromeOptions.merge(Capabilities)
+	 * @param capabilities
+	 * @return
 	 */
 	protected static ChromeOptions loadChromeOptions(Capabilities capabilities){
 		if(ChromeOptions.class.isAssignableFrom(capabilities.getClass())){
@@ -310,75 +261,40 @@ public abstract class WebDriverFactory {
 		return options;
 	}
 
-	/**
-	 * Opens a headless ChromeDriver instance for the specified capabilities.
-	 * @param capabilities The WebDriver capabilities
-	 * @return The headless ChromeDriver instance
-	 */
 	private static WebDriver openChromeHeadless(Capabilities capabilities) {
 		ChromeOptions options = loadChromeOptions(capabilities);
 		options.setHeadless(true);
 		return openChrome(options);
 	}
 
-	/**
-	 * Opens a FirefoxDriver instance for the specified capabilities.
-	 * @param capabilities The WebDriver capabilities
-	 * @return The FirefoxDriver instance
-	 */
 	private static WebDriver openFirefox(Capabilities capabilities) {
 		WebDriverManager.firefoxdriver().setup();
 		FirefoxOptions options = new FirefoxOptions(capabilities);
 		return new FirefoxDriver(options);
 	}
 
-	/**
-	 * Opens an InternetExplorerDriver instance for the specified capabilities.
-	 * @param capabilities The WebDriver capabilities
-	 * @return The InternetExplorerDriver instance
-	 */
 	private static WebDriver openInternetExplorer(Capabilities capabilities) {
 		WebDriverManager.iedriver().setup();
 		InternetExplorerOptions options = new InternetExplorerOptions(capabilities);
 		return new InternetExplorerDriver(options);
 	}
 
-	/**
-	 * Opens an EdgeDriver instance for the specified capabilities.
-	 * @param capabilities The WebDriver capabilities
-	 * @return The EdgeDriver instance
-	 */
 	private static WebDriver openEdge(Capabilities capabilities) {
 		WebDriverManager.edgedriver().setup();
 		return new EdgeDriver(new EdgeOptions().merge(capabilities));
 	}
 
-	/**
-	 * Opens an OperaDriver instance for the specified capabilities.
-	 * @param capabilities The WebDriver capabilities
-	 * @return The OperaDriver instance
-	 */
 	private static WebDriver openOpera(Capabilities capabilities) {
 		WebDriverManager.operadriver().setup();
 		// Replicate loadChromeOptions for Opera to fix use of deprecated constructor.  OperaOptions has the same bug as ChromeOptions.
 		return new OperaDriver(capabilities);
 	}
 
-	/**
-	 * Opens a SafariDriver instance for the specified capabilities.
-	 * @param capabilities The WebDriver capabilities
-	 * @return The SafariDriver instance
-	 */
 	private static WebDriver openSafari(Capabilities capabilities) {
 		SafariOptions options = new SafariOptions(capabilities);
 		return new SafariDriver(options);
 	}
 
-	/**
-	 * Opens an HtmlUnitDriver instance for the specified capabilities.
-	 * @param capabilities The WebDriver capabilities
-	 * @return The HtmlUnitDriver instance
-	 */
 	private static WebDriver openHtmlUnit(Capabilities capabilities) {
 		return new HtmlUnitDriver(true);
 	}

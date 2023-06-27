@@ -34,24 +34,9 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author Matt Stevenson [matt@pagemodel.org]
  */
-/**
- * A utility class for working with page models in a web testing context.
- */
 public class PageUtils {
-
-	/**
-	 * The default page load timeout in seconds.
-	 */
 	public static int DEFAULT_PAGE_LOAD_TIMEOUT_SECONDS = 20;
 
-	/**
-	 * Creates an instance of the specified page model class using the provided web test context.
-	 *
-	 * @param clazz the class of the page model to create
-	 * @param context the web test context to use
-	 * @return an instance of the specified page model class
-	 * @throws RuntimeException if an error occurs while creating the page model
-	 */
 	public static <T extends PageModel<? super T>> T makeInstance(final Class<T> clazz, final WebTestContext context) {
 		try {
 			for(Constructor<?> c : clazz.getConstructors()){
@@ -68,56 +53,18 @@ public class PageUtils {
 		}
 	}
 
-	/**
-	 * Waits for the specified page model class to be displayed in the web test context.
-	 *
-	 * @param clazz the class of the page model to wait for
-	 * @param context the web test context to use
-	 * @return the displayed page model instance
-	 * @throws RuntimeException if the page model is not displayed within the default timeout
-	 */
 	static public <T extends PageModel<? super T>> T waitForNavigateToPage(final Class<T> clazz, final WebTestContext context) {
 		return waitForNavigateToPage(clazz, null, null, context, DEFAULT_PAGE_LOAD_TIMEOUT_SECONDS);
 	}
 
-	/**
-	 * Waits for the specified page model class to be displayed in the web test context with the specified timeout.
-	 *
-	 * @param clazz the class of the page model to wait for
-	 * @param context the web test context to use
-	 * @param timeoutSeconds the timeout in seconds to wait for the page model to be displayed
-	 * @return the displayed page model instance
-	 * @throws RuntimeException if the page model is not displayed within the specified timeout
-	 */
 	static public <T extends PageModel<? super T>> T waitForNavigateToPage(final Class<T> clazz, final WebTestContext context, int timeoutSeconds) {
 		return waitForNavigateToPage(clazz, null, null, context, timeoutSeconds);
 	}
 
-	/**
-	 * Waits for the specified page model class to be displayed in the web test context as a child of the specified section parent and with the specified element reference.
-	 *
-	 * @param clazz the class of the page model to wait for
-	 * @param sectionParent the parent section model of the page model to wait for
-	 * @param elementRef the element reference of the page model to wait for
-	 * @param context the web test context to use
-	 * @return the displayed page model instance
-	 * @throws RuntimeException if the page model is not displayed within the default timeout
-	 */
 	static public <T extends PageModel<? super T>> T waitForNavigateToPage(final Class<T> clazz, PageModel<?> sectionParent, Callable<WebElement> elementRef, final WebTestContext context) {
 		return waitForNavigateToPage(clazz, sectionParent, elementRef, context, DEFAULT_PAGE_LOAD_TIMEOUT_SECONDS);
 	}
 
-	/**
-	 * Waits for the specified page model class to be displayed in the web test context as a child of the specified section parent and with the specified element reference and timeout.
-	 *
-	 * @param clazz the class of the page model to wait for
-	 * @param sectionParent the parent section model of the page model to wait for
-	 * @param elementRef the element reference of the page model to wait for
-	 * @param context the web test context to use
-	 * @param timeout the timeout in seconds to wait for the page model to be displayed
-	 * @return the displayed page model instance
-	 * @throws RuntimeException if the page model is not displayed within the specified timeout
-	 */
 	static public <T extends PageModel<? super T>> T waitForNavigateToPage(final Class<T> clazz, PageModel<?> sectionParent, Callable<WebElement> elementRef, final WebTestContext context, int timeout) {
 		try {
 			T page = null;
@@ -148,25 +95,10 @@ public class PageUtils {
 		}
 	}
 
-	/**
-	 * Waits for the specified page model instance to be displayed in the web test context.
-	 *
-	 * @param page the page model instance to wait for
-	 * @return the displayed page model instance
-	 * @throws RuntimeException if the page model is not displayed within the default timeout
-	 */
 	static public <T extends PageModel<? super T>> T waitForModelDisplayed(T page) {
 		return waitForModelDisplayed(page, DEFAULT_PAGE_LOAD_TIMEOUT_SECONDS);
 	}
 
-	/**
-	 * Waits for the specified page model instance to be displayed in the web test context with the specified timeout.
-	 *
-	 * @param page the page model instance to wait for
-	 * @param timeout the timeout in seconds to wait for the page model to be displayed
-	 * @return the displayed page model instance
-	 * @throws RuntimeException if the page model is not displayed within the specified timeout
-	 */
 	static public <T extends PageModel<? super T>> T waitForModelDisplayed(T page, int timeout) {
 		if (waitForPageIsDisplayed(page, timeout)) {
 			return page;
@@ -174,23 +106,10 @@ public class PageUtils {
 		throw new RuntimeException("Page not displayed: " + page.getClass());
 	}
 
-	/**
-	 * Waits for the specified page model instance to be displayed in the web test context.
-	 *
-	 * @param page the page model instance to wait for
-	 * @return true if the page model is displayed within the default timeout, false otherwise
-	 */
 	static public boolean waitForPageIsDisplayed(PageModel page) {
 		return waitForPageIsDisplayed(page, DEFAULT_PAGE_LOAD_TIMEOUT_SECONDS);
 	}
 
-	/**
-	 * Waits for the specified page model instance to be displayed in the web test context with the specified timeout.
-	 *
-	 * @param page the page model instance to wait for
-	 * @param timeout the timeout in seconds to wait for the page model to be displayed
-	 * @return true if the page model is displayed within the specified timeout, false otherwise
-	 */
 	static public boolean waitForPageIsDisplayed(PageModel page, int timeout) {
 		WebDriverWait wait = new WebDriverWait(page.getContext().getDriver(), timeout);
 		try {
@@ -223,23 +142,10 @@ public class PageUtils {
 		return true;
 	}
 
-	/**
-	 * Gets the test evaluator for the specified page model instance.
-	 *
-	 * @param page the page model instance to get the test evaluator for
-	 * @return the test evaluator for the specified page model instance
-	 */
 	public static TestEvaluator getEvaluator(PageModel<?> page){
 		return page.getEvaluator();
 	}
 
-	/**
-	 * Sets the test evaluator for the specified page model instance.
-	 *
-	 * @param page the page model instance to set the test evaluator for
-	 ** @param testEvaluator the test evaluator to set for the page model instance
-	 * @return the page model instance with the test evaluator set
-	 */
 	public static <T extends PageModel<? super T>> T trySetEvaluator(T page, TestEvaluator testEvaluator){
 		if(page instanceof PageModel.DefaultPageModel) {
 			((PageModel.DefaultPageModel)page).setTestEvaluator(testEvaluator);
@@ -254,13 +160,8 @@ public class PageUtils {
 		return page;
 	}
 
-	/**
-	 * Logs the page source for the specified web test context with the specified test type and messages.
-	 *
-	 * @param testContext the web test context to log the page source for
-	 * @param testType the test type to use for the log event
-	 * @param messages the messages to include in the log event
-	 */
+
+
 	public static void logPageSource(WebTestContext testContext, String testType, String...messages){
 		String msg = String.join("\n", messages);
 		if(testType == null || testType.isEmpty()){

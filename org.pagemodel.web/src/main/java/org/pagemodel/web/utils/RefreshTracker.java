@@ -29,27 +29,9 @@ import org.pagemodel.web.testers.WebElementTester;
 /**
  * @author Matt Stevenson [matt@pagemodel.org]
  */
-/**
- * The RefreshTracker class is responsible for refreshing a page and tracking the refresh event.
- * It extends the DefaultPageModel class and implements the modelDisplayed method.
- * It also provides a static refreshPage method that takes a PageModel as input and returns a refreshed PageModel.
- * The class uses a unique ID to track the refresh event and provides methods to add and test the refresh tracking element.
- *
- * @param <T> the type of PageModel being refreshed
- */
 public class RefreshTracker extends PageModel.DefaultPageModel<RefreshTracker> {
-
-	/**
-	 * The unique ID used to track the refresh event.
-	 */
 	private String id;
 
-	/**
-	 * Refreshes the given PageModel and returns a refreshed PageModel.
-	 *
-	 * @param page the PageModel to refresh
-	 * @return the refreshed PageModel
-	 */
 	public static <T extends PageModel<? super T>> T refreshPage(T page) {
 		page.getEvaluator().logEvent(TestEvaluator.TEST_EXECUTE, "refresh page", op -> op
 				.addValue("model", page.getClass().getSimpleName()));
@@ -73,47 +55,22 @@ public class RefreshTracker extends PageModel.DefaultPageModel<RefreshTracker> {
 		return retPage;
 	}
 
-	/**
-	 * Constructs a new RefreshTracker object with the given WebTestContext.
-	 *
-	 * @param testContext the WebTestContext to use
-	 */
 	public RefreshTracker(WebTestContext testContext) {
 		super(testContext);
 	}
 
-	/**
-	 * Returns true if the model is displayed.
-	 *
-	 * @return true if the model is displayed
-	 */
 	public boolean modelDisplayed() {
 		return true;
 	}
 
-	/**
-	 * Returns the refresh tracking element as a WebElement.
-	 *
-	 * @return the refresh tracking element as a WebElement
-	 */
 	protected WebElement getRefreshTrackingElement() {
 		return findPageElement("RefreshElement", By.id(id));
 	}
 
-	/**
-	 * Creates a new WebElementTester for the refresh tracking element.
-	 *
-	 * @return a new WebElementTester for the refresh tracking element
-	 */
 	private WebElementTester<RefreshTracker, RefreshTracker> testRefreshTrackingElement() {
 		return new WebElementTester<>(this, ClickAction.make(this::getRefreshTrackingElement, this, getEvaluator()), getEvaluator());
 	}
 
-	/**
-	 * Adds a refresh tracking element to the page and returns the RefreshTracker object.
-	 *
-	 * @return the RefreshTracker object with the refresh tracking element added
-	 */
 	protected RefreshTracker addRefreshTrackingElement() {
 		id = Unique.string("refresh-%s");
 		return testPage().testJavaScriptWithReturn(
