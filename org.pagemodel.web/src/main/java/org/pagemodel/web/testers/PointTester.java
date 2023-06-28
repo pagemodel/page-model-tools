@@ -20,6 +20,7 @@ import org.openqa.selenium.Point;
 import org.pagemodel.core.TestContext;
 import org.pagemodel.core.testers.ComparableTester;
 import org.pagemodel.core.testers.TestEvaluator;
+import org.pagemodel.web.WebTestContext;
 
 import java.util.concurrent.Callable;
 
@@ -29,10 +30,10 @@ import java.util.concurrent.Callable;
 public class PointTester<R> {
 	protected final R returnObj;
 	protected final Callable<Point> ref;
-	protected final TestContext testContext;
+	protected final WebTestContext testContext;
 	private TestEvaluator testEvaluator;
 
-	public PointTester(Callable<Point> ref, R returnObj, TestContext testContext, TestEvaluator testEvaluator) {
+	public PointTester(Callable<Point> ref, R returnObj, WebTestContext testContext, TestEvaluator testEvaluator) {
 		this.ref = ref;
 		this.returnObj = returnObj;
 		this.testContext = testContext;
@@ -49,6 +50,11 @@ public class PointTester<R> {
 
 	protected TestEvaluator getEvaluator(){
 		return testEvaluator;
+	}
+
+	public R storeValue(String key) {
+		testContext.store(key, callRef());
+		return returnObj;
 	}
 
 	public ComparableTester<Integer, R> x() {

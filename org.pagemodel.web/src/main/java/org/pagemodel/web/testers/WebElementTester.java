@@ -24,6 +24,7 @@ import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.core.utils.json.JsonBuilder;
 import org.pagemodel.web.LocatedWebElement;
 import org.pagemodel.web.PageModel;
+import org.pagemodel.web.utils.Screenshot;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -252,6 +253,15 @@ public class WebElementTester<R, N extends PageModel<? super N>> {
 						.addValue("element", getElementJson()));
 		clickAction.doClick(null);
 		return new WebActionTester<>(page.getContext(), page, this, getEvaluator());
+	}
+
+	public R takeScreenshot(String filename, int padding){
+		Screenshot.takeScreenshot(page.getContext().getDriver(), callRef().getRect(), padding, filename, false);
+		return returnObj;
+	}
+
+	public R takeScreenshot(String filename){
+		return takeScreenshot(filename, 0);
 	}
 
 	public WebElementWait<R, N> waitFor() {
