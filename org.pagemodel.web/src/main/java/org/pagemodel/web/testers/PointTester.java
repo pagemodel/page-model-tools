@@ -17,9 +17,11 @@
 package org.pagemodel.web.testers;
 
 import org.openqa.selenium.Point;
+import org.openqa.selenium.Rectangle;
 import org.pagemodel.core.TestContext;
 import org.pagemodel.core.testers.ComparableTester;
 import org.pagemodel.core.testers.TestEvaluator;
+import org.pagemodel.core.utils.ThrowingFunction;
 import org.pagemodel.web.WebTestContext;
 
 import java.util.concurrent.Callable;
@@ -63,6 +65,14 @@ public class PointTester<R> {
 
 	public ComparableTester<Integer, R> y() {
 		return new ComparableTester<>(() -> callRef().getY(), returnObj, testContext, getEvaluator());
+	}
+
+	public PointTester<R> transform(ThrowingFunction<Point,Point,?> transform) {
+		return new PointTester<>(() -> ThrowingFunction.unchecked(transform).apply(callRef()), returnObj, testContext, getEvaluator());
+	}
+
+	public PointTester<R> translate(int x, int y) {
+		return transform(rect -> new Point(rect.x + x, rect.y + y));
 	}
 
 }

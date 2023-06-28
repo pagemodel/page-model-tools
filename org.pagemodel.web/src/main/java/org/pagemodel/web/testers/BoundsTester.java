@@ -50,7 +50,7 @@ public class BoundsTester<R> extends RectangleTester<R> {
 	}
 
 	@Override
-	public BoundsTester<R> include(Rectangle includeBounds){
+	public BoundsTester<R> extend(Rectangle includeBounds){
 		Rectangle bounds = callRef();
 		Rectangle merged = merge(this.bounds, includeBounds);
 		Rectangle newBounds = merge(bounds, includeBounds);
@@ -63,7 +63,7 @@ public class BoundsTester<R> extends RectangleTester<R> {
 	}
 
 	@Override
-	public BoundsTester<R> include(Point includeBounds){
+	public BoundsTester<R> extend(Point includeBounds){
 		Rectangle bounds = callRef();
 		Rectangle merged = merge(this.bounds, includeBounds);
 		Rectangle newBounds = merge(bounds, includeBounds);

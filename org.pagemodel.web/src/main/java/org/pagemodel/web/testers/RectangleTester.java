@@ -18,13 +18,16 @@ package org.pagemodel.web.testers;
 
 import org.openqa.selenium.Point;
 import org.openqa.selenium.Rectangle;
-import org.pagemodel.core.TestContext;
 import org.pagemodel.core.testers.ComparableTester;
 import org.pagemodel.core.testers.TestEvaluator;
+import org.pagemodel.core.utils.ThrowingFunction;
 import org.pagemodel.core.utils.json.JsonObjectBuilder;
 import org.pagemodel.web.WebTestContext;
+import org.pagemodel.web.utils.ImageAnnotator;
 import org.pagemodel.web.utils.Screenshot;
 
+import javax.imageio.ImageIO;
+import java.io.File;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
@@ -102,7 +105,23 @@ public class RectangleTester<R> {
 		return new ComparableTester<>(() -> callRef().getHeight(), returnObj, testContext, getEvaluator());
 	}
 
-	public BoundsTester<R> include(Rectangle includeBounds){
+	public RectangleTester<R> transform(ThrowingFunction<Rectangle,Rectangle,?> transform) {
+		return new RectangleTester<>(() -> ThrowingFunction.unchecked(transform).apply(callRef()), returnObj, testContext, getEvaluator());
+	}
+
+	public RectangleTester<R> translate(int x, int y) {
+		return transform(rect -> new Rectangle(rect.x + x, rect.y + y, rect.height, rect.width));
+	}
+
+	public RectangleTester<R> setOrigin(int x, int y) {
+		return transform(rect -> new Rectangle(x, y, rect.height, rect.width));
+	}
+
+	public RectangleTester<R> pad(int padding) {
+		return transform(rect -> new Rectangle(rect.x - padding, rect.y - padding, rect.height + padding + padding, rect.width + padding + padding));
+	}
+
+	public BoundsTester<R> extend(Rectangle includeBounds){
 		Rectangle bounds = callRef();
 		Rectangle newBounds = merge(bounds, includeBounds);
 		getEvaluator().logEvent(TestEvaluator.TEST_BUILD,
@@ -113,7 +132,7 @@ public class RectangleTester<R> {
 		return new BoundsTester<>(includeBounds, ref, returnObj, testContext, getEvaluator());
 	}
 
-	public BoundsTester<R> include(Point includeBounds){
+	public BoundsTester<R> extend(Point includeBounds){
 		Rectangle bounds = callRef();
 		Rectangle newBounds = merge(bounds, includeBounds);
 		getEvaluator().logEvent(TestEvaluator.TEST_BUILD,
@@ -131,6 +150,15 @@ public class RectangleTester<R> {
 
 	public R takeScreenshot(String filename){
 		return takeScreenshot(filename, 0);
+	}
+
+	public ImageAnnotator<R> editScreenshot(int padding){
+		String filename = Screenshot.takeScreenshot(testContext.getDriver(), callRef(), padding, "edit", true);
+		return new ImageAnnotator<>(() -> ImageIO.read(new File(filename)), returnObj, testContext, getEvaluator());
+	}
+
+	public ImageAnnotator<R> editScreenshot(){
+		return editScreenshot(0);
 	}
 
 	protected Rectangle merge(Rectangle a, Rectangle b){

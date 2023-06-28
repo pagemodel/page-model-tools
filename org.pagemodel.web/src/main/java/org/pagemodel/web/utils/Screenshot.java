@@ -32,10 +32,14 @@ import java.util.Date;
  */
 public class Screenshot {
 
-	private static int SCREENSHOT_NUMBER = 1;
+	static int SCREENSHOT_NUMBER = 1;
 	public static String SCREENSHOT_DEST = "build/screenshots/";
 
 	public static <T> String takeScreenshot(WebTestContext testContext, String filenamePrefix) {
+		return takeScreenshot(testContext, filenamePrefix, true);
+	}
+
+	public static <T> String takeScreenshot(WebTestContext testContext, String filenamePrefix, boolean formatName) {
 		TestEvaluator.Now eval = new TestEvaluator.Now();
 		if (testContext == null) {
 			eval.logMessage("Error: Unable to take screenshot, null TestContext.");
@@ -45,10 +49,14 @@ public class Screenshot {
 			eval.logMessage("Error: Unable to take screenshot, null WebDriver in TestContext.");
 			return null;
 		}
-		return takeScreenshot(testContext.getDriver(), filenamePrefix);
+		return takeScreenshot(testContext.getDriver(), filenamePrefix, formatName);
 	}
 
 	public static String takeScreenshot(WebDriver driver, String filenamePrefix) {
+		return takeScreenshot(driver, filenamePrefix, true);
+	}
+
+	public static String takeScreenshot(WebDriver driver, String filenamePrefix, boolean formatName) {
 		File destFolder = new File(SCREENSHOT_DEST);
 		TestEvaluator.Now eval = new TestEvaluator.Now();
 		if (!destFolder.exists()) {
@@ -58,10 +66,15 @@ public class Screenshot {
 					() -> destFolder.mkdirs(),
 					null, null);
 		}
-		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
-		String date = simpleDateFormat.format(new Date());
-		String filename = String.format("%03d_%s_%s.png", SCREENSHOT_NUMBER++, filenamePrefix, date);
-		File screenshot = new File(destFolder, filename);
+		File screenshot;
+		if(formatName){
+			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
+			String date = simpleDateFormat.format(new Date());
+			String filename = String.format("%03d_%s_%s.png", SCREENSHOT_NUMBER++, filenamePrefix, date);
+			screenshot = new File(destFolder, filename);
+		}else{
+			screenshot = new File(destFolder, filenamePrefix+".png");
+		}
 
 		byte[] bytes = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
 		String base64Encoded = Base64.getEncoder().encodeToString(bytes);

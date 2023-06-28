@@ -23,9 +23,12 @@ import org.pagemodel.web.PageModel;
 import org.pagemodel.web.PageUtils;
 import org.pagemodel.web.WebTestContext;
 import org.pagemodel.web.paths.PageFlow;
+import org.pagemodel.web.utils.ImageAnnotator;
 import org.pagemodel.web.utils.RefreshTracker;
 import org.pagemodel.web.utils.Screenshot;
 
+import javax.imageio.ImageIO;
+import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.TimeUnit;
@@ -158,6 +161,11 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 	public P takeScreenshot(String filePrefix) {
 		Screenshot.takeScreenshot(testContext, filePrefix + "_" + page.getClass().getSimpleName());
 		return page;
+	}
+
+	public ImageAnnotator<P> editScreenshot(){
+		String filename = Screenshot.takeScreenshot(testContext, "edit");
+		return new ImageAnnotator<>(() -> ImageIO.read(new File(filename)), page, testContext, getEvaluator());
 	}
 
 	public P logPageSource(String...messages){
