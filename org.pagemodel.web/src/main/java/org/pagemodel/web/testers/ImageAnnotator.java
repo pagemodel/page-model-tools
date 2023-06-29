@@ -44,9 +44,9 @@ public class ImageAnnotator<R> {
 	protected final R returnObj;
 	protected final Callable<BufferedImage> ref;
 	protected final WebTestContext testContext;
-	private TestEvaluator testEvaluator;
+	private final TestEvaluator testEvaluator;
 	protected BufferedImage image = null;
-	protected Graphics graphics = null;
+	protected Graphics2D graphics = null;
 
 	public ImageAnnotator(Callable<BufferedImage> ref, R returnObj, WebTestContext testContext, TestEvaluator testEvaluator) {
 		this.ref = ref;
@@ -55,13 +55,13 @@ public class ImageAnnotator<R> {
 		this.testEvaluator = testEvaluator;
 	}
 
-	protected Graphics callRef() {
+	protected Graphics2D callRef() {
 		if(graphics != null){
 			return graphics;
 		}
 		try {
 			BufferedImage image = getImage();
-			graphics = image == null ? null : image.getGraphics();
+			graphics = image == null ? null : (Graphics2D)image.getGraphics();
 			return graphics;
 		} catch (Exception ex) {
 			return null;
@@ -96,6 +96,16 @@ public class ImageAnnotator<R> {
 
 	public ImageAnnotator<R> setFont(Font font){
 		callRef().setFont(font);
+		return this;
+	}
+
+	public ImageAnnotator<R> setStroke(Stroke stroke){
+		callRef().setStroke(stroke);
+		return this;
+	}
+
+	public ImageAnnotator<R> setBackground(Color color){
+		callRef().setBackground(color);
 		return this;
 	}
 

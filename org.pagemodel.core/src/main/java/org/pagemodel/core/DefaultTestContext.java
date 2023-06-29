@@ -96,6 +96,11 @@ public class DefaultTestContext implements TestContext {
 	}
 
 	@Override
+	public boolean containsKey(String key) {
+		return storedObjects.containsKey(key);
+	}
+
+	@Override
 	public DefaultTestContext removeStored(String key) {
 		return getEvaluator().testCondition(
 				"remove stored", op -> op.addValue("value", key).addValue("actual",storedObjects.get(key)),

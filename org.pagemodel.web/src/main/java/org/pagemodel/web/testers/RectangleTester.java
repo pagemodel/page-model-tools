@@ -38,7 +38,7 @@ public class RectangleTester<R> extends HasPageBounds {
 	protected final R returnObj;
 	protected final Callable<Rectangle> ref;
 	protected final WebTestContext testContext;
-	private TestEvaluator testEvaluator;
+	private final TestEvaluator testEvaluator;
 
 	public RectangleTester(Callable<Rectangle> ref, R returnObj, WebTestContext testContext, TestEvaluator testEvaluator) {
 		this.ref = ref;
@@ -117,7 +117,35 @@ public class RectangleTester<R> extends HasPageBounds {
 	}
 
 	public RectangleTester<R> pad(int padding) {
-		return transform(rect -> new Rectangle(rect.x - padding, rect.y - padding, rect.height + padding + padding, rect.width + padding + padding));
+		return pad(padding, padding, padding, padding);
+	}
+
+	public RectangleTester<R> pad(int width, int height) {
+		return pad(height, width, height, width);
+	}
+
+	public RectangleTester<R> pad(int top, int right, int bottom, int left) {
+		return transform(rect -> pad(callRef(), top, right, bottom, left, getEvaluator()));
+	}
+
+	protected static Rectangle pad(Rectangle rect, int top, int right, int bottom, int left, TestEvaluator evaluator) {
+		int top2 = Math.min(rect.x, top);
+		int left2 = Math.min(rect.y, left);
+		Rectangle newRect = new Rectangle(rect.x - left2, rect.y - top2, rect.height + top2 + bottom, rect.width + left2 + right);
+		if(evaluator != null) {
+			evaluator.logEvent(TestEvaluator.TEST_BUILD,
+					"pad rectangle", op -> op
+							.addValue("x", rect.x)
+							.addValue("y", rect.y)
+							.addValue("width", rect.width)
+							.addValue("height", rect.height)
+							.addValue("top", top2)
+							.addValue("right", right)
+							.addValue("bottom", bottom)
+							.addValue("left", left2)
+							.addObject("new", rectangleJson(newRect)));
+		}
+		return newRect;
 	}
 
 	public BoundsTester<R> extend(Rectangle includeBounds){
@@ -133,6 +161,11 @@ public class RectangleTester<R> extends HasPageBounds {
 
 	public BoundsTester<R> extend(Point point){
 		Rectangle includeBounds = new Rectangle(point.getX(), point.getY(), 0, 0);
+		return extend(includeBounds);
+	}
+
+	public BoundsTester<R> extend(int x, int y){
+		Rectangle includeBounds = new Rectangle(x, y, 0, 0);
 		return extend(includeBounds);
 	}
 

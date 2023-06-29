@@ -17,6 +17,7 @@
 package org.pagemodel.web.testers;
 
 import org.openqa.selenium.*;
+import org.pagemodel.core.testers.ComparableTester;
 import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.core.utils.ThrowingFunction;
 import org.pagemodel.core.utils.json.JsonBuilder;
@@ -26,6 +27,7 @@ import org.pagemodel.web.WebTestContext;
 import org.pagemodel.web.paths.PageFlow;
 import org.pagemodel.web.utils.RefreshTracker;
 import org.pagemodel.web.utils.Screenshot;
+import org.pagemodel.web.utils.WindowHelper;
 
 import javax.imageio.ImageIO;
 import java.io.File;
@@ -51,22 +53,6 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 				"focused element", op -> op
 						.addValue("model", page.getClass().getName()));
 		return new WebElementTester<>(ClickAction.make(() -> testContext.getDriver().switchTo().activeElement(), page, getEvaluator()), getEvaluator());
-	}
-
-	public RectangleTester<P> testLocation(int x, int y, int width, int height) {
-		Rectangle rectangle = new Rectangle(x, y, height, width);
-		getEvaluator().addSourceEvent(TestEvaluator.TEST_FIND,
-				"location", op -> op
-						.addValue("location", RectangleTester.rectangleJson(rectangle)));
-		return new RectangleTester<>(() -> rectangle, page, testContext, getEvaluator());
-	}
-
-	public RectangleTester<P> testLocation(Rectangle rect){
-		return testLocation(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
-	}
-
-	public RectangleTester<P> testLocation(ThrowingFunction<P,HasPageBounds,?> getBounds){
-		return testLocation(ThrowingFunction.unchecked(getBounds).apply(page).getBounds());
 	}
 
 	public WebElementTester<P, P> testHTMLElement() {
@@ -128,6 +114,43 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 		return new PageTesterBase<>(page, testContext, new WebTestEvaluator.WaitAndRefresh<>(testContext, WebElementTester.WebElementWait.DEFAULT_WAIT_SEC, page, page));
 	}
 
+	public RectangleTester<P> testBrowserSize() {
+		Dimension dim = testContext.getDriver().manage().window().getSize();
+		Rectangle rectangle = new Rectangle(0, 0, dim.getHeight(), dim.getWidth());
+		getEvaluator().addSourceEvent(TestEvaluator.TEST_FIND,
+				"window size", op -> op
+						.addObject("size", RectangleTester.rectangleJson(rectangle)));
+		return new RectangleTester<>(() -> rectangle, page, testContext, getEvaluator());
+	}
+
+	public ComparableTester<Integer,P> testViewHeight() {
+		return executeJavaScript("return window.innerHeight;", 5, false).testReturnLong().transform(Long::intValue);
+	}
+
+	public ComparableTester<Integer,P> testViewWidth() {
+		return executeJavaScript("return window.innerWidth;", 5, false).testReturnLong().transform(Long::intValue);
+	}
+
+	public RectangleTester<P> testLocation(int x, int y, int width, int height) {
+		Rectangle rectangle = new Rectangle(x, y, height, width);
+		getEvaluator().addSourceEvent(TestEvaluator.TEST_FIND,
+				"location", op -> op
+						.addValue("location", RectangleTester.rectangleJson(rectangle)));
+		return new RectangleTester<>(() -> rectangle, page, testContext, getEvaluator());
+	}
+
+	public RectangleTester<P> testLocation(Rectangle rect){
+		return testLocation(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
+	}
+
+	public RectangleTester<P> testLocation(String storedRectKey){
+		return testLocation(page.getContext().<Rectangle>load(storedRectKey));
+	}
+
+	public RectangleTester<P> testLocation(ThrowingFunction<P,HasPageBounds,?> getBounds){
+		return testLocation(ThrowingFunction.unchecked(getBounds).apply(page).getBounds());
+	}
+
 	public P setWindowSize(int width, int height) {
 		return getEvaluator().testExecute(
 				"set window size", op -> op
@@ -135,6 +158,30 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 						.addValue("model",getModelName()),
 				() -> testContext.getDriver().manage().window().setSize(new Dimension(width, height)),
 				page, page.getContext());
+	}
+
+	public P setWindowSizeToInclude(int setWidth, int setHeight, ThrowingFunction<P,HasPageBounds,?> getBounds){
+		Dimension dim = testContext.getDriver().manage().window().getSize();
+		int newWidth = dim.getWidth();
+		if(setWidth != 0 && setWidth != dim.getWidth()){
+			newWidth = setWidth;
+		}
+		int newHeight = dim.getHeight();
+		if(setHeight != 0 && setHeight != dim.getHeight()){
+			newHeight = setHeight;
+		}
+		if(newWidth != dim.getWidth() || newHeight != dim.getHeight()){
+			setWindowSize(newWidth, newHeight);
+		}
+		WindowHelper.storeBrowserOffset(testContext);
+		Rectangle rectangle = RectangleTester.pad(ThrowingFunction.unchecked(getBounds).apply(page).getBounds(),
+				0, testContext.load("wtcWidthOffset"), testContext.load("wtcHeightOffset"), 0,
+				getEvaluator());
+		return setWindowSize(Math.max(setWidth, rectangle.x + rectangle.width), Math.max(setHeight, rectangle.y + rectangle.height));
+	}
+
+	public P setWindowSizeToInclude(ThrowingFunction<P,HasPageBounds,?> getBounds){
+		return setWindowSizeToInclude(0, 0, getBounds);
 	}
 
 	public P maximizeWindow() {

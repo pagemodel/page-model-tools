@@ -36,15 +36,17 @@ public interface TestContext {
 
 	<T> T load(String key);
 
-	default public String loadString(String key) {
+	boolean containsKey(String key);
+
+	default String loadString(String key) {
 		return load(key);
 	}
 
-	default public Integer loadInteger(String key) {
+	default Integer loadInteger(String key) {
 		return load(key);
 	}
 
-	default public Date loadDate(String key) {
+	default Date loadDate(String key) {
 		return load(key);
 	}
 
