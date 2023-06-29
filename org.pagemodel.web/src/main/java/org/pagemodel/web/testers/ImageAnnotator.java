@@ -256,7 +256,12 @@ public class ImageAnnotator<R> {
 		return drawText(text, point.getX(), point.getY());
 	}
 
-	public ImageAnnotator<R> paint(ThrowingConsumer<Graphics,?> paintFunc){
+	public ImageAnnotator<R> paint(ThrowingConsumer<ImageAnnotator<R>,?> paintFunc){
+		ThrowingConsumer.unchecked(paintFunc).accept(this);
+		return this;
+	}
+
+	public ImageAnnotator<R> useGraphics(ThrowingConsumer<Graphics,?> paintFunc){
 		ThrowingConsumer.unchecked(paintFunc).accept(callRef());
 		return this;
 	}

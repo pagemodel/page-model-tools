@@ -74,6 +74,23 @@ public class PointTester<R> extends HasPageBounds {
 		return transform(rect -> new Point(rect.x + x, rect.y + y));
 	}
 
+	public RectangleTester<R> asRectangle(int width, int height) {
+		return new RectangleTester<>(() -> toRect(callRef(), width, height), returnObj, testContext, getEvaluator());
+	}
+
+	public RectangleTester<R> asRectangle(){
+		return asRectangle(0, 0);
+	}
+
+	private static Rectangle toRect(Point p, int width, int height){
+		int x1 = p.x, x2 = p.x + width, y1 = p.y, y2 = p.y + height;
+		int xmin = Math.min(x1, x2);
+		int xmax = Math.max(x1, x2);
+		int ymin = Math.min(y1, y2);
+		int ymax = Math.max(y1, y2);
+		return new Rectangle(xmin, ymin, ymax - ymin, xmax - xmin);
+	}
+
 	@Override
 	protected Rectangle getBounds() {
 		Point p = callRef();
