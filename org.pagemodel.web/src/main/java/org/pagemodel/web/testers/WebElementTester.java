@@ -16,6 +16,7 @@
 
 package org.pagemodel.web.testers;
 
+import org.openqa.selenium.Rectangle;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -36,7 +37,7 @@ import java.util.function.Function;
  * @param <N> return type for clicking element
  * @author Matt Stevenson [matt@pagemodel.org]
  */
-public class WebElementTester<R, N extends PageModel<? super N>> {
+public class WebElementTester<R, N extends PageModel<? super N>> extends HasPageBounds {
 
 	protected R returnObj;
 	protected Callable<WebElement> elementRef;
@@ -278,6 +279,11 @@ public class WebElementTester<R, N extends PageModel<? super N>> {
 		} catch (Throwable t) {
 			return JsonBuilder.object().toMap();
 		}
+	}
+
+	@Override
+	protected Rectangle getBounds() {
+		return location().getBounds();
 	}
 
 	/**

@@ -23,7 +23,6 @@ import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.core.utils.ThrowingFunction;
 import org.pagemodel.core.utils.json.JsonObjectBuilder;
 import org.pagemodel.web.WebTestContext;
-import org.pagemodel.web.utils.ImageAnnotator;
 import org.pagemodel.web.utils.Screenshot;
 
 import javax.imageio.ImageIO;
@@ -34,7 +33,7 @@ import java.util.function.Consumer;
 /**
  * @author Matt Stevenson [matt@pagemodel.org]
  */
-public class RectangleTester<R> {
+public class RectangleTester<R> extends HasPageBounds {
 
 	protected final R returnObj;
 	protected final Callable<Rectangle> ref;
@@ -132,33 +131,29 @@ public class RectangleTester<R> {
 		return new BoundsTester<>(includeBounds, ref, returnObj, testContext, getEvaluator());
 	}
 
-	public BoundsTester<R> extend(Point includeBounds){
-		Rectangle bounds = callRef();
-		Rectangle newBounds = merge(bounds, includeBounds);
-		getEvaluator().logEvent(TestEvaluator.TEST_BUILD,
-				"bounds", op -> op
-						.addObject("current", rectangleJson(bounds))
-						.addObject("include", pointJson(includeBounds))
-						.addObject("new", rectangleJson(newBounds)));
-		return new BoundsTester<>(newBounds, ref, returnObj, testContext, getEvaluator());
+	public BoundsTester<R> extend(Point point){
+		Rectangle includeBounds = new Rectangle(point.getX(), point.getY(), 0, 0);
+		return extend(includeBounds);
 	}
 
-	public R takeScreenshot(String filename, int padding){
-		Screenshot.takeScreenshot(testContext.getDriver(), callRef(), padding, filename, false);
-		return returnObj;
+	public BoundsTester<R> extend(ThrowingFunction<R,HasPageBounds,?> getBounds){
+		Rectangle includeBounds = ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds();
+		return extend(includeBounds);
 	}
 
 	public R takeScreenshot(String filename){
-		return takeScreenshot(filename, 0);
-	}
-
-	public ImageAnnotator<R> editScreenshot(int padding){
-		String filename = Screenshot.takeScreenshot(testContext.getDriver(), callRef(), padding, "edit", true);
-		return new ImageAnnotator<>(() -> ImageIO.read(new File(filename)), returnObj, testContext, getEvaluator());
+		Screenshot.takeScreenshot(testContext.getDriver(), callRef(), 0, filename, false);
+		return returnObj;
 	}
 
 	public ImageAnnotator<R> editScreenshot(){
-		return editScreenshot(0);
+		String filename = Screenshot.takeScreenshot(testContext.getDriver(), callRef(), 0, "edit", true);
+		return new ImageAnnotator<>(() -> ImageIO.read(new File(filename)), returnObj, testContext, getEvaluator());
+	}
+
+	@Override
+	protected Rectangle getBounds() {
+		return callRef();
 	}
 
 	protected Rectangle merge(Rectangle a, Rectangle b){
@@ -171,21 +166,6 @@ public class RectangleTester<R> {
 		int xmax = Math.max(a.x + a.width, b.x + b.width);
 		int ymin = Math.min(a.y, b.y);
 		int ymax = Math.max(a.y + a.height, b.y + b.height);
-		return new Rectangle(xmin, ymin, ymax - ymin, xmax - xmin);
-	}
-
-	protected Rectangle merge(Rectangle a, Point b){
-		if(a == null && b == null){
-			return null;
-		}else if(a == null){
-			return new Rectangle(b.x, b.y, 1, 1);
-		}else if(b == null){
-			return a;
-		}
-		int xmin = Math.min(a.x, b.x);
-		int xmax = Math.max(a.x + a.width, b.x);
-		int ymin = Math.min(a.y, b.y);
-		int ymax = Math.max(a.y + a.height, b.y);
 		return new Rectangle(xmin, ymin, ymax - ymin, xmax - xmin);
 	}
 

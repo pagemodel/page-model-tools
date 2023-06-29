@@ -18,7 +18,6 @@ package org.pagemodel.web.testers;
 
 import org.openqa.selenium.Point;
 import org.openqa.selenium.Rectangle;
-import org.pagemodel.core.TestContext;
 import org.pagemodel.core.testers.ComparableTester;
 import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.core.utils.ThrowingFunction;
@@ -29,7 +28,7 @@ import java.util.concurrent.Callable;
 /**
  * @author Matt Stevenson [matt@pagemodel.org]
  */
-public class PointTester<R> {
+public class PointTester<R> extends HasPageBounds {
 	protected final R returnObj;
 	protected final Callable<Point> ref;
 	protected final WebTestContext testContext;
@@ -75,4 +74,12 @@ public class PointTester<R> {
 		return transform(rect -> new Point(rect.x + x, rect.y + y));
 	}
 
+	@Override
+	protected Rectangle getBounds() {
+		Point p = callRef();
+		if(p == null){
+			return null;
+		}
+		return new Rectangle(p.x, p.y, 0, 0);
+	}
 }

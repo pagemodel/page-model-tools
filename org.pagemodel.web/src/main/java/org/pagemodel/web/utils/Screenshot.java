@@ -32,7 +32,7 @@ import java.util.Date;
  */
 public class Screenshot {
 
-	static int SCREENSHOT_NUMBER = 1;
+	public static int SCREENSHOT_NUMBER = 1;
 	public static String SCREENSHOT_DEST = "build/screenshots/";
 
 	public static <T> String takeScreenshot(WebTestContext testContext, String filenamePrefix) {

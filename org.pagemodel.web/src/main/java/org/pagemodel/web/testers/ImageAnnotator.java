@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-package org.pagemodel.web.utils;
+package org.pagemodel.web.testers;
 
 import org.openqa.selenium.Point;
 import org.openqa.selenium.Rectangle;
-import org.pagemodel.core.testers.ComparableTester;
 import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.core.utils.ThrowingConsumer;
-import org.pagemodel.core.utils.json.JsonObjectBuilder;
+import org.pagemodel.core.utils.ThrowingFunction;
 import org.pagemodel.web.WebTestContext;
-import org.pagemodel.web.testers.BoundsTester;
-import org.pagemodel.web.testers.PointTester;
 import org.pagemodel.web.utils.Screenshot;
 
 import javax.imageio.ImageIO;
@@ -37,7 +34,6 @@ import java.text.SimpleDateFormat;
 import java.util.Base64;
 import java.util.Date;
 import java.util.concurrent.Callable;
-import java.util.function.Consumer;
 
 import static org.pagemodel.web.utils.Screenshot.SCREENSHOT_DEST;
 
@@ -103,6 +99,58 @@ public class ImageAnnotator<R> {
 		return this;
 	}
 
+	public ImageAnnotator<R> drawOval(int x, int y, int width, int height){
+		callRef().drawOval(x, y, width, height);
+		return this;
+	}
+
+	public ImageAnnotator<R> drawOval(Rectangle rect){
+		return drawOval(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
+	}
+
+	public ImageAnnotator<R> drawOval(ThrowingFunction<R,HasPageBounds,?> getBounds){
+		return drawOval(ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds());
+	}
+
+	public ImageAnnotator<R> fillOval(int x, int y, int width, int height){
+		callRef().fillOval(x, y, width, height);
+		return this;
+	}
+
+	public ImageAnnotator<R> fillOval(Rectangle rect){
+		return fillOval(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
+	}
+
+	public ImageAnnotator<R> fillOval(ThrowingFunction<R,HasPageBounds,?> getBounds){
+		return fillOval(ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds());
+	}
+
+	public ImageAnnotator<R> drawArc(int x, int y, int width, int height, int startAngle, int arcAngle){
+		callRef().drawArc(x, y, width, height, startAngle, arcAngle);
+		return this;
+	}
+
+	public ImageAnnotator<R> drawArc(Rectangle rect, int startAngle, int arcAngle){
+		return drawArc(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight(), startAngle, arcAngle);
+	}
+
+	public ImageAnnotator<R> drawArc(ThrowingFunction<R,HasPageBounds,?> getBounds, int startAngle, int arcAngle){
+		return drawArc(ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds(), startAngle, arcAngle);
+	}
+
+	public ImageAnnotator<R> fillArc(int x, int y, int width, int height, int startAngle, int arcAngle){
+		callRef().fillArc(x, y, width, height, startAngle, arcAngle);
+		return this;
+	}
+
+	public ImageAnnotator<R> fillArc(Rectangle rect, int startAngle, int arcAngle){
+		return fillArc(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight(), startAngle, arcAngle);
+	}
+
+	public ImageAnnotator<R> fillArc(ThrowingFunction<R,HasPageBounds,?> getBounds, int startAngle, int arcAngle){
+		return fillArc(ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds(), startAngle, arcAngle);
+	}
+
 	public ImageAnnotator<R> drawRect(int x, int y, int width, int height){
 		callRef().drawRect(x, y, width, height);
 		return this;
@@ -110,6 +158,10 @@ public class ImageAnnotator<R> {
 
 	public ImageAnnotator<R> drawRect(Rectangle rect){
 		return drawRect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
+	}
+
+	public ImageAnnotator<R> drawRect(ThrowingFunction<R,HasPageBounds,?> getBounds){
+		return drawRect(ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds());
 	}
 
 	public ImageAnnotator<R> drawRoundedRect(int x, int y, int width, int height, int arcWidth, int arcHeight){
@@ -121,6 +173,10 @@ public class ImageAnnotator<R> {
 		return drawRoundedRect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight(), arcWidth, arcHeight);
 	}
 
+	public ImageAnnotator<R> drawRoundedRect(ThrowingFunction<R,HasPageBounds,?> getBounds, int arcWidth, int arcHeight){
+		return drawRoundedRect(ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds(), arcWidth, arcHeight);
+	}
+
 	public ImageAnnotator<R> clip(int x, int y, int width, int height){
 		callRef().clipRect(x, y, width, height);
 		return this;
@@ -128,6 +184,10 @@ public class ImageAnnotator<R> {
 
 	public ImageAnnotator<R> clip(Rectangle rect){
 		return clip(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
+	}
+
+	public ImageAnnotator<R> clip(ThrowingFunction<R,HasPageBounds,?> getBounds){
+		return clip(ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds());
 	}
 
 	public ImageAnnotator<R> clear(int x, int y, int width, int height){
@@ -139,6 +199,10 @@ public class ImageAnnotator<R> {
 		return clear(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
 	}
 
+	public ImageAnnotator<R> clear(ThrowingFunction<R,HasPageBounds,?> getBounds){
+		return clear(ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds());
+	}
+
 	public ImageAnnotator<R> fillRect(int x, int y, int width, int height){
 		callRef().fillRect(x, y, width, height);
 		return this;
@@ -146,6 +210,10 @@ public class ImageAnnotator<R> {
 
 	public ImageAnnotator<R> fillRect(Rectangle rect){
 		return fillRect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
+	}
+
+	public ImageAnnotator<R> fillRect(ThrowingFunction<R,HasPageBounds,?> getBounds){
+		return fillRect(ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds());
 	}
 
 	public ImageAnnotator<R> fillRoundedRect(int x, int y, int width, int height, int arcWidth, int arcHeight){
@@ -157,6 +225,10 @@ public class ImageAnnotator<R> {
 		return fillRoundedRect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight(), arcWidth, arcHeight);
 	}
 
+	public ImageAnnotator<R> fillRoundedRect(ThrowingFunction<R,HasPageBounds,?> getBounds, int arcWidth, int arcHeight){
+		return fillRoundedRect(ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds(), arcWidth, arcHeight);
+	}
+
 	public ImageAnnotator<R> drawText(String text, int x, int y){
 		callRef().drawString(text, x, y);
 		return this;
@@ -164,6 +236,10 @@ public class ImageAnnotator<R> {
 
 	public ImageAnnotator<R> drawText(String text, Rectangle rect){
 		return drawText(text, rect.getX(), rect.getY());
+	}
+
+	public ImageAnnotator<R> drawText(String text, ThrowingFunction<R,HasPageBounds,?> getBounds){
+		return drawText(text,ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds());
 	}
 
 	public ImageAnnotator<R> drawText(String text, Point point){

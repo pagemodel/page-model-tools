@@ -23,7 +23,6 @@ import org.pagemodel.web.PageModel;
 import org.pagemodel.web.PageUtils;
 import org.pagemodel.web.WebTestContext;
 import org.pagemodel.web.paths.PageFlow;
-import org.pagemodel.web.utils.ImageAnnotator;
 import org.pagemodel.web.utils.RefreshTracker;
 import org.pagemodel.web.utils.Screenshot;
 

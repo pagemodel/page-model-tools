@@ -16,13 +16,9 @@
 
 package org.pagemodel.web.testers;
 
-import org.openqa.selenium.Point;
 import org.openqa.selenium.Rectangle;
-import org.pagemodel.core.TestContext;
-import org.pagemodel.core.testers.ComparableTester;
 import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.web.WebTestContext;
-import org.pagemodel.web.utils.Screenshot;
 
 import java.util.concurrent.Callable;
 
@@ -58,19 +54,6 @@ public class BoundsTester<R> extends RectangleTester<R> {
 				"bounds", op -> op
 						.addObject("current", rectangleJson(bounds))
 						.addObject("include", rectangleJson(includeBounds))
-						.addObject("new", rectangleJson(newBounds)));
-		return new BoundsTester<>(merged, ref, returnObj, testContext, getEvaluator());
-	}
-
-	@Override
-	public BoundsTester<R> extend(Point includeBounds){
-		Rectangle bounds = callRef();
-		Rectangle merged = merge(this.bounds, includeBounds);
-		Rectangle newBounds = merge(bounds, includeBounds);
-		getEvaluator().logEvent(TestEvaluator.TEST_BUILD,
-				"bounds", op -> op
-						.addObject("current", rectangleJson(bounds))
-						.addObject("include", pointJson(includeBounds))
 						.addObject("new", rectangleJson(newBounds)));
 		return new BoundsTester<>(merged, ref, returnObj, testContext, getEvaluator());
 	}
