@@ -47,12 +47,24 @@ public class ImageAnnotator<R> {
 	private final TestEvaluator testEvaluator;
 	protected BufferedImage image = null;
 	protected Graphics2D graphics = null;
+	protected Point imageOrigin;
+	protected Point currentOrigin;
 
-	public ImageAnnotator(Callable<BufferedImage> ref, R returnObj, WebTestContext testContext, TestEvaluator testEvaluator) {
+	public ImageAnnotator(Point origin, Callable<BufferedImage> ref, R returnObj, WebTestContext testContext, TestEvaluator testEvaluator) {
 		this.ref = ref;
 		this.returnObj = returnObj;
 		this.testContext = testContext;
 		this.testEvaluator = testEvaluator;
+		this.imageOrigin = origin;
+		if(this.imageOrigin == null){
+			this.imageOrigin = new Point(0,0);
+		}
+		this.currentOrigin = new Point(0, 0);
+		resetOrigin();
+	}
+
+	public ImageAnnotator(Callable<BufferedImage> ref, R returnObj, WebTestContext testContext, TestEvaluator testEvaluator) {
+		this(new Point(0,0), ref, returnObj, testContext, testEvaluator);
 	}
 
 	protected Graphics2D callRef() {
@@ -87,6 +99,32 @@ public class ImageAnnotator<R> {
 	public R storeValue(String key) {
 		testContext.store(key, callRef());
 		return returnObj;
+	}
+
+	public ImageAnnotator<R> resetOrigin(){
+		if(this.currentOrigin.x == 0 && this.currentOrigin.y == 0){
+			return translateOrigin(imageOrigin);
+		}else{
+			return translateOrigin(currentOrigin);
+		}
+	}
+
+	public ImageAnnotator<R> translateOrigin(int x, int y){
+		this.currentOrigin = new Point(this.currentOrigin.x - x, this.currentOrigin.y - y);
+		callRef().translate(-x, -y);
+		return this;
+	}
+
+	public ImageAnnotator<R> translateOrigin(Point point){
+		return translateOrigin(point.getX(), point.getY());
+	}
+
+	public ImageAnnotator<R> translateOrigin(Rectangle rect){
+		return translateOrigin(rect.getX(), rect.getY());
+	}
+
+	public ImageAnnotator<R> translateOrigin(ThrowingFunction<R,HasPageBounds,?> getBounds){
+		return translateOrigin(ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds());
 	}
 
 	public ImageAnnotator<R> setColor(Color color){

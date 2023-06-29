@@ -180,8 +180,9 @@ public class RectangleTester<R> extends HasPageBounds {
 	}
 
 	public ImageAnnotator<R> editScreenshot(){
-		String filename = Screenshot.takeScreenshot(testContext.getDriver(), callRef(), 0, "edit", true);
-		return new ImageAnnotator<>(() -> ImageIO.read(new File(filename)), returnObj, testContext, getEvaluator());
+		Rectangle rect = callRef();
+		String filename = Screenshot.takeScreenshot(testContext.getDriver(), rect, 0, "edit", true);
+		return new ImageAnnotator<>(rect.getPoint(), () -> ImageIO.read(new File(filename)), returnObj, testContext, getEvaluator());
 	}
 
 	@Override

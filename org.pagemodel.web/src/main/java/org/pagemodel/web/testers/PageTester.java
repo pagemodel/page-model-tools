@@ -228,7 +228,7 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 
 	public ImageAnnotator<P> editScreenshot(){
 		String filename = Screenshot.takeScreenshot(testContext, "edit");
-		return new ImageAnnotator<>(() -> ImageIO.read(new File(filename)), page, testContext, getEvaluator());
+		return new ImageAnnotator<>(new Point(0,0), () -> ImageIO.read(new File(filename)), page, testContext, getEvaluator());
 	}
 
 	public P logPageSource(String...messages){
