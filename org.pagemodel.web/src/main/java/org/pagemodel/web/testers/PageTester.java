@@ -18,6 +18,7 @@ package org.pagemodel.web.testers;
 
 import org.openqa.selenium.*;
 import org.pagemodel.core.testers.TestEvaluator;
+import org.pagemodel.core.utils.ThrowingFunction;
 import org.pagemodel.core.utils.json.JsonBuilder;
 import org.pagemodel.web.PageModel;
 import org.pagemodel.web.PageUtils;
@@ -50,6 +51,22 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 				"focused element", op -> op
 						.addValue("model", page.getClass().getName()));
 		return new WebElementTester<>(ClickAction.make(() -> testContext.getDriver().switchTo().activeElement(), page, getEvaluator()), getEvaluator());
+	}
+
+	public RectangleTester<P> testLocation(int x, int y, int width, int height) {
+		Rectangle rectangle = new Rectangle(x, y, height, width);
+		getEvaluator().addSourceEvent(TestEvaluator.TEST_FIND,
+				"location", op -> op
+						.addValue("location", RectangleTester.rectangleJson(rectangle)));
+		return new RectangleTester<>(() -> rectangle, page, testContext, getEvaluator());
+	}
+
+	public RectangleTester<P> testLocation(Rectangle rect){
+		return testLocation(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
+	}
+
+	public RectangleTester<P> testLocation(ThrowingFunction<P,HasPageBounds,?> getBounds){
+		return testLocation(ThrowingFunction.unchecked(getBounds).apply(page).getBounds());
 	}
 
 	public WebElementTester<P, P> testHTMLElement() {

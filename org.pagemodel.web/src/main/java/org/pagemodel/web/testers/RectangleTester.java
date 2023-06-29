@@ -169,7 +169,7 @@ public class RectangleTester<R> extends HasPageBounds {
 		return new Rectangle(xmin, ymin, ymax - ymin, xmax - xmin);
 	}
 
-	protected Consumer<JsonObjectBuilder> rectangleJson(Rectangle a){
+	protected static Consumer<JsonObjectBuilder> rectangleJson(Rectangle a){
 		if(a == null){
 			return json -> json
 					.addValue("x", "null")
@@ -182,7 +182,7 @@ public class RectangleTester<R> extends HasPageBounds {
 				.addValue("height", a.height);
 	}
 
-	protected Consumer<JsonObjectBuilder> pointJson(Point a){
+	protected static Consumer<JsonObjectBuilder> pointJson(Point a){
 		if(a == null){
 			return json -> json
 				.addValue("x", "null")
