@@ -30,8 +30,7 @@ import org.pagemodel.web.utils.RefreshTracker;
 import org.pagemodel.web.utils.Screenshot;
 import org.pagemodel.web.utils.WindowHelper;
 
-import javax.imageio.ImageIO;
-import java.io.File;
+import java.awt.image.BufferedImage;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.TimeUnit;
@@ -228,8 +227,8 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 	}
 
 	public ImageAnnotator<P> editScreenshot(){
-		String filename = Screenshot.takeScreenshot(testContext, "edit");
-		return new ImageAnnotator<>(new Point(0,0), () -> ImageIO.read(new File(filename)), page, testContext, getEvaluator());
+		BufferedImage image = Screenshot.getScreenshot(testContext.getDriver(), null, 0, true);
+		return new ImageAnnotator<>(new Point(0, 0), () -> image, page, testContext, getEvaluator());
 	}
 
 	public P logPageSource(String...messages){

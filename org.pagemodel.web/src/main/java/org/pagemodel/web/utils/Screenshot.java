@@ -153,19 +153,14 @@ public class Screenshot {
 		byte[] bytes = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
 		try {
 			BufferedImage fullImg = ImageIO.read(new ByteArrayInputStream(bytes));
-			int xmin = Math.min(fullImg.getWidth(), Math.max(0, bounds.getX() - padding));
-			int xmax = Math.min(fullImg.getWidth() - xmin, Math.max(0, bounds.getWidth() + padding + padding));
-			int ymin = Math.min(fullImg.getHeight(), Math.max(0, bounds.getY() - padding));
-			int ymax = Math.min(fullImg.getHeight() - ymin, Math.max(0, bounds.getHeight() + padding + padding));
-			BufferedImage eleScreenshot = fullImg.getSubimage(xmin, ymin, xmax, ymax);
+			BufferedImage cropped = bounds == null ? fullImg : crop(fullImg, bounds, padding, padding, padding, padding);
 
 			ByteArrayOutputStream outBytes = new ByteArrayOutputStream();
-			ImageIO.write(eleScreenshot, "png", outBytes);
 			String base64Encoded = Base64.getEncoder().encodeToString(outBytes.toByteArray());
 			eval.logEvent(TestEvaluator.TEST_EXECUTE, "get screenshot", obj -> obj
 					.addValue("bounds", RectangleUtils.rectangleJson(bounds))
 					.addValue("img-base64", base64Encoded));
-			return eleScreenshot;
+			return cropped;
 		}catch (Exception ex){
 			eval.logException(TestEvaluator.TEST_ERROR, "get screenshot", obj -> obj
 							.addValue("bounds", RectangleUtils.rectangleJson(bounds))
