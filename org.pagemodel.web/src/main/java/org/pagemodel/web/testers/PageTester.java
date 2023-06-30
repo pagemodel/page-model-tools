@@ -25,6 +25,7 @@ import org.pagemodel.web.PageModel;
 import org.pagemodel.web.PageUtils;
 import org.pagemodel.web.WebTestContext;
 import org.pagemodel.web.paths.PageFlow;
+import org.pagemodel.web.utils.RectangleUtils;
 import org.pagemodel.web.utils.RefreshTracker;
 import org.pagemodel.web.utils.Screenshot;
 import org.pagemodel.web.utils.WindowHelper;
@@ -119,7 +120,7 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 		Rectangle rectangle = new Rectangle(0, 0, dim.getHeight(), dim.getWidth());
 		getEvaluator().addSourceEvent(TestEvaluator.TEST_FIND,
 				"window size", op -> op
-						.addObject("size", RectangleTester.rectangleJson(rectangle)));
+						.addObject("size", RectangleUtils.rectangleJson(rectangle)));
 		return new RectangleTester<>(() -> rectangle, page, testContext, getEvaluator());
 	}
 
@@ -135,7 +136,7 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 		Rectangle rectangle = new Rectangle(x, y, height, width);
 		getEvaluator().addSourceEvent(TestEvaluator.TEST_FIND,
 				"location", op -> op
-						.addValue("location", RectangleTester.rectangleJson(rectangle)));
+						.addValue("location", RectangleUtils.rectangleJson(rectangle)));
 		return new RectangleTester<>(() -> rectangle, page, testContext, getEvaluator());
 	}
 
@@ -174,7 +175,7 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 			setWindowSize(newWidth, newHeight);
 		}
 		WindowHelper.storeBrowserOffset(testContext);
-		Rectangle rectangle = RectangleTester.pad(ThrowingFunction.unchecked(getBounds).apply(page).getBounds(),
+		Rectangle rectangle = RectangleUtils.pad(ThrowingFunction.unchecked(getBounds).apply(page).getBounds(),
 				0, testContext.load("wtcWidthOffset"), testContext.load("wtcHeightOffset"), 0,
 				getEvaluator());
 		return setWindowSize(Math.max(setWidth, rectangle.x + rectangle.width), Math.max(setHeight, rectangle.y + rectangle.height));

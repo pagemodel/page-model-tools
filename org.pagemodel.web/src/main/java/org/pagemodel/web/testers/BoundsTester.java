@@ -19,6 +19,7 @@ package org.pagemodel.web.testers;
 import org.openqa.selenium.Rectangle;
 import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.web.WebTestContext;
+import org.pagemodel.web.utils.RectangleUtils;
 
 import java.util.concurrent.Callable;
 
@@ -42,19 +43,19 @@ public class BoundsTester<R> extends RectangleTester<R> {
 		if(bounds == null){
 			return ref;
 		}
-		return merge(ref, bounds);
+		return RectangleUtils.merge(ref, bounds);
 	}
 
 	@Override
 	public BoundsTester<R> extend(Rectangle includeBounds){
 		Rectangle bounds = callRef();
-		Rectangle merged = merge(this.bounds, includeBounds);
-		Rectangle newBounds = merge(bounds, includeBounds);
+		Rectangle merged = RectangleUtils.merge(this.bounds, includeBounds);
+		Rectangle newBounds = RectangleUtils.merge(bounds, includeBounds);
 		getEvaluator().logEvent(TestEvaluator.TEST_BUILD,
 				"bounds", op -> op
-						.addObject("current", rectangleJson(bounds))
-						.addObject("include", rectangleJson(includeBounds))
-						.addObject("new", rectangleJson(newBounds)));
+						.addObject("current", RectangleUtils.rectangleJson(bounds))
+						.addObject("include", RectangleUtils.rectangleJson(includeBounds))
+						.addObject("new", RectangleUtils.rectangleJson(newBounds)));
 		return new BoundsTester<>(merged, ref, returnObj, testContext, getEvaluator());
 	}
 }

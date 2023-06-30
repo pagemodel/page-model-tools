@@ -21,14 +21,12 @@ import org.openqa.selenium.Rectangle;
 import org.pagemodel.core.testers.ComparableTester;
 import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.core.utils.ThrowingFunction;
-import org.pagemodel.core.utils.json.JsonObjectBuilder;
 import org.pagemodel.web.WebTestContext;
+import org.pagemodel.web.utils.RectangleUtils;
 import org.pagemodel.web.utils.Screenshot;
 
-import javax.imageio.ImageIO;
-import java.io.File;
+import java.awt.image.BufferedImage;
 import java.util.concurrent.Callable;
-import java.util.function.Consumer;
 
 /**
  * @author Matt Stevenson [matt@pagemodel.org]
@@ -125,37 +123,17 @@ public class RectangleTester<R> extends HasPageBounds {
 	}
 
 	public RectangleTester<R> pad(int top, int right, int bottom, int left) {
-		return transform(rect -> pad(callRef(), top, right, bottom, left, getEvaluator()));
-	}
-
-	protected static Rectangle pad(Rectangle rect, int top, int right, int bottom, int left, TestEvaluator evaluator) {
-		int top2 = Math.min(rect.x, top);
-		int left2 = Math.min(rect.y, left);
-		Rectangle newRect = new Rectangle(rect.x - left2, rect.y - top2, rect.height + top2 + bottom, rect.width + left2 + right);
-		if(evaluator != null) {
-			evaluator.logEvent(TestEvaluator.TEST_BUILD,
-					"pad rectangle", op -> op
-							.addValue("x", rect.x)
-							.addValue("y", rect.y)
-							.addValue("width", rect.width)
-							.addValue("height", rect.height)
-							.addValue("top", top2)
-							.addValue("right", right)
-							.addValue("bottom", bottom)
-							.addValue("left", left2)
-							.addObject("new", rectangleJson(newRect)));
-		}
-		return newRect;
+		return transform(rect -> RectangleUtils.pad(callRef(), top, right, bottom, left, getEvaluator()));
 	}
 
 	public BoundsTester<R> extend(Rectangle includeBounds){
 		Rectangle bounds = callRef();
-		Rectangle newBounds = merge(bounds, includeBounds);
+		Rectangle newBounds = RectangleUtils.merge(bounds, includeBounds);
 		getEvaluator().logEvent(TestEvaluator.TEST_BUILD,
 				"bounds", op -> op
-						.addObject("current", rectangleJson(bounds))
-						.addObject("include", rectangleJson(includeBounds))
-						.addObject("new", rectangleJson(newBounds)));
+						.addObject("current", RectangleUtils.rectangleJson(bounds))
+						.addObject("include", RectangleUtils.rectangleJson(includeBounds))
+						.addObject("new", RectangleUtils.rectangleJson(newBounds)));
 		return new BoundsTester<>(includeBounds, ref, returnObj, testContext, getEvaluator());
 	}
 
@@ -181,50 +159,13 @@ public class RectangleTester<R> extends HasPageBounds {
 
 	public ImageAnnotator<R> editScreenshot(){
 		Rectangle rect = callRef();
-		String filename = Screenshot.takeScreenshot(testContext.getDriver(), rect, 0, "edit", true);
-		return new ImageAnnotator<>(rect.getPoint(), () -> ImageIO.read(new File(filename)), returnObj, testContext, getEvaluator());
+		BufferedImage image = Screenshot.getScreenshot(testContext.getDriver(), rect, 0, true);
+		return new ImageAnnotator<>(rect.getPoint(), () -> image, returnObj, testContext, getEvaluator());
 	}
 
 	@Override
 	protected Rectangle getBounds() {
 		return callRef();
-	}
-
-	protected Rectangle merge(Rectangle a, Rectangle b){
-		if(a == null){
-			return b;
-		}else if(b == null){
-			return a;
-		}
-		int xmin = Math.min(a.x, b.x);
-		int xmax = Math.max(a.x + a.width, b.x + b.width);
-		int ymin = Math.min(a.y, b.y);
-		int ymax = Math.max(a.y + a.height, b.y + b.height);
-		return new Rectangle(xmin, ymin, ymax - ymin, xmax - xmin);
-	}
-
-	protected static Consumer<JsonObjectBuilder> rectangleJson(Rectangle a){
-		if(a == null){
-			return json -> json
-					.addValue("x", "null")
-					.addValue("y", "null");
-		}
-		return json -> json
-				.addValue("x", a.x)
-				.addValue("y", a.y)
-				.addValue("width", a.width)
-				.addValue("height", a.height);
-	}
-
-	protected static Consumer<JsonObjectBuilder> pointJson(Point a){
-		if(a == null){
-			return json -> json
-				.addValue("x", "null")
-				.addValue("y", "null");
-		}
-		return json -> json
-				.addValue("x", a.x)
-				.addValue("y", a.y);
 	}
 
 	protected Point getPoint(int x_i, int y_i) {

@@ -309,37 +309,7 @@ public class ImageAnnotator<R> {
 	}
 
 	public R save(String filename, boolean formatName){
-		File destFolder = new File(SCREENSHOT_DEST);
-		if (!destFolder.exists()) {
-			getEvaluator().quiet().testRun(TestEvaluator.TEST_EXECUTE,
-					"create directory", op -> op
-							.addValue("value", destFolder.getAbsolutePath()),
-					() -> destFolder.mkdirs(),
-					null, null);
-		}
-		File screenshot;
-		if(formatName){
-			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
-			String date = simpleDateFormat.format(new Date());
-			String formattedName = String.format("%03d_%s_%s.png", Screenshot.SCREENSHOT_NUMBER++, filename, date);
-			screenshot = new File(destFolder, formattedName);
-		}else{
-			screenshot = new File(destFolder, filename+".png");
-		}
-		ByteArrayOutputStream outBytes = new ByteArrayOutputStream();
-		String base64Encoded1;
-		try {
-			ImageIO.write(getImage(), "png", outBytes);
-			base64Encoded1 = Base64.getEncoder().encodeToString(outBytes.toByteArray());
-		}catch (IOException ex){
-			base64Encoded1 = "";
-		}
-		final String base64Encoded = base64Encoded1;
-		getEvaluator().testExecute("save image", op -> op
-				.addValue("value", "file://" + screenshot.getAbsolutePath())
-				.addValue("img-base64", base64Encoded),
-				() -> ImageIO.write(getImage(), "png", screenshot),
-				null, testContext);
+		Screenshot.save(getImage(), filename, formatName);
 		return returnObj;
 	}
 }
