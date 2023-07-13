@@ -50,6 +50,9 @@ public class RectangleUtils {
 	}
 
 	public static Rectangle pad(Rectangle rect, int top, int right, int bottom, int left, TestEvaluator evaluator) {
+		if(rect == null){
+			return null;
+		}
 		int top2 = Math.min(rect.x, top);
 		int left2 = Math.min(rect.y, left);
 		Rectangle newRect = new Rectangle(rect.x - left2, rect.y - top2, rect.height + top2 + bottom, rect.width + left2 + right);

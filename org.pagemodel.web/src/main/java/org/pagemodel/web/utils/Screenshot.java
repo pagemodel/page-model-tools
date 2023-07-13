@@ -156,9 +156,10 @@ public class Screenshot {
 			BufferedImage cropped = bounds == null ? fullImg : crop(fullImg, bounds, padding, padding, padding, padding);
 
 			ByteArrayOutputStream outBytes = new ByteArrayOutputStream();
+			ImageIO.write(cropped, "png", outBytes);
 			String base64Encoded = Base64.getEncoder().encodeToString(outBytes.toByteArray());
 			eval.logEvent(TestEvaluator.TEST_EXECUTE, "get screenshot", obj -> obj
-					.addValue("bounds", RectangleUtils.rectangleJson(bounds))
+					.addObject("bounds", RectangleUtils.rectangleJson(bounds))
 					.addValue("img-base64", base64Encoded));
 			return cropped;
 		}catch (Exception ex){
