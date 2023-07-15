@@ -33,12 +33,18 @@ public class PointTester<R> extends HasPageBounds {
 	protected final Callable<Point> ref;
 	protected final WebTestContext testContext;
 	private TestEvaluator testEvaluator;
+	protected final String name;
 
-	public PointTester(Callable<Point> ref, R returnObj, WebTestContext testContext, TestEvaluator testEvaluator) {
+	public PointTester(String name, Callable<Point> ref, R returnObj, WebTestContext testContext, TestEvaluator testEvaluator) {
 		this.ref = ref;
 		this.returnObj = returnObj;
 		this.testContext = testContext;
 		this.testEvaluator = testEvaluator;
+		this.name = name;
+	}
+
+	public PointTester(Callable<Point> ref, R returnObj, WebTestContext testContext, TestEvaluator testEvaluator) {
+		this("Point", ref, returnObj, testContext, testEvaluator);
 	}
 
 	protected Point callRef() {
@@ -51,6 +57,10 @@ public class PointTester<R> extends HasPageBounds {
 
 	protected TestEvaluator getEvaluator(){
 		return testEvaluator;
+	}
+
+	public String getName() {
+		return name;
 	}
 
 	public R storeValue(String key) {
@@ -76,6 +86,10 @@ public class PointTester<R> extends HasPageBounds {
 
 	public RectangleTester<R> asRectangle(int width, int height) {
 		return new RectangleTester<>(() -> toRect(callRef(), width, height), returnObj, testContext, getEvaluator());
+	}
+
+	public RectangleTester<R> pad(int...padding){
+		return asRectangle().pad(padding);
 	}
 
 	public RectangleTester<R> asRectangle(){

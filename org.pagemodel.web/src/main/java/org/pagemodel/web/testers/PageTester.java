@@ -114,7 +114,7 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 		return new PageTesterBase<>(page, testContext, new WebTestEvaluator.WaitAndRefresh<>(testContext, WebElementTester.WebElementWait.DEFAULT_WAIT_SEC, page, page));
 	}
 
-	public RectangleTester<P> testBrowserSize() {
+	public RectangleTester<P> testWindowSize() {
 		Dimension dim = testContext.getDriver().manage().window().getSize();
 		Rectangle rectangle = new Rectangle(0, 0, dim.getHeight(), dim.getWidth());
 		getEvaluator().addSourceEvent(TestEvaluator.TEST_FIND,
@@ -148,7 +148,9 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 	}
 
 	public RectangleTester<P> testLocation(ThrowingFunction<P,HasPageBounds,?> getBounds){
-		return testLocation(ThrowingFunction.unchecked(getBounds).apply(page).getBounds());
+		HasPageBounds bounds = ThrowingFunction.unchecked(getBounds).apply(page);
+		Rectangle rect = bounds == null ? null : ThrowingFunction.unchecked(getBounds).apply(page).getBounds();
+		return testLocation(rect);
 	}
 
 	public P setWindowSize(int width, int height) {
@@ -174,9 +176,8 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 			setWindowSize(newWidth, newHeight);
 		}
 		WindowHelper.storeBrowserOffset(testContext);
-		Rectangle rectangle = RectangleUtils.pad(ThrowingFunction.unchecked(getBounds).apply(page).getBounds(),
-				0, testContext.load("wtcWidthOffset"), testContext.load("wtcHeightOffset"), 0,
-				getEvaluator());
+		Rectangle rectangle = RectangleUtils.pad(getEvaluator(), ThrowingFunction.unchecked(getBounds).apply(page).getBounds(),
+				0, testContext.load("wtcWidthOffset"), testContext.load("wtcHeightOffset"), 0);
 		return setWindowSize(Math.max(setWidth, rectangle.x + rectangle.width), Math.max(setHeight, rectangle.y + rectangle.height));
 	}
 
@@ -227,7 +228,7 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 	}
 
 	public ImageAnnotator<P> editScreenshot(){
-		BufferedImage image = Screenshot.getScreenshot(testContext.getDriver(), null, 0, true);
+		BufferedImage image = Screenshot.getScreenshot(testContext.getDriver(), null, true, 0);
 		return new ImageAnnotator<>(new Point(0, 0), () -> image, page, testContext, getEvaluator());
 	}
 

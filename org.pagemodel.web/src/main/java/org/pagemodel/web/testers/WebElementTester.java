@@ -83,6 +83,11 @@ public class WebElementTester<R, N extends PageModel<? super N>> extends HasPage
 		}
 	}
 
+	@Override
+	protected String getName() {
+		return callRef().getFriendlyName();
+	}
+
 	protected R getReturnObj() {
 		return returnObj;
 	}
@@ -257,7 +262,7 @@ public class WebElementTester<R, N extends PageModel<? super N>> extends HasPage
 	}
 
 	public R takeScreenshot(String filename, int padding){
-		Screenshot.takeScreenshot(page.getContext().getDriver(), callRef().getRect(), padding, filename, false);
+		Screenshot.takeScreenshot(page.getContext().getDriver(), callRef().getRect(), filename, false, padding);
 		return returnObj;
 	}
 

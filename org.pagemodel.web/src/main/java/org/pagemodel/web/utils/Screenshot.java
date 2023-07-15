@@ -30,6 +30,8 @@ import java.text.SimpleDateFormat;
 import java.util.Base64;
 import java.util.Date;
 
+import static org.pagemodel.web.utils.RectangleUtils.*;
+
 /**
  * @author Matt Stevenson [matt@pagemodel.org]
  */
@@ -94,15 +96,11 @@ public class Screenshot {
 		return screenshot.getAbsolutePath();
 	}
 
-	public static String takeScreenshot(WebDriver driver, Rectangle bounds, String filename) {
-		return takeScreenshot(driver, bounds, 10, filename, false);
+	public static String takeScreenshot(WebDriver driver, Rectangle bounds, String filename, int...padding) {
+		return takeScreenshot(driver, bounds, filename, false, padding);
 	}
 
-	public static String takeScreenshot(WebDriver driver, Rectangle bounds, int padding, String filename) {
-		return takeScreenshot(driver, bounds, padding, filename, false);
-	}
-
-	public static String takeScreenshot(WebDriver driver, Rectangle bounds, int padding, String filenamePrefix, boolean formatName) {
+	public static String takeScreenshot(WebDriver driver, Rectangle bounds, String filenamePrefix, boolean formatName, int...padding) {
 		File destFolder = new File(SCREENSHOT_DEST);
 		TestEvaluator.Now eval = new TestEvaluator.Now();
 		if (!destFolder.exists()) {
@@ -125,11 +123,12 @@ public class Screenshot {
 
 		byte[] bytes = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
 		try {
+			int[] pads = RectangleUtils.getPads(padding);
 			BufferedImage fullImg = ImageIO.read(new ByteArrayInputStream(bytes));
-			int xmin = Math.min(fullImg.getWidth(), Math.max(0, bounds.getX() - padding));
-			int xmax = Math.min(fullImg.getWidth() - xmin, Math.max(0, bounds.getWidth() + padding + padding));
-			int ymin = Math.min(fullImg.getHeight(), Math.max(0, bounds.getY() - padding));
-			int ymax = Math.min(fullImg.getHeight() - ymin, Math.max(0, bounds.getHeight() + padding + padding));
+			int xmin = Math.min(fullImg.getWidth(), Math.max(0, bounds.getX() - pads[LEFT]));
+			int xmax = Math.min(fullImg.getWidth() - xmin, Math.max(0, bounds.getWidth() + pads[LEFT] + pads[RIGHT]));
+			int ymin = Math.min(fullImg.getHeight(), Math.max(0, bounds.getY() - pads[TOP]));
+			int ymax = Math.min(fullImg.getHeight() - ymin, Math.max(0, bounds.getHeight() + pads[TOP] + pads[BOTTOM]));
 			BufferedImage eleScreenshot= fullImg.getSubimage(xmin, ymin, xmax, ymax);
 
 			ImageIO.write(eleScreenshot, "png", screenshot);
@@ -148,12 +147,12 @@ public class Screenshot {
 		return screenshot.getAbsolutePath();
 	}
 
-	public static BufferedImage getScreenshot(WebDriver driver, Rectangle bounds, int padding, boolean formatName) {
+	public static BufferedImage getScreenshot(WebDriver driver, Rectangle bounds, boolean formatName, int...padding) {
 		TestEvaluator.Now eval = new TestEvaluator.Now();
 		byte[] bytes = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
 		try {
 			BufferedImage fullImg = ImageIO.read(new ByteArrayInputStream(bytes));
-			BufferedImage cropped = bounds == null ? fullImg : crop(fullImg, bounds, padding, padding, padding, padding);
+			BufferedImage cropped = bounds == null ? fullImg : crop(fullImg, bounds, padding);
 
 			ByteArrayOutputStream outBytes = new ByteArrayOutputStream();
 			ImageIO.write(cropped, "png", outBytes);
@@ -170,16 +169,8 @@ public class Screenshot {
 		return null;
 	}
 
-	public static BufferedImage crop(BufferedImage fullImg, Rectangle bounds) {
-		return crop(fullImg, bounds, 0, 0, 0, 0);
-	}
-
-	public static BufferedImage crop(BufferedImage fullImg, Rectangle bounds, int padding) {
-		return crop(fullImg, bounds, padding, padding, padding, padding);
-	}
-
-	public static BufferedImage crop(BufferedImage fullImg, Rectangle bounds, int padTop, int padRight, int padBottom, int padLeft) {
-		Rectangle padded = RectangleUtils.pad(bounds, padTop, padRight, padBottom, padLeft);
+	public static BufferedImage crop(BufferedImage fullImg, Rectangle bounds, int...padding) {
+		Rectangle padded = RectangleUtils.pad(bounds, padding);
 		return fullImg.getSubimage(padded.getX(), padded.getY(), padded.getWidth(), padded.getHeight());
 	}
 
