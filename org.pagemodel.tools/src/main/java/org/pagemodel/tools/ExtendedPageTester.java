@@ -19,6 +19,7 @@ package org.pagemodel.tools;
 import org.pagemodel.core.testers.StringTester;
 import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.tools.accessibility.AXEScanner;
+import org.pagemodel.tools.screenshots.LocationGroup;
 import org.pagemodel.web.PageModel;
 import org.pagemodel.web.WebTestContext;
 import org.pagemodel.web.testers.*;
@@ -27,7 +28,7 @@ import org.pagemodel.web.testers.*;
  * @author Matt Stevenson [matt@pagemodel.org]
  */
 public class ExtendedPageTester<P extends PageModel<? super P>> extends PageTester<P> {
-	public ExtendedPageTester(P page, WebTestContext testContext, TestEvaluator testEvaluator) {
+	public ExtendedPageTester(P page, ExtendedTestContext testContext, TestEvaluator testEvaluator) {
 		super(page, testContext, testEvaluator);
 	}
 
@@ -119,6 +120,10 @@ public class ExtendedPageTester<P extends PageModel<? super P>> extends PageTest
 	@Override
 	public PointTester<P> windowPosition(){
 		return super.windowPosition();
+	}
+
+	public LocationGroup<P> testLocationGroup() {
+		return new LocationGroup<>(page);
 	}
 
 	public P testAccessibility() {
