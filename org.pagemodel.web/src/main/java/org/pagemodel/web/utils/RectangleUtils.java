@@ -64,7 +64,7 @@ public class RectangleUtils {
 		int[] pads = getPads(padding);
 		int top2 = Math.min(rect.x, pads[TOP]);
 		int left2 = Math.min(rect.y, pads[LEFT]);
-		Rectangle newRect = new Rectangle(rect.x - left2, rect.y - top2, rect.height + top2 + pads[BOTTOM], rect.width + left2 + pads[LEFT]);
+		Rectangle newRect = new Rectangle(rect.x - left2, rect.y - top2, rect.height + top2 + pads[BOTTOM], rect.width + left2 + pads[RIGHT]);
 		if(evaluator != null) {
 			evaluator.logEvent(TestEvaluator.TEST_BUILD,
 					"pad rectangle", op -> op
