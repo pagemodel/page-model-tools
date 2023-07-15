@@ -170,7 +170,7 @@ public class RectangleTester<R> extends HasPageBounds {
 		return extend(includeBounds);
 	}
 
-	public RectangleTester<R> extend(ThrowingFunction<R,HasPageBounds,?> getBounds){
+	public RectangleTester<R> extend(ThrowingFunction<R,? extends HasPageBounds,?> getBounds){
 		return new RectangleTester<>(getName() + ".extend(" + ThrowingFunction.unchecked(getBounds).apply(returnObj).getName() + ")",
 				() -> RectangleUtils.merge(callRef(), ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds()),
 				returnObj, testContext, getEvaluator());

@@ -123,7 +123,7 @@ public class ImageAnnotator<R> {
 		return translateOrigin(rect.getX(), rect.getY());
 	}
 
-	public ImageAnnotator<R> translateOrigin(ThrowingFunction<R,HasPageBounds,?> getBounds){
+	public ImageAnnotator<R> translateOrigin(ThrowingFunction<R,? extends HasPageBounds,?> getBounds){
 		return translateOrigin(ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds());
 	}
 
@@ -156,7 +156,7 @@ public class ImageAnnotator<R> {
 		return drawOval(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
 	}
 
-	public ImageAnnotator<R> drawOval(ThrowingFunction<R,HasPageBounds,?> getBounds){
+	public ImageAnnotator<R> drawOval(ThrowingFunction<R,? extends HasPageBounds,?> getBounds){
 		return drawOval(ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds());
 	}
 
@@ -169,7 +169,7 @@ public class ImageAnnotator<R> {
 		return fillOval(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
 	}
 
-	public ImageAnnotator<R> fillOval(ThrowingFunction<R,HasPageBounds,?> getBounds){
+	public ImageAnnotator<R> fillOval(ThrowingFunction<R,? extends HasPageBounds,?> getBounds){
 		return fillOval(ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds());
 	}
 
@@ -182,7 +182,7 @@ public class ImageAnnotator<R> {
 		return drawArc(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight(), startAngle, arcAngle);
 	}
 
-	public ImageAnnotator<R> drawArc(ThrowingFunction<R,HasPageBounds,?> getBounds, int startAngle, int arcAngle){
+	public ImageAnnotator<R> drawArc(ThrowingFunction<R,? extends HasPageBounds,?> getBounds, int startAngle, int arcAngle){
 		return drawArc(ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds(), startAngle, arcAngle);
 	}
 
@@ -195,7 +195,7 @@ public class ImageAnnotator<R> {
 		return fillArc(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight(), startAngle, arcAngle);
 	}
 
-	public ImageAnnotator<R> fillArc(ThrowingFunction<R,HasPageBounds,?> getBounds, int startAngle, int arcAngle){
+	public ImageAnnotator<R> fillArc(ThrowingFunction<R,? extends HasPageBounds,?> getBounds, int startAngle, int arcAngle){
 		return fillArc(ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds(), startAngle, arcAngle);
 	}
 
@@ -208,7 +208,7 @@ public class ImageAnnotator<R> {
 		return drawRect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
 	}
 
-	public ImageAnnotator<R> drawRect(ThrowingFunction<R,HasPageBounds,?> getBounds){
+	public ImageAnnotator<R> drawRect(ThrowingFunction<R,? extends HasPageBounds,?> getBounds){
 		return drawRect(ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds());
 	}
 
@@ -221,7 +221,7 @@ public class ImageAnnotator<R> {
 		return drawRoundedRect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight(), arcWidth, arcHeight);
 	}
 
-	public ImageAnnotator<R> drawRoundedRect(ThrowingFunction<R,HasPageBounds,?> getBounds, int arcWidth, int arcHeight){
+	public ImageAnnotator<R> drawRoundedRect(ThrowingFunction<R,? extends HasPageBounds,?> getBounds, int arcWidth, int arcHeight){
 		return drawRoundedRect(ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds(), arcWidth, arcHeight);
 	}
 
@@ -234,7 +234,7 @@ public class ImageAnnotator<R> {
 		return clip(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
 	}
 
-	public ImageAnnotator<R> clip(ThrowingFunction<R,HasPageBounds,?> getBounds){
+	public ImageAnnotator<R> clip(ThrowingFunction<R,? extends HasPageBounds,?> getBounds){
 		return clip(ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds());
 	}
 
@@ -247,7 +247,7 @@ public class ImageAnnotator<R> {
 		return clear(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
 	}
 
-	public ImageAnnotator<R> clear(ThrowingFunction<R,HasPageBounds,?> getBounds){
+	public ImageAnnotator<R> clear(ThrowingFunction<R,? extends HasPageBounds,?> getBounds){
 		return clear(ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds());
 	}
 
@@ -260,7 +260,7 @@ public class ImageAnnotator<R> {
 		return fillRect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
 	}
 
-	public ImageAnnotator<R> fillRect(ThrowingFunction<R,HasPageBounds,?> getBounds){
+	public ImageAnnotator<R> fillRect(ThrowingFunction<R,? extends HasPageBounds,?> getBounds){
 		return fillRect(ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds());
 	}
 
@@ -273,7 +273,7 @@ public class ImageAnnotator<R> {
 		return fillRoundedRect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight(), arcWidth, arcHeight);
 	}
 
-	public ImageAnnotator<R> fillRoundedRect(ThrowingFunction<R,HasPageBounds,?> getBounds, int arcWidth, int arcHeight){
+	public ImageAnnotator<R> fillRoundedRect(ThrowingFunction<R,? extends HasPageBounds,?> getBounds, int arcWidth, int arcHeight){
 		return fillRoundedRect(ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds(), arcWidth, arcHeight);
 	}
 
@@ -286,7 +286,7 @@ public class ImageAnnotator<R> {
 		return drawText(text, rect.getX(), rect.getY());
 	}
 
-	public ImageAnnotator<R> drawText(String text, ThrowingFunction<R,HasPageBounds,?> getBounds){
+	public ImageAnnotator<R> drawText(String text, ThrowingFunction<R,? extends HasPageBounds,?> getBounds){
 		return drawText(text,ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds());
 	}
 

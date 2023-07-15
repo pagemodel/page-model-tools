@@ -147,7 +147,7 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 		return testLocation(page.getContext().<Rectangle>load(storedRectKey));
 	}
 
-	public RectangleTester<P> testLocation(ThrowingFunction<P,HasPageBounds,?> getBounds){
+	public RectangleTester<P> testLocation(ThrowingFunction<P,? extends HasPageBounds,?> getBounds){
 		HasPageBounds bounds = ThrowingFunction.unchecked(getBounds).apply(page);
 		Rectangle rect = bounds == null ? null : ThrowingFunction.unchecked(getBounds).apply(page).getBounds();
 		return testLocation(rect);
@@ -162,7 +162,7 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 				page, page.getContext());
 	}
 
-	public P setWindowSizeToInclude(int setWidth, int setHeight, ThrowingFunction<P,HasPageBounds,?> getBounds){
+	public P setWindowSizeToInclude(int setWidth, int setHeight, ThrowingFunction<P,? extends HasPageBounds,?> getBounds){
 		Dimension dim = testContext.getDriver().manage().window().getSize();
 		int newWidth = dim.getWidth();
 		if(setWidth != 0 && setWidth != dim.getWidth()){
@@ -181,7 +181,7 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 		return setWindowSize(Math.max(setWidth, rectangle.x + rectangle.width), Math.max(setHeight, rectangle.y + rectangle.height));
 	}
 
-	public P setWindowSizeToInclude(ThrowingFunction<P,HasPageBounds,?> getBounds){
+	public P setWindowSizeToInclude(ThrowingFunction<P,? extends HasPageBounds,?> getBounds){
 		return setWindowSizeToInclude(0, 0, getBounds);
 	}
 
