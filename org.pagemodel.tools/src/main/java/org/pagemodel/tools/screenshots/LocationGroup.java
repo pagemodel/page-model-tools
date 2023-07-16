@@ -354,7 +354,7 @@ public class LocationGroup<P extends PageModel<? super P>> {
 
 	protected <R extends PageModel<? super R>> void doNavScreenshot(int i, NavLocation<P,R> location, R page){
 		String locPrefix = groupPrefix + "." + (i + 1);
-		location.inner.page = page;
+		location.setPage(page);
 		location.inner.withGroupPrefix(locPrefix).withName(location.name);
 		if(!location.placeholder) {
 			location.inner.takeScreenshot();
@@ -584,6 +584,20 @@ public class LocationGroup<P extends PageModel<? super P>> {
 
 		public void setInner(LocationGroup<R> inner) {
 			this.inner = inner;
+		}
+
+		public void setPage(R page) {
+			setPage(page, inner);
+		}
+
+		private <Q extends PageModel<? super Q>> void setPage(R page, LocationGroup<R> group) {
+			group.page = page;
+			for(NamedLocation<R> loc : group.locations){
+				if(loc.locationGroup != null) {
+					setPage(page, loc.locationGroup);
+				}else if(NavLocation.class.isAssignableFrom(loc.getClass())){
+				}
+			}
 		}
 	}
 
