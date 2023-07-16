@@ -60,13 +60,13 @@ public class LocationGroup<P extends PageModel<? super P>> {
 
 	public LocationGroup<P> log(){
 		TestEvaluator testEvaluator = page != null ? page.getEvaluator() : new TestEvaluator.Now();
-		testEvaluator.logEvent(j -> j
-				.addValue("Log", "LocationGroup")
+		testEvaluator.logEvent(TestEvaluator.TEST_LOG, "LocationGroup", j -> j
 				.addValue("order", this.getGroupPrefix())
 				.addValue("name", this.getName())
 				.addValue("placeholder", placeholder)
 				.addValue("annotated", this.annotated)
-				.addValue("children", this.locations.size()));
+				.addValue("children", this.locations.size())
+		);
 		return this;
 	}
 
@@ -411,11 +411,10 @@ public class LocationGroup<P extends PageModel<? super P>> {
 		double widthPad[] = new double[1];
 		int arcSize[] = new int[1];
 		TestEvaluator testEvaluator = page != null ? page.getEvaluator() : new TestEvaluator.Now();
-		testEvaluator.logEvent(j -> j
-					.addValue("Log", "Annotate")
-					.addValue("group", this.getGroupPrefix() + "." + this.getName())
-					.addValue("location", location.name)
-					.doAdd(AnnotationStyle.logJson(style)));
+		testEvaluator.logEvent(TestEvaluator.TEST_EXECUTE, "Annotate", j -> j
+				.addValue("group", this.getGroupPrefix() + "." + this.getName())
+				.addValue("location", location.name)
+				.doAdd(AnnotationStyle.logJson(style)));
 		ThrowingFunction<R,RectangleTester<? super R>, ?> locBounds = page -> page
 				.testPage().testLocation(p -> location.getPageBounds((P)p))
 				.pad(style.locationPadding);

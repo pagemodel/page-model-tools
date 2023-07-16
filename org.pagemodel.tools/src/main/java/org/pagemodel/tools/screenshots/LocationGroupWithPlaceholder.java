@@ -28,8 +28,8 @@ public class LocationGroupWithPlaceholder<P extends PageModel<? super P>> extend
 			storePlaceHolder(name);
 		} else {
 			TestEvaluator testEvaluator = page != null ? page.getEvaluator() : new TestEvaluator.Now();
-			testEvaluator.logEvent(j -> j
-					.addValue("Error", "Unable to auto-store Placeholder with duplicate name, use storePlaceholder to define new store key.")
+			testEvaluator.logEvent(TestEvaluator.TEST_LOG, "Warning", j -> j
+					.addValue("message", "Unable to auto-store Placeholder with duplicate name, use storePlaceholder to define new store key.")
 					.addValue("name", name));
 		}
 	}
