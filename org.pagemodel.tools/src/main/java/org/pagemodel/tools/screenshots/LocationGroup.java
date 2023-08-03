@@ -10,9 +10,11 @@ import org.pagemodel.web.testers.HasPageBounds;
 import org.pagemodel.web.testers.ImageAnnotator;
 import org.pagemodel.web.testers.PageBoundsHelper;
 import org.pagemodel.web.testers.RectangleTester;
+import org.pagemodel.web.utils.Screenshot;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -36,6 +38,7 @@ public class LocationGroup<P extends PageModel<? super P>> {
 
 	protected boolean annotated = true;
 	protected boolean placeholder = false;
+	protected boolean text = false;
 	protected AnnotationStyle annotationStyle;
 
 	public LocationGroup(P page) {
@@ -110,6 +113,11 @@ public class LocationGroup<P extends PageModel<? super P>> {
 		return this;
 	}
 
+	public LocationGroup<P> textGroup() {
+		this.text = true;
+		return notAnnotated();
+	}
+
 	public LocationGroup<P> annotated() {
 		this.annotated = true;
 		return this;
@@ -125,6 +133,11 @@ public class LocationGroup<P extends PageModel<? super P>> {
 		return this;
 	}
 
+	public LocationGroup<P> addText(String name) {
+		locations.add(new NamedLocation<P>(name, (ThrowingFunction<P, HasPageBounds, ?>)null, this).text());
+		return this;
+	}
+
 	public LocationGroupWithPlaceholder<P> addPlaceholder(String name, ThrowingFunction<P, HasPageBounds, ?> getBounds) {
 		LocationGroup<P> newGroup = new LocationGroup<P>(page, storePlaceholderNames, new AnnotationStyle(annotationStyle)).withLocation(getBounds).notAnnotated();
 		locations.add(new NamedLocation<P>(name, newGroup, this).placeholder().notAnnotated());
@@ -132,12 +145,6 @@ public class LocationGroup<P extends PageModel<? super P>> {
 	}
 
 	public LocationGroupWithPlaceholder<P> addPlaceholder(String name) {
-		LocationGroup<P> newGroup = new LocationGroup<P>(page, storePlaceholderNames, new AnnotationStyle(annotationStyle)).notAnnotated();
-		locations.add(new NamedLocation<P>(name, newGroup, this).placeholder().notAnnotated());
-		return new LocationGroupWithPlaceholder<>(this);
-	}
-
-	public LocationGroupWithPlaceholder<P> addTextPlaceholder(String name) {
 		LocationGroup<P> newGroup = new LocationGroup<P>(page, storePlaceholderNames, new AnnotationStyle(annotationStyle)).notAnnotated();
 		locations.add(new NamedLocation<P>(name, newGroup, this).placeholder().notAnnotated());
 		return new LocationGroupWithPlaceholder<>(this);
@@ -152,6 +159,13 @@ public class LocationGroup<P extends PageModel<? super P>> {
 
 	public LocationGroup<P> addGroup(String name, Consumer<LocationGroup<P>> group) {
 		LocationGroup<P> newGroup = new LocationGroup<>(page, storePlaceholderNames, new AnnotationStyle(annotationStyle));
+		group.accept(newGroup);
+		locations.add(new NamedLocation<P>(name, newGroup, this));
+		return this;
+	}
+
+	public LocationGroup<P> addGroupText(String name, Consumer<LocationGroup<P>> group) {
+		LocationGroup<P> newGroup = new LocationGroup<>(page, storePlaceholderNames, new AnnotationStyle(annotationStyle)).textGroup();
 		group.accept(newGroup);
 		locations.add(new NamedLocation<P>(name, newGroup, this));
 		return this;
@@ -223,7 +237,7 @@ public class LocationGroup<P extends PageModel<? super P>> {
 			}
 			if(annotated) {
 				for (NamedLocation<P> loc : locations) {
-					if (!loc.getAnnotated() || loc.placeholder) {
+					if (!loc.getAnnotated() || loc.placeholder || loc.text) {
 						continue;
 					}
 					if(loc.getLocationGroup() != null && NavLocation.class.isAssignableFrom(loc.getClass())){
@@ -271,12 +285,13 @@ public class LocationGroup<P extends PageModel<? super P>> {
 		}
 
 		RectangleTester<P> bounds = getMergedBounds(page);
-		if(bounds == null){
+		if(annotated && !text && bounds == null){
 			return page;
+		}else if(!text) {
+			bounds.pad(annotationStyle.imagePadding).takeScreenshot(groupPrefix + ".0.0." + name);
 		}
-		bounds.pad(annotationStyle.imagePadding).takeScreenshot(groupPrefix + ".0.0." + name);
 
-		if(annotated) {
+		if(!text && annotated) {
 			ImageAnnotator<P> img = getMergedBounds(page).pad(annotationStyle.imagePadding).editScreenshot().paint(this::setupGraphics);
 			int count = 1;
 			for (int i = 0; i < locations.size(); i++) {
@@ -293,6 +308,9 @@ public class LocationGroup<P extends PageModel<? super P>> {
 				}
 			}
 			img.save(groupPrefix + ".0.1." + name + "Labeled");
+		}
+		if(text){
+			saveTextFile(groupPrefix + ".0.0." + name);
 		}
 		if (annotationCleanup != null) {
 			ThrowingConsumer.unchecked(annotationCleanup).accept(page);
@@ -321,6 +339,16 @@ public class LocationGroup<P extends PageModel<? super P>> {
 			ThrowingConsumer.unchecked(screenshotCleanup).accept(page);
 		}
 		return page;
+	}
+
+	private void saveTextFile(String name) {
+		File dir = new File(Screenshot.SCREENSHOT_DEST);
+		File textFile = new File(dir, name + ".md");
+		try {
+			textFile.createNewFile();
+		}catch (Exception ex){
+			throw page.getContext().createException("Failed to create file:" + textFile.getAbsolutePath(), ex);
+		}
 	}
 
 	protected <R extends PageModel<? super R>> void takeLocationScreenshot(int i, NamedLocation<P> location, P page){
@@ -354,7 +382,9 @@ public class LocationGroup<P extends PageModel<? super P>> {
 				location.savePlaceHolder.accept(location.getLocationGroup());
 			}
 		}else {
-			if(!location.placeholder) {
+			if(location.text){
+				saveTextFile(groupPrefix + "." + (i + 1) + ".0.0." + location.name);
+			}else if(!location.placeholder) {
 				location.getBounds(page).pad(location.getAnnotationStyle().imagePadding)
 						.takeScreenshot(groupPrefix + "." + (i + 1) + ".0.0." + location.name);
 			}
@@ -463,6 +493,7 @@ public class LocationGroup<P extends PageModel<? super P>> {
 		protected String name;
 		protected boolean annotated = true;
 		protected boolean placeholder = false;
+		protected boolean text = false;
 		protected ThrowingConsumer<P,?> screenshotSetup;
 		protected ThrowingConsumer<P,?> screenshotCleanup;
 		protected StackTraceElement[] createTrace;
@@ -506,6 +537,14 @@ public class LocationGroup<P extends PageModel<? super P>> {
 			this.placeholder = true;
 			if(locationGroup != null){
 				locationGroup.placeholder = true;
+			}
+			return this;
+		}
+
+		public NamedLocation<P> text(){
+			this.text = true;
+			if(locationGroup != null){
+				locationGroup.textGroup();
 			}
 			return this;
 		}
