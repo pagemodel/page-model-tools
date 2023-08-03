@@ -22,6 +22,7 @@ import org.pagemodel.core.testers.ComparableTester;
 import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.core.utils.ThrowingFunction;
 import org.pagemodel.web.WebTestContext;
+import org.pagemodel.web.utils.RectangleUtils;
 
 import java.util.concurrent.Callable;
 
@@ -86,6 +87,12 @@ public class PointTester<R> extends HasPageBounds {
 
 	public RectangleTester<R> asRectangle(int width, int height) {
 		return new RectangleTester<>(() -> toRect(callRef(), width, height), returnObj, testContext, getEvaluator());
+	}
+
+	public RectangleTester<R> extend(ThrowingFunction<R,? extends HasPageBounds,?> getBounds){
+		return new RectangleTester<>(getName() + ".extend",
+				() -> RectangleUtils.merge(asRectangle().callRef(), ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds()),
+				returnObj, testContext, getEvaluator());
 	}
 
 	public RectangleTester<R> pad(int...padding){

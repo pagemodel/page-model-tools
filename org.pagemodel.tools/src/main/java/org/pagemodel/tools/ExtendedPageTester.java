@@ -20,8 +20,8 @@ import org.pagemodel.core.testers.StringTester;
 import org.pagemodel.core.testers.TestEvaluator;
 import org.pagemodel.tools.accessibility.AXEScanner;
 import org.pagemodel.tools.screenshots.LocationGroup;
+import org.pagemodel.tools.screenshots.LocationGroupsTester;
 import org.pagemodel.web.PageModel;
-import org.pagemodel.web.WebTestContext;
 import org.pagemodel.web.testers.*;
 
 /**
@@ -124,6 +124,14 @@ public class ExtendedPageTester<P extends PageModel<? super P>> extends PageTest
 
 	public LocationGroup<P> testLocationGroup() {
 		return new LocationGroup<>(page);
+	}
+
+	public LocationGroupsTester<P> testLocationGroups(String orderPrefix, int startOrder) {
+		return new LocationGroupsTester<>(orderPrefix, startOrder, page, null);
+	}
+
+	public LocationGroupsTester<P> testLocationGroups() {
+		return testLocationGroups("", 1);
 	}
 
 	public P testAccessibility() {

@@ -133,14 +133,14 @@ public class PageTester<P extends PageModel<? super P>> extends PageTesterBase<P
 
 	public RectangleTester<P> testLocation(int x, int y, int width, int height) {
 		Rectangle rectangle = new Rectangle(x, y, height, width);
-		getEvaluator().addSourceEvent(TestEvaluator.TEST_FIND,
-				"location", op -> op
-						.addValue("location", RectangleUtils.rectangleJson(rectangle)));
-		return new RectangleTester<>(() -> rectangle, page, testContext, getEvaluator());
+		return testLocation(rectangle);
 	}
 
 	public RectangleTester<P> testLocation(Rectangle rect){
-		return testLocation(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
+		getEvaluator().addSourceEvent(TestEvaluator.TEST_FIND,
+				"location", op -> op
+						.addValue("location", RectangleUtils.rectangleJson(rect)));
+		return new RectangleTester<>(() -> rect, page, testContext, getEvaluator());
 	}
 
 	public RectangleTester<P> testLocation(String storedRectKey){

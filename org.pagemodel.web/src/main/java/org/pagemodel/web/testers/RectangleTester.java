@@ -88,6 +88,10 @@ public class RectangleTester<R> extends HasPageBounds {
 		return transformRect("left", rect -> rect == null ? null : new Rectangle(rect.getX(), rect.getY(), rect.getHeight(), 0));
 	}
 
+	public PointTester<R> center() {
+		return new PointTester<>(getName() + ".center", () -> getPoint(r -> new Point(r.x + r.width/2, r.y + r.height/2)), returnObj, testContext, getEvaluator());
+	}
+
 	public PointTester<R> topLeft() {
 		return new PointTester<>(getName() + ".topLeft", () -> getPoint(0, 0), returnObj, testContext, getEvaluator());
 	}
@@ -171,11 +175,23 @@ public class RectangleTester<R> extends HasPageBounds {
 	}
 
 	public RectangleTester<R> extend(ThrowingFunction<R,? extends HasPageBounds,?> getBounds){
-		return new RectangleTester<>(getName() + ".extend(" + ThrowingFunction.unchecked(getBounds).apply(returnObj).getName() + ")",
+		return new RectangleTester<>(getName() + ".extend",
 				() -> RectangleUtils.merge(callRef(), ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds()),
 				returnObj, testContext, getEvaluator());
 //		Rectangle includeBounds = ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds();
 //		return extend(includeBounds);
+	}
+
+	public RectangleTester<R> extendWidth(ThrowingFunction<R,? extends HasPageBounds,?> getBounds){
+		return new RectangleTester<>(getName() + ".extendWidth",
+				() -> RectangleUtils.mergeWidth(callRef(), ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds()),
+				returnObj, testContext, getEvaluator());
+	}
+
+	public RectangleTester<R> extendHeight(ThrowingFunction<R,? extends HasPageBounds,?> getBounds){
+		return new RectangleTester<>(getName() + ".extendHeight",
+				() -> RectangleUtils.mergeHeight(callRef(), ThrowingFunction.unchecked(getBounds).apply(returnObj).getBounds()),
+				returnObj, testContext, getEvaluator());
 	}
 
 	public R takeScreenshot(String filename){
@@ -202,6 +218,14 @@ public class RectangleTester<R> extends HasPageBounds {
 		int x = x_i == 0 ? rect.x : rect.x + rect.width;
 		int y = y_i == 0 ? rect.y : rect.y + rect.height;
 		return new Point(x, y);
+	}
+
+	protected Point getPoint(ThrowingFunction<Rectangle,Point,?> pointFunc) {
+		Rectangle rect = callRef();
+		if (rect == null) {
+			return null;
+		}
+		return ThrowingFunction.unchecked(pointFunc).apply(rect);
 	}
 
 	protected Integer getX(int i) {

@@ -13,17 +13,31 @@ public class RectangleUtils {
 	public static int BOTTOM = 2;
 	public static int LEFT = 3;
 
-	public static Rectangle merge(Rectangle a, Rectangle b){
+	private static Rectangle merge(Rectangle a, Rectangle b, boolean setWidth, boolean setHeight){
 		if(a == null){
 			return b;
 		}else if(b == null){
 			return a;
 		}
-		int xmin = Math.min(a.x, b.x);
+		int xmin = setWidth ? Math.min(a.x, b.x) : a.x;
 		int xmax = Math.max(a.x + a.width, b.x + b.width);
-		int ymin = Math.min(a.y, b.y);
+		int ymin = setHeight ? Math.min(a.y, b.y) : a.y;
 		int ymax = Math.max(a.y + a.height, b.y + b.height);
-		return new Rectangle(xmin, ymin, ymax - ymin, xmax - xmin);
+		int width = setWidth ? xmax - xmin : a.width;
+		int height = setHeight ? ymax - ymin : a.height;
+		return new Rectangle(xmin, ymin, height, width);
+	}
+
+	public static Rectangle merge(Rectangle a, Rectangle b){
+		return merge(a, b, true, true);
+	}
+
+	public static Rectangle mergeHeight(Rectangle a, Rectangle b){
+		return merge(a, b, false, true);
+	}
+
+	public static Rectangle mergeWidth(Rectangle a, Rectangle b){
+		return merge(a, b, true, false);
 	}
 
 	public static Consumer<JsonObjectBuilder> rectangleJson(Rectangle a){

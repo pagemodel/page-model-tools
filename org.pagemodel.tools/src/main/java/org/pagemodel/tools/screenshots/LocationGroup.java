@@ -6,7 +6,6 @@ import org.pagemodel.core.utils.ThrowingConsumer;
 import org.pagemodel.core.utils.ThrowingFunction;
 import org.pagemodel.tools.ExtendedTestContext;
 import org.pagemodel.web.PageModel;
-import org.pagemodel.web.PageUtils;
 import org.pagemodel.web.testers.HasPageBounds;
 import org.pagemodel.web.testers.ImageAnnotator;
 import org.pagemodel.web.testers.PageBoundsHelper;
@@ -138,6 +137,12 @@ public class LocationGroup<P extends PageModel<? super P>> {
 		return new LocationGroupWithPlaceholder<>(this);
 	}
 
+	public LocationGroupWithPlaceholder<P> addTextPlaceholder(String name) {
+		LocationGroup<P> newGroup = new LocationGroup<P>(page, storePlaceholderNames, new AnnotationStyle(annotationStyle)).notAnnotated();
+		locations.add(new NamedLocation<P>(name, newGroup, this).placeholder().notAnnotated());
+		return new LocationGroupWithPlaceholder<>(this);
+	}
+
 	public <R extends PageModel<? super R>> NavLocationBuilder<P,R> addNavigation(String name, ThrowingFunction<P,R,?> navTo) {
 		NavLocation<P,R> navLocation = new NavLocation<P, R>(name, this);
 		locations.add(navLocation);
@@ -184,6 +189,11 @@ public class LocationGroup<P extends PageModel<? super P>> {
 		return new LocationGroupWithPlaceholder<>(this);
 	}
 
+	public LocationGroup<P> apply(ThrowingConsumer<LocationGroup<P>,?> group) {
+		ThrowingConsumer.unchecked(group).accept(this);
+		return this;
+	}
+
 	protected List<NamedLocation<P>> getLocations() {
 		return locations;
 	}
@@ -205,8 +215,7 @@ public class LocationGroup<P extends PageModel<? super P>> {
 		if (mergedBounds == null) {
 			try{
 				if(groupLocation != null){
-					mergedBounds = (RectangleTester<P>) page.testPage().testLocation(
-							PageBoundsHelper.getBounds(ThrowingFunction.unchecked(groupLocation).apply(page)));
+					mergedBounds = PageBoundsHelper.getTester(ThrowingFunction.unchecked(groupLocation).apply(page), page);
 				}
 			}catch (Throwable t){
 				failed = true;
@@ -222,7 +231,7 @@ public class LocationGroup<P extends PageModel<? super P>> {
 					}
 					try {
 						if (mergedBounds == null) {
-							mergedBounds = (RectangleTester<P>) page.testPage().testLocation(loc.getBounds(page));
+							mergedBounds = loc.getBounds(page);
 						} else {
 							mergedBounds = mergedBounds.extend(loc::getPageBounds);
 						}
@@ -346,7 +355,7 @@ public class LocationGroup<P extends PageModel<? super P>> {
 			}
 		}else {
 			if(!location.placeholder) {
-				page.testPage().testLocation(location.getBounds(page)).pad(location.getAnnotationStyle().imagePadding)
+				location.getBounds(page).pad(location.getAnnotationStyle().imagePadding)
 						.takeScreenshot(groupPrefix + "." + (i + 1) + ".0.0." + location.name);
 			}
 		}
@@ -538,12 +547,12 @@ public class LocationGroup<P extends PageModel<? super P>> {
 			}
 		}
 
-		protected Rectangle getBounds(P page) {
+		protected RectangleTester<P> getBounds(P page) {
 			try {
 				if (pageBounds != null) {
-					return PageBoundsHelper.getBounds(ThrowingFunction.unchecked(pageBounds).apply(page));
+					return PageBoundsHelper.getTester(ThrowingFunction.unchecked(pageBounds).apply(page), page);
 				}
-				return PageBoundsHelper.getBounds(getPageBounds(page));
+				return PageBoundsHelper.getTester(getPageBounds(page), page);
 			}catch(RuntimeException t){
 				throw createCause("pageBounds", t);
 			}
@@ -572,6 +581,7 @@ public class LocationGroup<P extends PageModel<? super P>> {
 
 		public NavLocation(String name, LocationGroup<P> parentGroup) {
 			super(name, (LocationGroup<P>) null, parentGroup);
+			this.notAnnotated();
 		}
 
 		public void setNavAction(ThrowingFunction<P, R, ?> navAction) {
