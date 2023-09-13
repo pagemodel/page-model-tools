@@ -319,6 +319,25 @@ public class WebElementTester<R, N extends PageModel<? super N>> extends HasPage
 			getEvaluator().withTimeout(waitSec);
 			return this;
 		}
+
+		@Override
+		public N click() {
+			isClickable();
+			getEvaluator().logEvent(TestEvaluator.TEST_EXECUTE,
+					"click", op -> op
+							.addValue("element", getElementJson()));
+			return clickAction.click(null);
+		}
+
+		@Override
+		public WebActionTester<R> clickAnd() {
+			isClickable();
+			getEvaluator().logEvent(TestEvaluator.TEST_EXECUTE,
+					"click and", op -> op
+							.addValue("element", getElementJson()));
+			clickAction.doClick(null);
+			return new WebActionTester<>(page.getContext(), page, this, getEvaluator());
+		}
 	}
 
 	/**
