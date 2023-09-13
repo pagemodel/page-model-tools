@@ -32,6 +32,7 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxDriverLogLevel;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
@@ -269,8 +270,48 @@ public abstract class WebDriverFactory {
 
 	private static WebDriver openFirefox(Capabilities capabilities) {
 		WebDriverManager.firefoxdriver().setup();
-		FirefoxOptions options = new FirefoxOptions(capabilities);
+		FirefoxOptions options = loadFirefoxOptions(capabilities);
 		return new FirefoxDriver(options);
+	}
+	protected static FirefoxOptions loadFirefoxOptions(Capabilities capabilities){
+		if(FirefoxOptions.class.isAssignableFrom(capabilities.getClass())){
+			return (FirefoxOptions) capabilities;
+		}
+		FirefoxOptions options = new FirefoxOptions().merge(capabilities);
+		Map<String,Object> capMap = capabilities.asMap();
+		if(capMap.containsKey(FirefoxOptions.FIREFOX_OPTIONS)){
+			Object firefoxOptObj = capMap.get(FirefoxOptions.FIREFOX_OPTIONS);
+			if(Map.class.isAssignableFrom(firefoxOptObj.getClass())){
+				Map<Object,Object> firefoxOptMap = (Map<Object,Object>)firefoxOptObj;
+				for(Map.Entry entry : firefoxOptMap.entrySet()) {
+					if (entry.getKey().equals("args")) {
+						if (String[].class.isAssignableFrom(entry.getValue().getClass())) {
+							String[] args = (String[]) entry.getValue();
+							options.addArguments(args);
+						}else if (List.class.isAssignableFrom(entry.getValue().getClass())) {
+							List args = (List) entry.getValue();
+							options.addArguments(args);
+						}
+					}else if (entry.getKey().equals("binary")) {
+						if (String.class.isAssignableFrom(entry.getValue().getClass())) {
+							String binary = (String) entry.getValue();
+							options.setBinary(binary);
+						}
+					}else if (entry.getKey().equals("log")) {
+						if (String.class.isAssignableFrom(entry.getValue().getClass())) {
+							String level = (String) entry.getValue();
+							options.setLogLevel(FirefoxDriverLogLevel.fromString(level));
+						}
+					}else {
+						if (String.class.isAssignableFrom(entry.getKey().getClass())) {
+							options.addPreference((String)entry.getKey(), entry.getValue().toString());
+						}
+					}
+				}
+			}
+		}
+		options.setCapability(CapabilityType.BROWSER_NAME, "firefox");
+		return options;
 	}
 
 	private static WebDriver openInternetExplorer(Capabilities capabilities) {
