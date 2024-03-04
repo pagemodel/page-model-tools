@@ -69,15 +69,15 @@ public class SSHConnectionTester<R> {
 		return sshTester.testConnectionFails(authenticator);
 	}
 
-	public SSHConnectionTester<R> scpFileUpload(String resourceFile, String remotePath) {
+	public R scpFileUpload(String resourceFile, String remotePath) {
 		return scpFileUpload(sshTester.getAuthenticator(), resourceFile, remotePath);
 	}
 
-	public SSHConnectionTester<R> scpFileDownload(String remotePath, String localPath) {
+	public R scpFileDownload(String remotePath, String localPath) {
 		return scpFileDownload(sshTester.getAuthenticator(), remotePath, localPath);
 	}
 
-	public SSHConnectionTester<R> scpFileUpload(SSHAuthenticator authenticator, String resourceFilePath, String remotePath) {
+	public R scpFileUpload(SSHAuthenticator authenticator, String resourceFilePath, String remotePath) {
 		return getEvaluator().testExecute("scp upload", op -> op
 				.addValue("local", resourceFilePath)
 				.addValue("remote", remotePath)
@@ -90,11 +90,11 @@ public class SSHConnectionTester<R> {
 					ssh.newSCPFileTransfer().upload(file, remotePath);
 					ssh.disconnect();
 				},
-				this, getContext());
+				this.sshTester.getReturnObj(), getContext());
 	}
 
 	public R testScpUploadFails(SSHAuthenticator authenticator, String resourceFilePath, String remotePath) {
-		return getEvaluator().testExecute("scp upload fails", op -> op
+		return getEvaluator().testCondition("scp upload fails", op -> op
 						.addValue("local", resourceFilePath)
 						.addValue("remote", remotePath)
 						.addValue("server", authenticator.getHost())
@@ -111,10 +111,10 @@ public class SSHConnectionTester<R> {
 					}
 					return false;
 				},
-				returnObj, testContext);
+				this.sshTester.getReturnObj(), getContext());
 	}
 
-	public SSHConnectionTester<R> scpFileDownload(SSHAuthenticator authenticator, String remotePath, String localPath) {
+	public R scpFileDownload(SSHAuthenticator authenticator, String remotePath, String localPath) {
 		return getEvaluator().testExecute("scp download", op -> op
 						.addValue("remote", remotePath)
 						.addValue("local", localPath)
@@ -125,13 +125,13 @@ public class SSHConnectionTester<R> {
 					ssh.newSCPFileTransfer().download(remotePath, localPath);
 					ssh.disconnect();
 				},
-				this, getContext());
+				this.sshTester.getReturnObj(), getContext());
 	}
 
-	public R testScpDownloadFails(SSHAuthenticator authenticator, String resourceFilePath, String remotePath) {
-		return getEvaluator().testExecute("scp download fails", op -> op
-						.addValue("local", resourceFilePath)
+	public R testScpDownloadFails(SSHAuthenticator authenticator, String remotePath, String localPath) {
+		return getEvaluator().testCondition("scp download fails", op -> op
 						.addValue("remote", remotePath)
+						.addValue("local", localPath)
 						.addValue("server", authenticator.getHost())
 						.addValue("user", authenticator.getUsername()),
 				() -> {
@@ -144,7 +144,7 @@ public class SSHConnectionTester<R> {
 					}
 					return false;
 				},
-				returnObj, testContext);
+				this.sshTester.getReturnObj(), getContext());
 	}
 
 	public R doAction(ThrowingFunction<? super SSHConnectionTester<R>, R, ?> sshAction) {
