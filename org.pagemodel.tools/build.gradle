@@ -6,11 +6,11 @@ dependencies {
     api project(':org.pagemodel.mail')
     api project(':org.pagemodel.ssh')
 
-    api 'org.seleniumhq.selenium:htmlunit-driver:2.33.3'
-    api 'io.github.bonigarcia:webdrivermanager:4.4.3'
+    api 'org.seleniumhq.selenium:htmlunit-driver:4.13.0'
+    api 'io.github.bonigarcia:webdrivermanager:5.7.0'
 
     api 'com.deque:axe-selenium:3.0'
     
     testImplementation 'junit:junit:4.12'
-    testImplementation 'ch.qos.logback:logback-classic:1.2.3'
+    testImplementation 'ch.qos.logback:logback-classic:1.5.3'
 }

@@ -28,6 +28,8 @@ import org.pagemodel.web.utils.Screenshot;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -111,7 +113,7 @@ public class PageUtils {
 	}
 
 	static public boolean waitForPageIsDisplayed(PageModel page, int timeout) {
-		WebDriverWait wait = new WebDriverWait(page.getContext().getDriver(), timeout);
+		WebDriverWait wait = new WebDriverWait(page.getContext().getDriver(), Duration.of(timeout, ChronoUnit.SECONDS));
 		try {
 			new WebTestEvaluator.Wait(page.getContext(),timeout).logEvent(
 					TestEvaluator.TEST_ASSERT,

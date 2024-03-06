@@ -37,7 +37,7 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.ie.InternetExplorerOptions;
-import org.openqa.selenium.opera.OperaDriver;
+//import org.openqa.selenium.opera.OperaDriver;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.LocalFileDetector;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -89,8 +89,8 @@ public abstract class WebDriverFactory {
 		browserFactoryMap.put("ie", WebDriverFactory::openInternetExplorer);
 		browserFactoryMap.put("edge", WebDriverFactory::openEdge);
 		browserFactoryMap.put("safari", WebDriverFactory::openSafari);
-		browserFactoryMap.put("opera", WebDriverFactory::openOpera);
-		browserFactoryMap.put("operablink", WebDriverFactory::openOpera);
+//		browserFactoryMap.put("opera", WebDriverFactory::openOpera);
+//		browserFactoryMap.put("operablink", WebDriverFactory::openOpera);
 		browserFactoryMap.put("htmlunit", WebDriverFactory::openHtmlUnit);
 	}
 
@@ -264,7 +264,7 @@ public abstract class WebDriverFactory {
 
 	private static WebDriver openChromeHeadless(Capabilities capabilities) {
 		ChromeOptions options = loadChromeOptions(capabilities);
-		options.setHeadless(true);
+//		options.setHeadless(true);
 		return openChrome(options);
 	}
 
@@ -325,11 +325,11 @@ public abstract class WebDriverFactory {
 		return new EdgeDriver(new EdgeOptions().merge(capabilities));
 	}
 
-	private static WebDriver openOpera(Capabilities capabilities) {
-		WebDriverManager.operadriver().setup();
-		// Replicate loadChromeOptions for Opera to fix use of deprecated constructor.  OperaOptions has the same bug as ChromeOptions.
-		return new OperaDriver(capabilities);
-	}
+//	private static WebDriver openOpera(Capabilities capabilities) {
+//		WebDriverManager.operadriver().setup();
+//		 Replicate loadChromeOptions for Opera to fix use of deprecated constructor.  OperaOptions has the same bug as ChromeOptions.
+//		return new OperaDriver(capabilities);
+//	}
 
 	private static WebDriver openSafari(Capabilities capabilities) {
 		SafariOptions options = new SafariOptions(capabilities);

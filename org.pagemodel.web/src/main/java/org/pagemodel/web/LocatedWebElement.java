@@ -141,6 +141,29 @@ public class LocatedWebElement implements WebElement {
 		return getElement().getScreenshotAs(target);
 	}
 
+	@Override
+	public SearchContext getShadowRoot() {
+		return getElement().getShadowRoot();
+	}
+	@Override
+	public String getAriaRole() {
+		return getElement().getAriaRole();
+	}
+
+	@Override
+	public String getAccessibleName() {
+		return getElement().getAccessibleName();
+	}
+	@Override
+	public String getDomProperty(String name) {
+		return getElement().getDomProperty(name);
+	}
+
+	@Override
+	public String getDomAttribute(String name) {
+		return getElement().getDomAttribute(name);
+	}
+
 	public String getElementLocator() {
 		return locator;
 	}

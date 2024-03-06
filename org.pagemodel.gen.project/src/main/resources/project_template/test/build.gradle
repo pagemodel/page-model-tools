@@ -3,5 +3,5 @@ dependencies {
     testImplementation "org.pagemodel:org.pagemodel.junit4:${pagemodelVersion}"
 
     testImplementation 'junit:junit:4.12'
-    testImplementation 'ch.qos.logback:logback-classic:1.2.3'
+    testImplementation 'ch.qos.logback:logback-classic:1.5.3'
 }

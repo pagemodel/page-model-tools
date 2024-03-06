@@ -2,9 +2,9 @@ publishing.publications.mavenJava.pom.description = 'pagemodel.org web testing -
 
 dependencies {
     api project(':org.pagemodel.core')
-    api 'org.seleniumhq.selenium:selenium-java:3.141.59'
+    api 'org.seleniumhq.selenium:selenium-java:4.18.1'
 
     testImplementation 'junit:junit:4.12'
-    testImplementation 'ch.qos.logback:logback-classic:1.2.3'
+    testImplementation 'ch.qos.logback:logback-classic:1.5.3'
     testImplementation 'org.mockito:mockito-core:2.28.2'
 }

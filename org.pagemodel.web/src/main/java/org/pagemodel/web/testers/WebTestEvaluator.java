@@ -26,6 +26,8 @@ import org.pagemodel.web.PageUtils;
 import org.pagemodel.web.WebTestContext;
 import org.pagemodel.web.utils.RefreshTracker;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -65,7 +67,7 @@ public class WebTestEvaluator {
 
 		@Override
 		protected Boolean callTest(Callable<Boolean> test) {
-			FluentWait wait = new WebDriverWait(testContext.getDriver(), waitSec)
+			FluentWait wait = new WebDriverWait(testContext.getDriver(), Duration.of(waitSec, ChronoUnit.SECONDS))
 					.ignoring(Throwable.class).ignoring(Exception.class);
 			wait.until(driver -> ThrowingCallable.unchecked(test).call());
 			return true;
@@ -116,7 +118,7 @@ public class WebTestEvaluator {
 			long end = System.currentTimeMillis() + (waitSec * 1000);
 			long waitStep = Math.max(waitSec / 10, 2);
 			try {
-				FluentWait wait = new WebDriverWait(testContext.getDriver(), waitStep)
+				FluentWait wait = new WebDriverWait(testContext.getDriver(), Duration.of(waitStep, ChronoUnit.SECONDS))
 						.ignoring(Throwable.class).ignoring(Exception.class);
 				wait.until(driver -> ThrowingCallable.unchecked(test).call());
 				return true;
@@ -130,7 +132,7 @@ public class WebTestEvaluator {
 						returnObj = pageSetupFunction.apply(returnObj);
 					}
 					logEvent(TEST_ASSERT, getActionDisplay(), getEventParams(), getSourceEvents());
-					FluentWait wait = new WebDriverWait(testContext.getDriver(), waitStep)
+					FluentWait wait = new WebDriverWait(testContext.getDriver(), Duration.of(waitStep, ChronoUnit.SECONDS))
 							.ignoring(Throwable.class).ignoring(Exception.class);
 					wait.until(driver -> ThrowingCallable.unchecked(test).call());
 					return true;

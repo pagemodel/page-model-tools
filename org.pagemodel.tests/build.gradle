@@ -12,5 +12,5 @@ dependencies {
     api project(':org.pagemodel.tools')
     api project(':org.pagemodel.junit4')
     testImplementation 'junit:junit:4.12'
-    testImplementation 'ch.qos.logback:logback-classic:1.2.3'
+    testImplementation 'ch.qos.logback:logback-classic:1.5.3'
 }

@@ -4,5 +4,5 @@ dependencies {
     api project(':org.pagemodel.core')
     
     api 'junit:junit:4.12'
-    api 'ch.qos.logback:logback-classic:1.2.3'
+    api 'ch.qos.logback:logback-classic:1.5.3'
 }

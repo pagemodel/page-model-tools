@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -83,7 +85,7 @@ public class PageResolver {
 
 	public boolean waitForPageLoad(final WebTestContext testContext, int timeoutSeconds) {
 		try {
-			return new WebDriverWait(testContext.getDriver(), timeoutSeconds)
+			return new WebDriverWait(testContext.getDriver(), Duration.of(timeoutSeconds, ChronoUnit.SECONDS))
 					.ignoring(NoSuchElementException.class)
 					.until(d -> {
 						return testContext.getDriver().findElement(By.tagName("body")) != null;

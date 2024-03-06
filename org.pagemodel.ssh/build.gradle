@@ -2,6 +2,6 @@ publishing.publications.mavenJava.pom.description = 'pagemodel.org ssh testing -
 
 dependencies {
     api project(':org.pagemodel.core')
-    api 'net.schmizz:sshj:0.9.0'
-    api 'net.sf.expectit:expectit-core:0.8.2'
+    api 'com.hierynomus:sshj:0.38.0'
+    api 'net.sf.expectit:expectit-core:0.9.0'
 }

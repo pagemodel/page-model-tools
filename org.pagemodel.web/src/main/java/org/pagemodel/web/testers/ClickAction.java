@@ -30,6 +30,8 @@ import org.pagemodel.web.PageUtils;
 import org.pagemodel.web.SectionModel;
 import org.pagemodel.web.utils.PageException;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -275,7 +277,7 @@ public class ClickAction<P extends PageModel<? super P>, N extends PageModel<? s
 	protected N afterAction() {
 		try {
 			if (alertWaitFlag) {
-				WebDriverWait wait = new WebDriverWait(page.getContext().getDriver(), alertWaitSec);
+				WebDriverWait wait = new WebDriverWait(page.getContext().getDriver(), Duration.of(alertWaitSec, ChronoUnit.SECONDS));
 				wait.until(ExpectedConditions.alertIsPresent());
 			}
 			if (alertAction == AlertAction.ACCEPT) {
