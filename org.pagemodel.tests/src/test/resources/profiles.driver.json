@@ -1,4 +1,67 @@
 {
+    "headless": {
+        "capabilities": {
+            "browserName":"firefox",
+            "moz:firefoxOptions": {
+                "log": { "level": "warn" },
+                "args": [
+                    "--disable-dev-shm-usage",
+                    "--silent",
+                    "--headless",
+                    "--window-size=1000,1000",
+                    "--use-fake-ui-for-media-stream"
+                ]
+            }
+        }
+    },
+    "firefox": {
+        "capabilities": {
+            "browserName":"firefox",
+            "moz:firefoxOptions": {
+                "log": { "level": "warn" },
+                "args": [
+                    "--disable-dev-shm-usage",
+                    "--silent",
+                    "--window-size=1000,1000",
+                    "--use-fake-ui-for-media-stream"
+                ],
+                "extensions": []
+            }
+        }
+    },
+    "firefox-headless": {
+        "capabilities": {
+            "browserName":"firefox",
+            "moz:firefoxOptions": {
+                "log": { "level": "warn" },
+                "args": [
+                    "--disable-dev-shm-usage",
+                    "--silent",
+                    "--headless",
+                    "--window-size=1000,1000",
+                    "--use-fake-ui-for-media-stream"
+                ]
+            }
+        }
+    },
+    "chrome": {
+        "capabilities": {
+            "browserName":"chrome",
+            "goog:chromeOptions": {
+                "args": [
+                    "--ignore-certificate-errors",
+                    "--disable-dev-shm-usage",
+                    "--silent",
+                    "--log-level=3",
+                    "--disable-gpu",
+                    "--window-size=1000,1000",
+                    "--use-fake-device-for-media-stream",
+                    "--use-fake-ui-for-media-stream"
+                ],
+                "extensions": []
+            }
+        }
+    },
     "chrome-headless": {
         "capabilities": {
             "browserName":"chrome",
@@ -10,7 +73,9 @@
                     "--log-level=3",
                     "--headless",
                     "--disable-gpu",
-                    "--window-size=1920,1080"
+                    "--window-size=1000,1000",
+                    "--use-fake-device-for-media-stream",
+                    "--use-fake-ui-for-media-stream"
                 ],
                 "extensions": []
             }

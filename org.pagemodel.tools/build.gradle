@@ -7,7 +7,7 @@ dependencies {
     api project(':org.pagemodel.ssh')
 
     api 'org.seleniumhq.selenium:htmlunit-driver:4.13.0'
-    api 'io.github.bonigarcia:webdrivermanager:5.7.0'
+    api 'com.google.code.gson:gson:2.10.1'
 
     api 'com.deque:axe-selenium:3.0'
     

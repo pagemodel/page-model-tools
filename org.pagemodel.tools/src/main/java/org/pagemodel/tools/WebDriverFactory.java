@@ -17,7 +17,6 @@
 package org.pagemodel.tools;
 
 import com.google.gson.Gson;
-import io.github.bonigarcia.wdm.WebDriverManager;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -32,12 +31,10 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxDriverLogLevel;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.ie.InternetExplorerOptions;
-//import org.openqa.selenium.opera.OperaDriver;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.LocalFileDetector;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -89,8 +86,8 @@ public abstract class WebDriverFactory {
 		browserFactoryMap.put("ie", WebDriverFactory::openInternetExplorer);
 		browserFactoryMap.put("edge", WebDriverFactory::openEdge);
 		browserFactoryMap.put("safari", WebDriverFactory::openSafari);
-//		browserFactoryMap.put("opera", WebDriverFactory::openOpera);
-//		browserFactoryMap.put("operablink", WebDriverFactory::openOpera);
+		browserFactoryMap.put("opera", WebDriverFactory::openOpera);
+		browserFactoryMap.put("operablink", WebDriverFactory::openOpera);
 		browserFactoryMap.put("htmlunit", WebDriverFactory::openHtmlUnit);
 	}
 
@@ -186,7 +183,6 @@ public abstract class WebDriverFactory {
 	}
 
 	private static WebDriver openChrome(MutableCapabilities capabilities) {
-		WebDriverManager.chromedriver().setup();
 		ChromeOptions options = loadChromeOptions(capabilities);
 		ChromeDriverService driverService = ChromeDriverService.createDefaultService();
 		ChromeDriver driver = new ChromeDriver(driverService, options);
@@ -269,7 +265,6 @@ public abstract class WebDriverFactory {
 	}
 
 	private static WebDriver openFirefox(Capabilities capabilities) {
-		WebDriverManager.firefoxdriver().setup();
 		FirefoxOptions options = loadFirefoxOptions(capabilities);
 		return new FirefoxDriver(options);
 	}
@@ -277,59 +272,55 @@ public abstract class WebDriverFactory {
 		if(FirefoxOptions.class.isAssignableFrom(capabilities.getClass())){
 			return (FirefoxOptions) capabilities;
 		}
-		FirefoxOptions options = new FirefoxOptions().merge(capabilities);
-		Map<String,Object> capMap = capabilities.asMap();
-		if(capMap.containsKey(FirefoxOptions.FIREFOX_OPTIONS)){
-			Object firefoxOptObj = capMap.get(FirefoxOptions.FIREFOX_OPTIONS);
-			if(Map.class.isAssignableFrom(firefoxOptObj.getClass())){
-				Map<Object,Object> firefoxOptMap = (Map<Object,Object>)firefoxOptObj;
-				for(Map.Entry entry : firefoxOptMap.entrySet()) {
-					if (entry.getKey().equals("args")) {
-						if (String[].class.isAssignableFrom(entry.getValue().getClass())) {
-							String[] args = (String[]) entry.getValue();
-							options.addArguments(args);
-						}else if (List.class.isAssignableFrom(entry.getValue().getClass())) {
-							List args = (List) entry.getValue();
-							options.addArguments(args);
-						}
-					}else if (entry.getKey().equals("binary")) {
-						if (String.class.isAssignableFrom(entry.getValue().getClass())) {
-							String binary = (String) entry.getValue();
-							options.setBinary(binary);
-						}
-					}else if (entry.getKey().equals("log")) {
-						if (String.class.isAssignableFrom(entry.getValue().getClass())) {
-							String level = (String) entry.getValue();
-							options.setLogLevel(FirefoxDriverLogLevel.fromString(level));
-						}
-					}else {
-						if (String.class.isAssignableFrom(entry.getKey().getClass())) {
-							options.addPreference((String)entry.getKey(), entry.getValue().toString());
-						}
-					}
-				}
-			}
-		}
+		FirefoxOptions options = new FirefoxOptions(capabilities);
+//		Map<String,Object> capMap = capabilities.asMap();
+//		if(capMap.containsKey(FirefoxOptions.FIREFOX_OPTIONS)){
+//			Object firefoxOptObj = capMap.get(FirefoxOptions.FIREFOX_OPTIONS);
+//			if(Map.class.isAssignableFrom(firefoxOptObj.getClass())){
+//				Map<Object,Object> firefoxOptMap = (Map<Object,Object>)firefoxOptObj;
+//				for(Map.Entry entry : firefoxOptMap.entrySet()) {
+//					if (entry.getKey().equals("args")) {
+//						if (String[].class.isAssignableFrom(entry.getValue().getClass())) {
+//							String[] args = (String[]) entry.getValue();
+//							options.addArguments(args);
+//						}else if (List.class.isAssignableFrom(entry.getValue().getClass())) {
+//							List args = (List) entry.getValue();
+//							options.addArguments(args);
+//						}
+//					}else if (entry.getKey().equals("binary")) {
+//						if (String.class.isAssignableFrom(entry.getValue().getClass())) {
+//							String binary = (String) entry.getValue();
+//							options.setBinary(binary);
+//						}
+//					}else if (entry.getKey().equals("log")) {
+//						if (String.class.isAssignableFrom(entry.getValue().getClass())) {
+//							String level = (String) entry.getValue();
+//							options.setLogLevel(FirefoxDriverLogLevel.fromString(level));
+//						}
+//					}else {
+//						if (String.class.isAssignableFrom(entry.getKey().getClass())) {
+//							options.addPreference((String)entry.getKey(), entry.getValue().toString());
+//						}
+//					}
+//				}
+//			}
+//		}
 		options.setCapability(CapabilityType.BROWSER_NAME, "firefox");
 		return options;
 	}
 
 	private static WebDriver openInternetExplorer(Capabilities capabilities) {
-		WebDriverManager.iedriver().setup();
 		InternetExplorerOptions options = new InternetExplorerOptions(capabilities);
 		return new InternetExplorerDriver(options);
 	}
 
 	private static WebDriver openEdge(Capabilities capabilities) {
-		WebDriverManager.edgedriver().setup();
 		return new EdgeDriver(new EdgeOptions().merge(capabilities));
 	}
 
-//	private static WebDriver openOpera(Capabilities capabilities) {
-//		WebDriverManager.operadriver().setup();
-//		 Replicate loadChromeOptions for Opera to fix use of deprecated constructor.  OperaOptions has the same bug as ChromeOptions.
-//		return new OperaDriver(capabilities);
-//	}
+	private static WebDriver openOpera(Capabilities capabilities) {
+		throw new RuntimeException("Opera no longer supported in Selenium 4");
+	}
 
 	private static WebDriver openSafari(Capabilities capabilities) {
 		SafariOptions options = new SafariOptions(capabilities);
