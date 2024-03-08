@@ -16,18 +16,29 @@
 
 package org.pagemodel.web.testers;
 
+import org.openqa.selenium.ElementClickInterceptedException;
 import org.openqa.selenium.Rectangle;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.FluentWait;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.pagemodel.core.testers.StringTester;
 import org.pagemodel.core.testers.TestEvaluator;
+import org.pagemodel.core.utils.TestRuntimeException;
+import org.pagemodel.core.utils.ThrowingCallable;
 import org.pagemodel.core.utils.json.JsonBuilder;
 import org.pagemodel.web.LocatedWebElement;
 import org.pagemodel.web.PageModel;
+import org.pagemodel.web.utils.PageException;
 import org.pagemodel.web.utils.Screenshot;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
@@ -326,7 +337,37 @@ public class WebElementTester<R, N extends PageModel<? super N>> extends HasPage
 			getEvaluator().logEvent(TestEvaluator.TEST_EXECUTE,
 					"click", op -> op
 							.addValue("element", getElementJson()));
-			return clickAction.click(null);
+			FluentWait wait = new WebDriverWait(page.getContext().getDriver(), Duration.of(getEvaluator().getWaitSec(), ChronoUnit.SECONDS))
+					.ignoring(ElementClickInterceptedException.class);
+			final List<N> returnObj = new ArrayList<>(1);
+			page.getContext().setLogExceptions(false);
+			try {
+				wait.until(driver -> {
+					try {
+						returnObj.add(clickAction.click(null));
+						return true;
+					}catch(PageException ex){
+						Throwable c = ex.getCause();
+						if(!ElementClickInterceptedException.class.isAssignableFrom(c.getClass())
+								&& !StaleElementReferenceException.class.isAssignableFrom(c.getClass())){
+							page.getContext().setLogExceptions(true);
+							throw page.getContext().createException("wait click failed", ex);
+						}
+					}
+					return false;
+				});
+				page.getContext().setLogExceptions(true);
+				return returnObj.get(0);
+			} catch (TestRuntimeException ex) {
+				page.getContext().setLogExceptions(true);
+				getEvaluator().logEvent(TestEvaluator.TEST_EXECUTE + "-failed", "click", op -> op
+						.addValue("element", getElementJson()));
+				throw ex;
+			} catch (Throwable ex) {
+				page.getContext().setLogExceptions(true);
+				throw page.getContext().createException(JsonBuilder.toMap(getEvaluator().getAssertEvent("click", op -> op
+						.addValue("element", getElementJson()))), ex);
+			}
 		}
 
 		@Override
@@ -335,8 +376,36 @@ public class WebElementTester<R, N extends PageModel<? super N>> extends HasPage
 			getEvaluator().logEvent(TestEvaluator.TEST_EXECUTE,
 					"click and", op -> op
 							.addValue("element", getElementJson()));
-			clickAction.doClick(null);
-			return new WebActionTester<>(page.getContext(), page, this, getEvaluator());
+			FluentWait wait = new WebDriverWait(page.getContext().getDriver(), Duration.of(getEvaluator().getWaitSec(), ChronoUnit.SECONDS))
+					.ignoring(ElementClickInterceptedException.class);
+			page.getContext().setLogExceptions(false);
+			try {
+				wait.until(driver -> {
+					try {
+						clickAction.doClick(null);
+						return true;
+					}catch(PageException ex){
+						Throwable c = ex.getCause();
+						if(!ElementClickInterceptedException.class.isAssignableFrom(c.getClass())
+								&& !StaleElementReferenceException.class.isAssignableFrom(c.getClass())){
+							page.getContext().setLogExceptions(true);
+							throw page.getContext().createException("wait click failed", ex);
+						}
+					}
+					return false;
+				});
+				page.getContext().setLogExceptions(true);
+				return new WebActionTester<>(page.getContext(), page, this, getEvaluator());
+			} catch (TestRuntimeException ex) {
+				page.getContext().setLogExceptions(true);
+				getEvaluator().logEvent(TestEvaluator.TEST_EXECUTE + "-failed", "click and", op -> op
+						.addValue("element", getElementJson()));
+				throw ex;
+			} catch (Throwable ex) {
+				page.getContext().setLogExceptions(true);
+				throw page.getContext().createException(JsonBuilder.toMap(getEvaluator().getAssertEvent("click and", op -> op
+						.addValue("element", getElementJson()))), ex);
+			}
 		}
 	}
 
